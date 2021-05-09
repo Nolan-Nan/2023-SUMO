@@ -85,7 +85,8 @@ HGloc1_X, HGloc2_X, HGloc3_X, HGloc4_X, HGloc5_X, HGloc6_X, sentlen_X, HGsentlen
 tfidf_HGavg_X, asp_X, modal_X, voice_X, negcue_X, tense_X, caseent_X, legalent_X, enamex_X, rhet_y, wordlist_X, pasttense_X, 
 provision_ent_X, instrument_ent_X, court_ent_X, casename_ent_X, citation_ent_X, judge_ent_X, loc_ent_X, org_ent_X, date_ent_X, 
 person_ent_X, time_ent_X, gpe_ent_X, fac_ent_X, ordinal_ent_X, totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, 
-modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X):
+modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, 
+second_pos_X, second_dep_X, second_tag_X, second_stop_X):
     with open('./data/MLdata.csv', 'w', newline='') as outfile:
         fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
         'loc4', 'loc5', 'loc6', 'HGloc1', 'HGloc2', 'HGloc3', 'HGloc4', 'HGloc5', 'HGloc6', 'sentlen',
@@ -94,7 +95,7 @@ modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, ne
         'case name entity', 'provision ent', 'instrument ent', 'court ent', 'case name ent', 'citation bl ent', 'judge ent', 
         'loc ent', 'org ent', 'date ent', 'person ent', 'time ent', 'gpe ent', 'fac ent', 'ordinal ent', 'all ent', 'judgename', 'rhet label', 
         'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative', 
-        'cp stop', 'cp voice']        
+        'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']        
 
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -114,7 +115,8 @@ modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, ne
             'fac ent' : fac_ent_X[v], 'ordinal ent' : ordinal_ent_X[v], 'all ent' : totalner_ent_X[v], 'judgename' : judgename[v], 'rhet label' : rhetlabel[v], 
             'cp tense': new_tense_X[v], 'cp modal': new_modal_X[v], 'cp pos bool' :  modal_pos_bool_X[v], 'cp dep bool': modal_dep_bool_X[v], 
             'cp dep count':  modal_dep_count_X[v], 'cp pos count': modal_pos_count_X[v], 'cp dep': new_dep_X[v], 'cp tag': new_tag_X[v], 'cp negative': negtoken_X[v],
-            'cp stop': verbstop_X[v], 'cp voice' : newvoice_X[v]})
+            'cp stop': verbstop_X[v], 'cp voice' : newvoice_X[v], 'cp second pos': second_pos_X[v], 'cp second dep' : second_dep_X[v], 
+            'cp second tag' : second_tag_X[v], 'cp second stop' : second_stop_X[v]})
 
 def get_wordlist(text):
     with open('./data/wordlist.csv', 'r') as infile:
@@ -221,9 +223,13 @@ new_tag_X = np.array([])
 negtoken_X = np.array([])
 verbstop_X = np.array([]) 
 newvoice_X = np.array([])
+second_pos_X = np.array([])
+second_dep_X = np.array([])
+second_tag_X = np.array([])
+second_stop_X = np.array([])
 
 import cuephrases
-new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X = cuephrases.cuePhrases()
+new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X = cuephrases.cuePhrases()
 
 
 with open('data/UKHL_corpus.csv', 'r') as infile:
@@ -550,7 +556,7 @@ HGloc1_X, HGloc2_X, HGloc3_X, HGloc4_X, HGloc5_X, HGloc6_X, sentlen_X, HGsentlen
 tfidf_HGavg_X, asp_X, modal_X, voice_X, negcue_X, tense_X, caseent_X, legalent_X, enamex_X, rhet_y, wordlist_X, pasttense_X, 
 provision_ent_X, instrument_ent_X, court_ent_X, casename_ent_X, citation_ent_X, judge_ent_X, loc_ent_X, org_ent_X, date_ent_X, 
 person_ent_X, time_ent_X, gpe_ent_X, fac_ent_X, ordinal_ent_X, totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X, 
-modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X)
+modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X)
 
 #rank_flag = 0 
 #createRankingFile(case_flag, sent_flag, y, rank_flag)

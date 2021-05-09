@@ -98,6 +98,12 @@ class ml:
         self.new_negative_X = np.array([])
         self.new_stop_X = np.array([])
         self.new_voice_X = np.array([])
+        
+        # data on the token after the verb 
+        self.second_pos_X = np.array([]) 
+        self.second_dep_X = np.array([]) 
+        self.second_tag_X = np.array([]) 
+        self.second_stop_X = np.array([])
 
     
     def classifier_performance(self, X_train, y_train, X_test, y_test, classifier, label, feat_names):
@@ -410,6 +416,10 @@ class ml:
                 self.new_stop_X = np.append(self.new_stop_X, [float(row['cp stop'])])
                 self.new_voice_X = np.append(self.new_voice_X, [float(row['cp voice'])])
   
+                self.second_pos_X = np.append(self.second_pos_X, [float(row['cp second pos'])])
+                self.second_dep_X = np.append(self.second_dep_X, [float(row['cp second dep'])])
+                self.second_tag_X = np.append(self.second_tag_X, [float(row['cp second tag'])])
+                self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
              
                 
 
@@ -444,12 +454,13 @@ class ml:
         modal_bool = self.modal_pos_bool_X, self.modal_dep_bool_X
         modal_count = self.modal_dep_count_X, self.modal_pos_count_X
         verb = self.new_modal_X, self.new_tense_X, self.new_dep_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X
-       
+        secondToken = self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
+        
         import mode_selector
         mode = mode_selector.mode_selector(location, HGlocation, quotation, entities, asmo,
         cue_phrase, sent_length, HGsent_length, tfidf_max, tfidf_top20, tfidf_HGavg, rhet_role, 
         wordlist, pasttense, rhet_y, rel_y, blackstone, spacy, total_spacy, HGents, modal_bool,
-        modal_count, verb)
+        modal_count, verb, secondToken)
         num_of_features = input("how many features? ")
         X, feat_names = mode.select_features(num_of_features)
         Y, label, target_names = mode.select_target()

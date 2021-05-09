@@ -108,6 +108,17 @@ def cuePhrases():
         verbStopResult = []
         voiceResult = []
         
+        # second token 
+        secTokenPosList = [] 
+        secTokenDepList = [] 
+        secTokenTagList = []
+        
+        secTokenStopResult = []
+        secTokenPosResult = []
+        secTokenDepResult = []
+        secTokenTagResult = []
+        
+        
         
         modalPosBoolResult = []
         modalDepBoolResult = []
@@ -131,7 +142,7 @@ def cuePhrases():
             modalPosCountResult.append(modalPosCount)
             
             # verb info for the entire sentence
-            verbDepList, verbTagList, verbTenseList, verbModal, tense, verbDep, verbTag, negToken, verbStop, voice = verb(doc, nlp, verbDepList, verbTagList, verbTenseList)
+            verbDepList, verbTagList, verbTenseList, verbModal, tense, verbDep, verbTag, negToken, verbStop, voice, secTokenPosList, secTokenDepList, secTokenTagList, secTokenStop, secTag, secPos, secDep = verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, secTokenDepList, secTokenTagList)
             
             if verbModal is None: 
                 verbModalsResult.append(0)
@@ -144,9 +155,18 @@ def cuePhrases():
             verbTagResult.append(verbTag)
             negResult.append(negToken)
             verbStopResult.append(verbStop)
-            voiceResult.append(voice)
             
-            print(negResult)
+            if voice == 0: 
+                # voice is active
+                voiceResult.append(1/2)
+            else:  # voice is passive
+                voiceResult.append(voice)
+                
+            secTokenStopResult.append(secTokenStop)
+            secTokenPosResult.append(secPos)
+            secTokenDepResult.append(secDep)
+            secTokenTagResult.append(secTag)
+            
 
             print(y)
            # aspects = aspectsAnalytics(doc, nlp, aspects)
@@ -168,6 +188,10 @@ def cuePhrases():
     newTagType = convertForTraining(verbTagList, verbTagResult)
     
     
+    secPosFinal = convertForTraining(secTokenPosList, secTokenPosResult)
+    secDepFinal = convertForTraining(secTokenDepList, secTokenDepResult)
+    secTagFinal = convertForTraining(secTokenTagList, secTokenTagResult)
+    
     
     # convert to numpy array for feature extractor
     modalFinal = np.array(verbModalsResult)
@@ -181,9 +205,12 @@ def cuePhrases():
     verbStopFinal = np.array(verbStopResult)
     voiceFinal = np.array(voiceResult)
     
+    # third iteration with the data of the second word
+    secStopFinal = np.array(secTokenStopResult)
     
     
-    return newTenseType, modalFinal, modalPosBoolFinal, modalDepBoolFinal, modalDepCountFinal, modalPosCountFinal, newDepType, newTagType, negTokenFinal, verbStopFinal, voiceFinal
+    
+    return newTenseType, modalFinal, modalPosBoolFinal, modalDepBoolFinal, modalDepCountFinal, modalPosCountFinal, newDepType, newTagType, negTokenFinal, verbStopFinal, voiceFinal, secPosFinal, secDepFinal, secTagFinal, secStopFinal
             
            
         
@@ -200,7 +227,7 @@ def convertForTraining(completeList, resultList):
             newType = np.append(newType, 0)
         else: #similar method as previous featureExtraction.py (result is index over number of results)
             i = completeList.index(verbType)
-            i += 1 # because we append 0 above where tense type is none
+            i += 1 # because we append 0 above where tense type is none (avoiding 0 for valuable training data in ML)
             result = i/listLength
             newType = np.append(newType, result)
     print(newType)
@@ -229,8 +256,9 @@ def modal(doc, nlp):
 
 
 #specifically data on the first verb in the sentence
-def verb(doc, nlp, verbDepList, verbTagList, verbTenseList):
+def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, secTokenDepList, secTokenTagList):
     firstVerb = False 
+    nextToken = False
     verbModal = 0
     
     tense = None
@@ -242,14 +270,56 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList):
     passiveSentence = 0 # will change to 1 if a passive dep is found
     
     # token following the verb
+    secTokenStop = 0 
     
+    secPos = None
+    secDep = None
+    secTag = None
     # left to do : get the data of the token following the first verb
     # data will be: its tag, dependency, POS, if it is a stop word
     # remove the count from the one feature set (leave it as just the booleans)
     # and then also check to see what is passive
     
+    
+    #adjust the 0's in the training data
+    
     print("new sentence")
     for token in doc:
+                if firstVerb == True and nextToken == False: 
+                    nextToken = True
+                    
+                    # get the pos tag after
+                    
+                    # collet the tags in an array 
+                    if token.pos_ not in secTokenPosList: 
+                        secTokenPosList.append(token.pos_)
+                    
+                    secPos = token.pos_
+                    
+                    # get dep 
+                    if token.dep_ not in secTokenDepList: 
+                        secTokenDepList.append(token.dep_)
+                    
+                    secDep = token.dep_
+                    
+                    if token.tag_ not in secTokenTagList: 
+                        secTokenTagList.append(token.tag_)
+                    
+                    secTag = token.tag_
+                    
+                    
+                    # check if stop 
+                    if token.is_stop is True:
+                        secTokenStop = 1
+                    
+                    print("second data")
+                    print(secPos)
+                    print(secDep)
+                    print(secTag)
+                    print("/n")
+                    
+                    
+                # data for token after the first verb
                 if firstVerb == False:
                     if token.pos_ == "VERB":
                         firstVerb = True
@@ -289,11 +359,11 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList):
                 for token in negation_head_tokens:
                     if token.head.pos_ == "VERB": 
                         negToken = 1 
-                    
+                        
                 
               
     
-    return verbDepList, verbTagList, verbTenseList, verbModal, tense, verbDep, verbTag, negToken, verbStop, passiveSentence
+    return verbDepList, verbTagList, verbTenseList, verbModal, tense, verbDep, verbTag, negToken, verbStop, passiveSentence, secTokenPosList, secTokenDepList, secTokenTagList, secTokenStop, secTag, secPos, secDep
 
 # maybe use this logic for the aspect parsing? https://stackoverflow.com/questions/60967134/named-entity-recognition-in-aspect-opinion-extraction-using-dependency-rule-matc
 # using the logic from https://towardsdatascience.com/aspect-based-sentiment-analysis-using-spacy-textblob-4c8de3e0d2b9
