@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-crf implemented for relevance classifier
+conditional random fields classifier implementation for sequence modelling 
+
 
 @author: amyconroy
 """
-
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
@@ -112,7 +112,6 @@ class crf():
         # other data
         self.judgename = []
         self.rhetlabel = []
-        self.rel_y = []
        
         
     def train_crf(self, rare_feat_cutoff=5, trace=3):
@@ -126,18 +125,21 @@ class crf():
         self.pull_training_data()
      
         X_train = self.create_speeches_features_list() 
-        y_train = self.sent_to_rellabel()
-      #  print(y_train)
-  
+        print("len 1")
+        print(len(X_train))
+        y_train = self.sent_to_rhetlabel()
+        print("len 2")
+        print(len(y_train))
+     
         self.initialize() 
         self.pull_testing_data()
         X_test = self.create_speeches_features_list()
-        y_test = self.sent_to_rellabel()
-       # print(y_test)
-       
-        
-  
-   
+        print("len 3")
+        print(len(X_test))
+
+        y_test = self.sent_to_rhetlabel()
+        print("len 4")
+        print(len(y_test))
         
 # TEST / TRAIN
         crf = sklearn_crfsuite.CRF(
@@ -147,16 +149,16 @@ class crf():
               max_iterations=100,
               all_possible_transitions=True
               )
-        
         crf.fit(X_train, y_train)
         
+        
         labels = list(crf.classes_)
-      #  labels.remove('NONE')
+        labels.remove('0.0')
         print(labels)
         
         y_pred = crf.predict(X_test)
         print(metrics.flat_f1_score(y_test, y_pred,
-                      average='micro', labels=labels))
+                      average='weighted', labels=labels))
         
         sorted_labels = sorted(
             labels,
@@ -167,11 +169,6 @@ class crf():
             y_test, y_pred, labels=labels, digits=3
             ))  
         from collections import Counter
-        
-
-        
-        
-        
      
         print("Top likely transitions:")
         
@@ -207,14 +204,9 @@ class crf():
             'c2': scipy.stats.expon(scale=0.05),
             }
         
-        
-        
 # use the same metric for evaluation
         f1_scorer = make_scorer(metrics.flat_f1_score,
-                        average='micro', labels=np.unique(labels))
-        
-     
-
+                        average='weighted', labels=np.unique(labels))
 
 # search
 
@@ -234,29 +226,32 @@ class crf():
         crf = rs.best_estimator_
         y_pred = crf.predict(X_test)
         labels = list(crf.classes_)
-      #  labels.remove('NONE')
+        labels.remove('0.0')
         print(labels)
         print(metrics.flat_classification_report(
             y_test, y_pred, labels=labels, digits=3
         ))
         
         print(len(Counter(crf.transition_features_).most_common(20)))
-        
+      
         from sklearn.metrics import plot_confusion_matrix
         from sklearn.metrics import confusion_matrix
         print(confusion_matrix(y_test, y_pred))
         plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
         plt.show()
+  
         
+        print("Top likely transitions:")
+        self.print_transitions(Counter(crf.transition_features_).most_common(20))
 
+        print("\nTop unlikely transitions:")
+        self.print_transitions(Counter(crf.transition_features_).most_common()[-20:])   
         
-# =============================================================================
-#         print("Top positive:")
-#         self.print_state_features(Counter(crf.state_features_).most_common(30))
-# 
-#         print("\nTop negative:")
-#         self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
-# =============================================================================
+        print("Top positive:")
+        self.print_state_features(Counter(crf.state_features_).most_common(30))
+
+        print("\nTop negative:")
+        self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
         
         import eli5
         expl = eli5.explain_weights(crf, top=10)
@@ -265,11 +260,9 @@ class crf():
         text = eli5.formatters.text.format_as_text(expl)
         print(text)
 
-        f = open('crf_relevance.pickle', 'wb')
+        f = open('crf_rhettest.pickle', 'wb')
         pickle.dump(crf, f)
         f.close()
-        
-        
         
 # =============================================================================
 #         f = open("crf.pickle", "rb")
@@ -302,13 +295,16 @@ class crf():
 
     def print_transitions(self, trans_features):
         for (label_from, label_to), weight in trans_features:
-            print("%-6s -> %-7s %0.6f" % (label_from, label_to, weight)) 
+            print("%-6s -> %-7s %0.6f" % (label_from, label_to, weight))   
     
     def sent_to_rhetlabel(self):
         labels = self.rhetlabel
-       
+        print("TEST LABELS")
+        print(labels)
+        print(len(labels))
         rhet_labels = []
-    
+        
+        
         for label in labels: 
             if label == 'FACT':
                 label = '2.0'
@@ -324,27 +320,7 @@ class crf():
                 label = '1.0'      
             if label == 'NONE':
                 label = '0.0'
-            individual_label = []
-            individual_label.append(label)
-            rhet_labels.append(individual_label)
-        
-        return rhet_labels
-    
-    def sent_to_rellabel(self):
-        labels = self.rel_y
-        print("TEST LABELS")
-       # print(labels)
-        print(len(labels))
-        rhet_labels = []
-        
-        
-        for label in labels: 
-            label = (int(label))
-            if label == 1: 
-                label = 'yes'
-            elif label == 0:
-                label = 'no'
-
+            print(label)
             individual_label = []
             individual_label.append(label)
             rhet_labels.append(individual_label)
@@ -365,8 +341,6 @@ class crf():
         newSpeechLookAheadBy1 = False # checks if the judges are different
         newSpeechLookAheadBy2 = False # indicates a new speech
         tags = self.rhetlabel
-        tag_history = self.sent_to_rhetlabel()
-        relevant = self.sent_to_rellabel()
             
       #  print(judges)
         
@@ -374,9 +348,21 @@ class crf():
              featureset = []
              newSpeechLookAheadBy1 = False 
              newSpeechLookAheadBy2 = False 
-             tag = tags[y]
-             rel = relevant[y]
-             
+             label = tags[y]
+             if label == 'FACT':
+                label = '2.0'
+             if label == 'PROCEEDINGS':
+                label = '3.0'            
+             if label == 'BACKGROUND':
+                label = '4.0'
+             if label == 'FRAMING':
+                label = '5.0'
+             if label == 'DISPOSAL':
+                label = '6.0'
+             if label == 'TEXTUAL':
+                label = '1.0'      
+             if label == 'NONE':
+                label = '0.0'
        #      print(judge)
       #       print(len(judges))
              
@@ -391,23 +377,20 @@ class crf():
              if judge != previous_judgename: 
                  tagcount = 1
                  newspeech = True
-                 rel_history = []
-               #  tag_history = [] # previously assigned tags for that speech
+                 tag_history = [] # previously assigned tags for that speech
                  featureset.append(self.get_features(tagcount, y, tag_history, newspeech, 
-                                                     newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
+                                                     newSpeechLookAheadBy1, newSpeechLookAheadBy2))
                  all_featureset.append(featureset)
-                 rel_history.append(rel)
-                # tag_history.append(tag)
+                 tag_history.append(label)
              #    print(tag_history)
                  y += 1 
                  tagcount += 1
              else: 
                  newspeech = False
                  featureset.append(self.get_features(tagcount, y, tag_history, newspeech, 
-                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
+                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2))
                  all_featureset.append(featureset)
-                 rel_history.append(rel)
-               #  tag_history.append(tag)
+                 tag_history.append(label)
              #    print(tag_history)
                  y += 1 
                  tagcount += 1   
@@ -416,13 +399,15 @@ class crf():
         print(len(all_featureset))
         return all_featureset    
         
-    def get_features(self, sentence_id, y, tag_history, newspeech, newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history):
+    def get_features(self, sentence_id, y, tag_history, newspeech, newSpeechLookAheadBy1, newSpeechLookAheadBy2):
             # creates a dict
         # rhetorical tags are strings, all others are int (null if the start of the sentence)
             sentence_id = (int(sentence_id))
    
             
             sentence_features = {}
+            print(y)
+            print(sentence_id)
     
   # NB - need not a super long way to access the 2D array
         # s refers to the sentence, r refers to rhetorical role
@@ -433,9 +418,7 @@ class crf():
                 sentence_features.update({"r-1" : "<START>", 
                                       "r-2 r-1" : "<START> <START>", # previous label and current features
                                       'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : "<START>", 
-                                      "rel-2 rel-1" : "<START> <START>",
+                                 #     "sentence_id" : y,
                                       "length" : (self.sent_length[y]), 
                                       "length+1" : (self.sent_length[y+1]), 
                                       "length+2" : (self.sent_length[y+2]), 
@@ -520,12 +503,10 @@ class crf():
                                       })
         # second word of the sentence
             elif sentence_id == 2: 
-                sentence_features.update({"r-1" : tag_history[y-1], 
-                                      "r-2 r-1" : "<START> %s" % (tag_history[y-1]),
+                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
+                                      "r-2 r-1" : "<START> %s" % (tag_history[sentence_id-2]),
                                       'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "<START> %s" % (rel_history[sentence_id-2]),
+                               #       "sentence_id" : y,
                                       "length" : (self.sent_length[y]), 
                                       "length+1" : (self.sent_length[y+1]), 
                                       "length+2" : (self.sent_length[y+2]), 
@@ -637,12 +618,10 @@ class crf():
                                       })
                 
             elif newSpeechLookAheadBy1:
-                sentence_features.update({"r-1" : tag_history[y-1], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[y-2], tag_history[y-1]),
+                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
+                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
                                       'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
+                               #       "sentence_id" : y,
                                       "length" : (self.sent_length[y]), 
                                       "length-1" : (self.sent_length[y-1]), 
                                       "length-2" : (self.sent_length[y-2]), 
@@ -726,12 +705,10 @@ class crf():
                                       "spacy4-2" : (self.person_ent_X[y-2])
                                       })
             elif newSpeechLookAheadBy2:
-                sentence_features.update({"r-1" : tag_history[y-1], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[y-2], tag_history[y-1]),
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
+                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
+                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
                                       'bias': 1.0,
-                                      "r" : tag,
+                             #         "sentence_id" : y,
                                       "length" : (self.sent_length[y]), 
                                       "length+1" : (self.sent_length[y+1]), 
                                       "length-1" : (self.sent_length[y-1]), 
@@ -843,12 +820,10 @@ class crf():
                                       })   
             
             else: 
-                sentence_features.update({"r-1" : tag_history[y-1], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[y-2], tag_history[y-1]),
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
+                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
+                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
                                       'bias': 1.0,
-                                      "r" : tag,
+                                 #     "sentence_id" : y,
                                       "length" : (self.sent_length[y]), 
                                       "length+1" : (self.sent_length[y+1]), 
                                       "length+2" : (self.sent_length[y+2]), 
@@ -986,6 +961,7 @@ class crf():
                                       "spacy4-2" : (self.person_ent_X[y-2])
                                       })  
             
+       #     print(sentence_features)
             return sentence_features
     
         # here it assigns relevant training data to the np.array, then can use the index to pull out the right rows
@@ -1039,7 +1015,6 @@ class crf():
         self.blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, 
         self.citation_blackstone, self.judge_blackstone
         self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
-    
     def pull_testing_data(self):
         # open up the MLdata
         # create the sentences arrays at the same time? including relevant 
@@ -1078,6 +1053,7 @@ class crf():
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
+               
                 self.judgename.append(row['judgename'])
                 self.rhetlabel.append(row['rhet label'])
 
