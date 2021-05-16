@@ -258,8 +258,8 @@ class crf():
         from sklearn.metrics import plot_confusion_matrix
         from sklearn.metrics import confusion_matrix
         print(confusion_matrix(y_test, y_pred))
-        plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
-        plt.show()
+      #  plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
+     #   plt.show()
   
         
         print("Top likely transitions:")
