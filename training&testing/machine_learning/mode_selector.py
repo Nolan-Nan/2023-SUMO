@@ -9,7 +9,7 @@ class mode_selector:
     def __init__(self, location, HGlocation, quotation, entities, asmo,
         cue_phrase, sent_length, HGsent_length, tfidf_max, tfidf_top20, tfidf_HGavg, rhet_role, 
         wordlist, pasttense, rhet_y, rel_y, blackstone, entity_spacy, total_spacy, new_entities, 
-        modal_bool, modal_count, verb, secondToken):
+        modal, verb, secondToken):
         self.feature_dict = {
             1 : location,
             2 : HGlocation,
@@ -29,10 +29,9 @@ class mode_selector:
             16 : entity_spacy, 
             17 : total_spacy, 
             18 : new_entities, 
-            19 : modal_bool, 
-            20 : modal_count,
-            21 : verb, 
-            22 : secondToken
+            19 : modal,
+            20 : verb, 
+            21 : secondToken
         }
         self.feature_opt = {
             'location' : 1,
@@ -53,10 +52,9 @@ class mode_selector:
             'HG spacy entities' : 16, 
             'all spacy entitiess' : 17, 
             'new entities' : 18, 
-            'modality boolean' : 19, 
-            'modality count' : 20,
-            'first verb' : 21, 
-            'token after verb' : 22
+            'sentence modality' : 19, 
+            'first verb' : 20, 
+            'token after verb' : 21
         }
         self.target_dict = {
             1 : rhet_y,

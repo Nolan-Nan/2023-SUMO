@@ -132,13 +132,18 @@ def cuePhrases():
             doc = nlp(text)
             
 
+            tokenCount = 0
+           
+            modalPosBool, modalDepBool, modalDepCount, modalPosCount, tokenCount = modal(doc, nlp) #modality of the entire sentence
             
+            normalizedDepCount = modalDepCount / tokenCount
+            normalizedDepCount = round(normalizedDepCount, 2)
             
-            modalPosBool, modalDepBool, modalDepCount, modalPosCount = modal(doc, nlp) #modality of the entire sentence
             
             modalPosBoolResult.append(modalPosBool)
             modalDepBoolResult.append(modalDepBool)
-            modalDepCountResult.append(modalDepCount)
+            modalDepCountResult.append(normalizedDepCount)
+            print(modalDepCountResult)
             modalPosCountResult.append(modalPosCount)
             
             # verb info for the entire sentence
@@ -156,6 +161,7 @@ def cuePhrases():
             negResult.append(negToken)
             verbStopResult.append(verbStop)
             
+            print(voice)
             if voice == 0: 
                 # voice is active
                 voiceResult.append(1/2)
@@ -242,6 +248,8 @@ def modal(doc, nlp):
     modalDepCount = 0
     modalPosCount = 0
     
+    tokenCount = 0
+    
 
     for token in doc:
         if token.pos_ == "AUX":
@@ -251,8 +259,10 @@ def modal(doc, nlp):
         if token.dep_ == "aux":
             modalDepCount += 1
             modalDepBool = 1 # true if found
+            
+        tokenCount += 1
         
-    return modalPosBool, modalDepBool, modalDepCount, modalPosCount
+    return modalPosBool, modalDepBool, modalDepCount, modalPosCount, tokenCount
 
 
 #specifically data on the first verb in the sentence
@@ -316,7 +326,7 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                     print(secPos)
                     print(secDep)
                     print(secTag)
-                    print("/n")
+                    print("\n")
                     
                     
                 # data for token after the first verb
@@ -348,8 +358,9 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                         if token.is_stop is True:
                             verbStop = 1
                             
-                if token.dep_ == "subjpass":
-                    passiveSentence = 1
+                        if token.dep_ == "subjpass" or token.dep_ == "auxpass":
+                            print("PASSIVE")
+                            passiveSentence = 1
                        
                
                 # negative tokens
