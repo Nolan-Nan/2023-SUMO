@@ -7,8 +7,7 @@ classifiers and feature selection
 
 class mode_selector:
     def __init__(self, location, quotation, asmo,
-        sent_length, tfidf_max, rhet_role, 
-        wordlist, rhet_y, rel_y,  new_entities, new_cue_phrases):
+        sent_length, tfidf_max, rhet_role, wordlist, rhet_y, rel_y,  new_entities, new_cue_phrases):
         self.feature_dict = {
             1 : location,
             2 : quotation,
@@ -29,7 +28,7 @@ class mode_selector:
             'rhet_role' : 6,
             'wordlist' : 7,
             'entities' : 8, 
-            'cue phrases' : 9
+            'cue_phrases' : 9
         }
         self.target_dict = {
             1 : rhet_y,

@@ -452,15 +452,16 @@ class ml:
         modal = self.modal_dep_bool_X,  self.modal_dep_count_X   #currently without the POS data
         verb =  self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X # currently without dep and modality
         secondToken = self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
-        new_cue_phrases = modal, verb, secondToken
+        new_cue_phrases = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
         
         import mode_selector
         mode = mode_selector.mode_selector(location, quotation, asmo,
-        sent_length, tfidf_max, rhet_role, 
-        wordlist, rhet_y, rel_y, HGents, new_cue_phrases)
+        sent_length, tfidf_max, rhet_role, wordlist, rhet_y, rel_y, HGents, new_cue_phrases)
         num_of_features = input("how many features? ")
         X, feat_names = mode.select_features(num_of_features)
         Y, label, target_names = mode.select_target()
+       
+
         
         print(X)
         print(feat_names)
