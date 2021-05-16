@@ -297,35 +297,6 @@ class ml:
             from sklearn.model_selection import train_test_split
             X_train, X_test, y_train, y_test = train_test_split(X, Y, shuffle=True, test_size = .1)
             
-            import sklearn_crfsuite
-            from sklearn_crfsuite import scorers
-            from sklearn_crfsuite import metrics
-            crf = sklearn_crfsuite.CRF(
-                    algorithm='lbfgs',
-                    c1=0.5,
-                    c2=0.05,
-                    max_iterations=100,
-                    all_possible_transitions=True
-                    )
-              
-            crf.fit(X_train, y_train)
-          
-            labels = list(crf.classes_)
-        #  labels.remove('NONE')
-            print(labels)
-          
-            y_pred = crf.predict(X_test)
-            print(metrics.flat_f1_score(y_test, y_pred,
-                        average='micro', labels=labels))
-          
-            sorted_labels = sorted(
-               labels,
-               key=lambda name: (name[1:], name[0])
-               )
-          
-            print(metrics.flat_classification_report(
-               y_test, y_pred, labels=labels, digits=3
-               ))  
         
         rep = ""
         while rep != "done":
