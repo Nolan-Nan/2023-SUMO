@@ -265,10 +265,12 @@ class crf():
         from sklearn.metrics import plot_confusion_matrix
         from sklearn.metrics import confusion_matrix
         print(confusion_matrix(y_test, y_pred))
-        plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
-        plt.show()
+     #   plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
+     #   plt.show()
         
-
+        f = open('crf_relevance.pickle', 'wb')
+        pickle.dump(crf, f)
+        f.close()
         
 # =============================================================================
 #         print("Top positive:")
@@ -285,9 +287,7 @@ class crf():
         text = eli5.formatters.text.format_as_text(expl)
         print(text)
 
-        f = open('crf_relevance.pickle', 'wb')
-        pickle.dump(crf, f)
-        f.close()
+        
         
         
         
