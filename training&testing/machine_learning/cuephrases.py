@@ -143,7 +143,6 @@ def cuePhrases():
             modalPosBoolResult.append(modalPosBool)
             modalDepBoolResult.append(modalDepBool)
             modalDepCountResult.append(normalizedDepCount)
-            print(modalDepCountResult)
             modalPosCountResult.append(modalPosCount)
             
             # verb info for the entire sentence
@@ -161,7 +160,6 @@ def cuePhrases():
             negResult.append(negToken)
             verbStopResult.append(verbStop)
             
-            print(voice)
             if voice == 0: 
                 # voice is active
                 voiceResult.append(1/2)
@@ -173,8 +171,6 @@ def cuePhrases():
             secTokenDepResult.append(secDep)
             secTokenTagResult.append(secTag)
             
-
-            print(y)
            # aspects = aspectsAnalytics(doc, nlp, aspects)
            
     with open('data/cuePhrasesCorpus.csv','w', newline='')as outfile:
@@ -267,7 +263,7 @@ def modal(doc, nlp):
 
 #specifically data on the first verb in the sentence
 def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, secTokenDepList, secTokenTagList):
-    firstVerb = False 
+    rootVerb = False 
     nextToken = False
     verbModal = 0
     
@@ -293,13 +289,11 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
     
     #adjust the 0's in the training data
     
-    print("new sentence")
     for token in doc:
-                if firstVerb == True and nextToken == False: 
+                # token directly after the root verb
+                if rootVerb == True and nextToken == False: 
                     nextToken = True
-                    
-                    # get the pos tag after
-                    
+                
                     # collet the tags in an array 
                     if token.pos_ not in secTokenPosList: 
                         secTokenPosList.append(token.pos_)
@@ -312,58 +306,51 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                     
                     secDep = token.dep_
                     
+                    
                     if token.tag_ not in secTokenTagList: 
                         secTokenTagList.append(token.tag_)
                     
                     secTag = token.tag_
                     
-                    
                     # check if stop 
                     if token.is_stop is True:
                         secTokenStop = 1
                     
-                    print("second data")
-                    print(secPos)
-                    print(secDep)
-                    print(secTag)
-                    print("\n")
                     
                     
                 # data for token after the first verb
-                if firstVerb == False:
-                    if token.pos_ == "VERB":
-                        firstVerb = True
-                        tense = nlp.vocab.morphology.tag_map[token.tag_].get("Tense")
-                        
-                        if tense != "pres" and tense != "past":
-                            verbForm = nlp.vocab.morphology.tag_map[token.tag_].get("VerbForm")
-                            if verbForm == "inf": 
-                                tense = verbForm
-                                
-                        if tense not in verbTenseList: 
-                            verbTenseList.append(tense)
-                  
-                        verbDep = token.dep_
-                        if verbDep not in verbDepList:
-                            verbDepList.append(verbDep)
-                        
-                        verbTag = token.tag_
-                        if verbTag not in verbTagList:
-                            verbTagList.append(verbTag)
+                if token.dep_ == "ROOT": 
+                    rootVerb = True
+                    tense = nlp.vocab.morphology.tag_map[token.tag_].get("Tense")
+                    
+                    if tense != "pres" and tense != "past":
+                        verbForm = nlp.vocab.morphology.tag_map[token.tag_].get("VerbForm")
+                        if verbForm == "inf": 
+                            tense = verbForm
                             
-                        # if modality
-                        if token.tag_ == "MD":
-                            verbModal = 1
+                    if tense not in verbTenseList: 
+                        verbTenseList.append(tense)
+              
+                    verbDep = token.dep_
+                    if verbDep not in verbDepList:
+                        verbDepList.append(verbDep)
+                    
+                    verbTag = token.tag_
+                    if verbTag not in verbTagList:
+                        verbTagList.append(verbTag)
                         
-                        if token.is_stop is True:
-                            verbStop = 1
-                            
-                        if token.dep_ == "subjpass" or token.dep_ == "auxpass":
-                            print("PASSIVE")
-                            passiveSentence = 1
+                    # if modality
+                    if token.tag_ == "MD":
+                        verbModal = 1
+                    
+                    if token.is_stop is True:
+                        verbStop = 1
+                        
+                    if token.dep_ == "subjpass" or token.dep_ == "auxpass":
+                        passiveSentence = 1
                        
                
-                # negative tokens
+                # find negative verb tokens
                 negation_tokens = [tok for tok in doc if tok.dep_ == 'neg']
                 negation_head_tokens = [token.head for token in negation_tokens]
                 
