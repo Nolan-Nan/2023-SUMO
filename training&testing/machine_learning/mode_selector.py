@@ -6,55 +6,30 @@ classifiers and feature selection
 
 
 class mode_selector:
-    def __init__(self, location, HGlocation, quotation, entities, asmo,
-        cue_phrase, sent_length, HGsent_length, tfidf_max, tfidf_top20, tfidf_HGavg, rhet_role, 
-        wordlist, pasttense, rhet_y, rel_y, blackstone, entity_spacy, total_spacy, new_entities, 
-        modal, verb, secondToken):
+    def __init__(self, location, quotation, asmo,
+        sent_length, tfidf_max, rhet_role, 
+        wordlist, rhet_y, rel_y,  new_entities, new_cue_phrases):
         self.feature_dict = {
             1 : location,
-            2 : HGlocation,
-            3 : quotation,
-            4 : entities,
-            5 : asmo,
-            6 : cue_phrase,
-            7 : sent_length,
-            8 : HGsent_length,
-            9 : tfidf_max,
-            10 : tfidf_top20,
-            11 : tfidf_HGavg,
-            12 : rhet_role,
-            13 : wordlist,
-            14 : pasttense, 
-            15 : blackstone, 
-            16 : entity_spacy, 
-            17 : total_spacy, 
-            18 : new_entities, 
-            19 : modal,
-            20 : verb, 
-            21 : secondToken
+            2 : quotation,
+            3 : asmo,
+            4 : sent_length,
+            5 : tfidf_max,
+            6 : rhet_role,
+            7 : wordlist,
+            8 : new_entities, 
+            9 : new_cue_phrases
         }
         self.feature_opt = {
             'location' : 1,
-            'HGlocation' : 2, 
-            'quotation' : 3,
-            'entities' : 4,
-            'asmo' : 5,
-            'cue_phrase' : 6,
-            'sent_length' : 7,
-            'HGsent_length' : 8,
-            'tfidf_max' : 9,
-            'tfidf_top20' : 10,
-            'tfidf_HGavg' : 11,
-            'rhet_role' : 12,
-            'wordlist' : 13,
-            'pasttense' : 14, 
-            'blackstone' : 15, 
-            'HG spacy entities' : 16, 
-            'all spacy entitiess' : 17, 
-            'new entities' : 18, 
-            'sentence modality' : 19, 
-            'first verb' : 20, 
-            'token after verb' : 21
+            'quotation' : 2,
+            'asmo' : 3,
+            'sent_length' : 4,
+            'tfidf' : 5,
+            'rhet_role' : 6,
+            'wordlist' : 7,
+            'entities' : 8, 
+            'cue phrases' : 9
         }
         self.target_dict = {
             1 : rhet_y,

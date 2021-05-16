@@ -429,40 +429,35 @@ class ml:
 
     def exec(self):
         location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
-        HGlocation = self.HGloc1_X, self.HGloc2_X, self.HGloc3_X, self.HGloc4_X, self.HGloc5_X, self.HGloc6_X
+      #  HGlocation = self.HGloc1_X, self.HGloc2_X, self.HGloc3_X, self.HGloc4_X, self.HGloc5_X, self.HGloc6_X
         quotation = self.inq_X, self.qb_X
-        entities = self.legalent_X, self.enamex_X # ALSO WANT TO ATTEMPT ADDING THE CITATION ENTITY HERE
+      #  entities = self.legalent_X, self.enamex_X # ALSO WANT TO ATTEMPT ADDING THE CITATION ENTITY HERE
         asmo = self.agree_X, self.outcome_X
-        cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
+      #  cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
         sent_length = self.sentlen_X
         HGsent_length = self.HGsentlen_X
         tfidf_max = self.tfidf_max_X
-        tfidf_HGavg = self.tfidf_HGavg_X 
-        tfidf_top20 = self.tfidf_top20_X 
+     #   tfidf_HGavg = self.tfidf_HGavg_X 
+     #   tfidf_top20 = self.tfidf_top20_X 
         rhet_role = self.rhet_X
         wordlist = self.wordlist_X
-        pasttense = self.pasttense_X
+      #  pasttense = self.pasttense_X
         rhet_y = self.rhet_y
         rel_y = self.rel_y
        # citationent_X = self.citationent_X
-        provision_blackstone = self.provision_blackstone
-        instrument_blackstone = self.instrument_blackstone
-        court_blackstone = self.court_blackstone 
-        case_blackstone = self.case_blackstone 
-        citation_blackstone = self.citation_blackstone 
-        judge_blackstone = self.judge_blackstone
-        blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
-        spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.time_ent_X, self.gpe_ent_X, self.fac_ent_X, self.ordinal_ent_X
-        total_spacy = self.total_spacy_X
+      #  blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
+     #   spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.time_ent_X, self.gpe_ent_X, self.fac_ent_X, self.ordinal_ent_X
+     #   total_spacy = self.total_spacy_X
         HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
         modal = self.modal_dep_bool_X,  self.modal_dep_count_X   #currently without the POS data
         verb =  self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X # currently without dep and modality
         secondToken = self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
+        new_cue_phrases = modal, verb, secondToken
         
         import mode_selector
-        mode = mode_selector.mode_selector(location, HGlocation, quotation, entities, asmo,
-        cue_phrase, sent_length, HGsent_length, tfidf_max, tfidf_top20, tfidf_HGavg, rhet_role, 
-        wordlist, pasttense, rhet_y, rel_y, blackstone, spacy, total_spacy, HGents, modal, verb, secondToken)
+        mode = mode_selector.mode_selector(location, quotation, asmo,
+        sent_length, tfidf_max, rhet_role, 
+        wordlist, rhet_y, rel_y, HGents, new_cue_phrases)
         num_of_features = input("how many features? ")
         X, feat_names = mode.select_features(num_of_features)
         Y, label, target_names = mode.select_target()
