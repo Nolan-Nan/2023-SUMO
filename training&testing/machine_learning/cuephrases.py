@@ -153,7 +153,6 @@ def cuePhrases():
             else: 
                 verbModalsResult.append(verbModal)
             
-            
             tenseResult.append(tense)
             verbDepResult.append(verbDep)
             verbTagResult.append(verbTag)
@@ -265,8 +264,6 @@ def modal(doc, nlp):
 def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, secTokenDepList, secTokenTagList):
     rootVerb = False 
     nextToken = False
-    verbModal = 0
-    
     tense = None
     verbModal = None
     verbDep = None
@@ -341,6 +338,7 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                         
                     # if modality
                     if token.tag_ == "MD":
+                        print("MODALITY")
                         verbModal = 1
                     
                     if token.is_stop is True:
@@ -359,8 +357,6 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                         negToken = 1 
                         
                 
-              
-    
     return verbDepList, verbTagList, verbTenseList, verbModal, tense, verbDep, verbTag, negToken, verbStop, passiveSentence, secTokenPosList, secTokenDepList, secTokenTagList, secTokenStop, secTag, secPos, secDep
 
 # maybe use this logic for the aspect parsing? https://stackoverflow.com/questions/60967134/named-entity-recognition-in-aspect-opinion-extraction-using-dependency-rule-matc
