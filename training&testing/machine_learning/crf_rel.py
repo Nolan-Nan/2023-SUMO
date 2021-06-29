@@ -253,6 +253,7 @@ class crf():
         
         crf = rs.best_estimator_
         y_pred = crf.predict(X_test)
+        print(y_pred)
         labels = list(crf.classes_)
       #  labels.remove('NONE')
         print(labels)
