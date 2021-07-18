@@ -42,11 +42,8 @@ class summary():
         agreeJudges = self.prepareASMOData(casenum)
         self.createICLRSummary(agreeJudges, judges, majority, rankedData, summaryLength)
         
-        ## take the majority 
-        ## get the top disposal sentences from majority 
-        ## parse and try to create an outcome sentence
         
-        self.getOutcome(judges, rankedData, majority, agreeJudges)
+      
     
     def printJudges(self, judges):
         print("HL: ", end="")
@@ -305,7 +302,7 @@ class summary():
         # this function just gets the Fact sentences from the majority judges
    #     self.writeFactsParagraph(majority, factSentences)
         self.writeJudgmentParagraph(majority, agreeJudges,  backgroundSentences, framingSentences, 
-                                    disposalSentences, judges, sentencesNum)
+                                    disposalSentences, judges, sentencesNum, rankedData)
                 
     def getICLRFactandProceedingsDistribution(self, rankedData, summaryLength, factSentences, proceedingsSentences):
         #  rhetorical distribution for these summaries are based on the distribution provided by Hachey and Grover
@@ -389,7 +386,7 @@ class summary():
             print(sentence['text'], end="")
         print("\n")
         
-    def writeJudgmentParagraph(self, majority, agreeJudges,  backgroundSentences, framingSentences, disposalSentences, judges, length):
+    def writeJudgmentParagraph(self, majority, agreeJudges,  backgroundSentences, framingSentences, disposalSentences, judges, length, rankedData):
         backgroundDist = 10.2
         distribution = length / 100
         distribution = distribution * backgroundDist
@@ -402,6 +399,12 @@ class summary():
         distribution = length / 100
         distribution = distribution * disposalDist
         disposalDist = round(distribution)
+        
+        
+        self.getOutcome(judges, rankedData, majority, agreeJudges)
+        
+        
+        # before going through line of reasoning b/w judges we print the outcome statements first
         if len(majority) > 0:
             print("The line of reasoning forming the majority opinion was delivered by ", end= "")
             majorityMultiple = False
@@ -660,34 +663,35 @@ class summary():
             for judge in majority:
                 if disposal['judge'] == judge: 
                     outcomeSentences.append(disposal['text'])
-        print(disposalSentences)
+ 
        # outcomeSentences these are all top ranked disposal sentences ideally with the outcome
-        print(outcomeSentences)
+
         self.parseOutcome(outcomeSentences)
         
         
         # need to account for this being empty next w/ using the agreement judges
         
     def parseOutcome(self, outcomeSentences): 
-        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal']
+        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal', 'refuse the appeal']
         allowFragments = ['I would allow the appeal', 'would allow the appeal', 'too would allow the appeal', 'appeal should be allowed', 'allow the appeal']
         
         
         for fragment in dismissFragments: 
-            check = any(fragment in string for string in outcomeSentences)     
+            check = any(fragment in string for string in outcomeSentences)    
+
+            if check is True: 
+                print("The appeal was dismissed.")
+                break
+
         
+     
+        for fragment in allowFragments: 
+            check = any(fragment in string for string in outcomeSentences)  
         
-        if check is True: 
-            print("The appeal was dismissed.")
-            outcomeStatement = "The appeal was dismissed. "
-        
-        else: 
-            for fragment in allowFragments: 
-                check = any(fragment in string for string in outcomeSentences)  
-        
-        if check is True: 
-            print("The appeal was allowed.")
-            outcomeStatement = "The appeal was allowed. "
+            if check is True: 
+                print("The appeal was allowed.")
+                break
+
         
             
                 
