@@ -42,16 +42,6 @@ class summary():
         agreeJudges = self.prepareASMOData(casenum)
         self.createICLRSummary(agreeJudges, judges, majority, rankedData, summaryLength)
         
-        print("\n")
-        print(agreeJudges)
-        print("\n")
-        print(judges)
-        print("\n")
-        print(majority)
-        print("\n")
-        print(rankedData)
-        print("\n")
-        
         ## take the majority 
         ## get the top disposal sentences from majority 
         ## parse and try to create an outcome sentence
@@ -670,15 +660,18 @@ class summary():
             for judge in majority:
                 if disposal['judge'] == judge: 
                     outcomeSentences.append(disposal['text'])
-                    
+        print(disposalSentences)
        # outcomeSentences these are all top ranked disposal sentences ideally with the outcome
-        
+        print(outcomeSentences)
         self.parseOutcome(outcomeSentences)
+        
         
         # need to account for this being empty next w/ using the agreement judges
         
     def parseOutcome(self, outcomeSentences): 
-        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss']
+        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal']
+        allowFragments = ['I would allow the appeal']
+        
         
         for fragment in dismissFragments: 
             check = any(fragment in string for string in outcomeSentences)     
@@ -686,6 +679,7 @@ class summary():
         
         if check is True: 
             print("The appeal was dismissed.")
+        print(check)
         
             
                 
