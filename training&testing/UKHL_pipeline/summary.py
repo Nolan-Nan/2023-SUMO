@@ -670,7 +670,7 @@ class summary():
         
     def parseOutcome(self, outcomeSentences): 
         dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal']
-        allowFragments = ['I would allow the appeal']
+        allowFragments = ['I would allow the appeal', 'would allow the appeal', 'too would allow the appeal', 'appeal should be allowed', 'allow the appeal']
         
         
         for fragment in dismissFragments: 
@@ -679,7 +679,15 @@ class summary():
         
         if check is True: 
             print("The appeal was dismissed.")
-        print(check)
+            outcomeStatement = "The appeal was dismissed. "
+        
+        else: 
+            for fragment in allowFragments: 
+                check = any(fragment in string for string in outcomeSentences)  
+        
+        if check is True: 
+            print("The appeal was allowed.")
+            outcomeStatement = "The appeal was allowed. "
         
             
                 
