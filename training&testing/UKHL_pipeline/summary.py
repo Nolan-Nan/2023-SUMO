@@ -663,6 +663,16 @@ class summary():
             for judge in majority:
                 if disposal['judge'] == judge: 
                     outcomeSentences.append(disposal['text'])
+        
+        
+        if not outcomeSentences: 
+            for disposal in disposalSentences: 
+                for judge in agreeJudges:
+                    print(judge)
+                    if disposal['judge'] == judge: 
+                        outcomeSentences.append(disposal['text'])
+                        
+                    print(outcomeSentences)
  
        # outcomeSentences these are all top ranked disposal sentences ideally with the outcome
 
@@ -672,7 +682,7 @@ class summary():
         # need to account for this being empty next w/ using the agreement judges
         
     def parseOutcome(self, outcomeSentences): 
-        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal', 'refuse the appeal']
+        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss', 'would dismiss the appeal', 'would therefore dismiss the appeal', 'refuse the appeal', 'dismiss the appeal']
         allowFragments = ['I would allow the appeal', 'would allow the appeal', 'too would allow the appeal', 'appeal should be allowed', 'allow the appeal']
         
         
