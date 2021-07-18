@@ -52,7 +52,11 @@ class summary():
         print(rankedData)
         print("\n")
         
-        self.getOutcome(agreeJudges, judges, rankedData)
+        ## take the majority 
+        ## get the top disposal sentences from majority 
+        ## parse and try to create an outcome sentence
+        
+        self.getOutcome(judges, rankedData, majority, agreeJudges)
     
     def printJudges(self, judges):
         print("HL: ", end="")
@@ -654,8 +658,34 @@ class summary():
         rankedList = sorted(newData, key=lambda i: i['sent id'], reverse=True)
         return rankedList
     
-    def getOutcome(self, agreeJudges, judges, rankedData): 
-        y = 1
+    def getOutcome(self, judges, rankedData, majority, agreeJudges): 
+        disposalSentences = []
+        outcomeSentences = []
+        
+        for sentence in rankedData: 
+            if sentence['role'] == '6.0': 
+                disposalSentences.append(sentence)
+                
+        for disposal in disposalSentences: 
+            for judge in majority:
+                if disposal['judge'] == judge: 
+                    outcomeSentences.append(disposal['text'])
+                    
+       # outcomeSentences these are all top ranked disposal sentences ideally with the outcome
+        
+        self.parseOutcome(outcomeSentences)
+        
+        # need to account for this being empty next w/ using the agreement judges
+        
+    def parseOutcome(self, outcomeSentences): 
+        dismissFragments = ['I would dismiss the appeal', 'should be dismissed', 'I would dismiss']
+        
+        for fragment in dismissFragments: 
+            check = any(fragment in string for string in outcomeSentences)     
+        
+        
+        if check is True: 
+            print("The appeal was dismissed.")
         
             
                 
