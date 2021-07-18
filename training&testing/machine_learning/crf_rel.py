@@ -269,7 +269,7 @@ class crf():
      #   plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
      #   plt.show()
         
-        f = open('crf_relevance.pickle', 'wb')
+        f = open('RELEVANCE.pickle', 'wb')
         pickle.dump(crf, f)
         f.close()
         

@@ -41,6 +41,18 @@ class summary():
         self.printJudges(judges)
         agreeJudges = self.prepareASMOData(casenum)
         self.createICLRSummary(agreeJudges, judges, majority, rankedData, summaryLength)
+        
+        print("\n")
+        print(agreeJudges)
+        print("\n")
+        print(judges)
+        print("\n")
+        print(majority)
+        print("\n")
+        print(rankedData)
+        print("\n")
+        
+        self.getOutcome(agreeJudges, judges, rankedData)
     
     def printJudges(self, judges):
         print("HL: ", end="")
@@ -641,6 +653,9 @@ class summary():
         
         rankedList = sorted(newData, key=lambda i: i['sent id'], reverse=True)
         return rankedList
+    
+    def getOutcome(self, agreeJudges, judges, rankedData): 
+        y = 1
         
             
                 
