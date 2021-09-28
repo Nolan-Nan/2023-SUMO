@@ -41,6 +41,8 @@ class summary():
         self.printJudges(judges)
         agreeJudges = self.prepareASMOData(casenum)
         self.createICLRSummary(agreeJudges, judges, majority, rankedData, summaryLength)
+        print("\n UKSC SUMMARY")
+        self.createUKSCSummary(agreeJudges, judges, majority, rankedData, summaryLength)
         
         
       
@@ -701,6 +703,23 @@ class summary():
             if check is True: 
                 print("The appeal was allowed.")
                 break
+            
+    def createUKSCSummary(self, agreeJudges, judges, majority, rankedData, sentencesNum):
+        backgroundSentences, framingSentences, proceedingsSentences, factSentences, disposalSentences = self.getRankedSentbyRole(rankedData)
+        # this will get the appropriate distribution, top ranked Fact from all judges
+        fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences)
+    
+        print("\n")
+        for sentence in fact: 
+            print(sentence['text'], end="")
+        for sentence in pro: 
+            print(sentence['text'], end="")
+        print("\n")
+        
+        # this function just gets the Fact sentences from the majority judges
+   #     self.writeFactsParagraph(majority, factSentences)
+        self.writeJudgmentParagraph(majority, agreeJudges,  backgroundSentences, framingSentences, 
+                                    disposalSentences, judges, sentencesNum, rankedData)
 
         
             
