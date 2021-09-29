@@ -41,7 +41,9 @@ class summary():
         self.printJudges(judges)
         agreeJudges = self.prepareASMOData(casenum)
         self.createICLRSummary(agreeJudges, judges, majority, rankedData, summaryLength)
-        print("\n UKSC SUMMARY")
+        print("\n")
+        print("UKSC SUMMARY ")
+        print("\n")
         self.createUKSCSummary(agreeJudges, judges, majority, rankedData, summaryLength)
         
         
@@ -571,12 +573,19 @@ class summary():
             
             
     def printMajorityOpinions(self, sentences, judge):
+        y = 0
+        
         if(len(sentences) > 0):
             print("LORD " + judge + " said: \"", end="")
             for sentence in sentences: 
                 print(sentence['text'], end="")
+                y = y + 1
+                if y == 5: 
+                    print("\n")
+                    y = 0
                 
             print("\"", end="")
+            print("\n")
             
      # get top ranked for each data type     
     def createMajorityStatements(self, judge, backgroundSentences, framingSentences, disposalSentences, 
@@ -710,16 +719,205 @@ class summary():
         fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences)
     
         print("\n")
+        
+        print("BACKGROUND TO THE APPEAL")
+    
+        print("\n")
         for sentence in fact: 
             print(sentence['text'], end="")
+            
+        print("\n")
+            
         for sentence in pro: 
             print(sentence['text'], end="")
         print("\n")
         
         # this function just gets the Fact sentences from the majority judges
    #     self.writeFactsParagraph(majority, factSentences)
-        self.writeJudgmentParagraph(majority, agreeJudges,  backgroundSentences, framingSentences, 
+        self.writeUKSCJudgmentParagraph(majority, agreeJudges,  backgroundSentences, framingSentences, 
                                     disposalSentences, judges, sentencesNum, rankedData)
+        
+        
+    def writeUKSCJudgmentParagraph(self, majority, agreeJudges,  backgroundSentences, framingSentences, disposalSentences, judges, length, rankedData):
+        length = 30
+        backgroundDist = 10.2
+        distribution = length / 100
+        distribution = distribution * backgroundDist
+        backgroundDist = round(distribution)
+        framingDist = 30.0
+        distribution = length / 100
+        distribution = distribution * framingDist
+        framingDist = round(distribution)
+        disposalDist = 31.1
+        distribution = length / 100
+        distribution = distribution * disposalDist
+        disposalDist = round(distribution)
+        
+        print("\n JUDGMENT \n")
+        
+        
+        self.getOutcome(judges, rankedData, majority, agreeJudges)
+        
+        
+        
+        
+        # before going through line of reasoning b/w judges we print the outcome statements first
+        if len(majority) > 0:
+            print("The line of reasoning forming the majority opinion was delivered by ", end= "")
+            majorityMultiple = False
+            for judge in majority: 
+                if majorityMultiple == True: 
+                    print(" and ", end = "")
+                print("LORD " + judge, end="")
+                majorityMultiple = True
+            print(". ", end="")
+
+            
+
+        # manually check for a majority first just in case then back up for no majority 
+        else:
+            possibleMajority = []
+            for lord in agreeJudges: 
+                multiple_agree = False
+                for judge in judges: 
+                    if judge != "NONE":
+                        if judge not in majority:
+                            if lord[0] in judge:
+                                    if len(lord[1]) > 1: 
+                                        for i in range(len(lord[1])): 
+                                            for jdg in judges: 
+                                                if lord[1][i] in jdg: 
+                                                    possibleMajority.append(jdg)
+                                    else:
+                                        possibleMajority.append(lord[1][0])
+            judges.remove("NONE")
+            major = round(len(judges)/2)
+          
+            for jdg in judges:
+                count = 0
+                for judge in possibleMajority: 
+                    if judge == jdg:
+                        count += 1
+                    elif judge == "ALL":
+                        count += 1
+                if count >= major:
+                    if judge not in majority:
+                        majority.append(judge)
+            
+            # majority not identified by the ASMO system, here check manually 
+            if (len(majority)) > 0:
+                print("The majority of judges agreed to the reasoning delivered by ", end= "")
+                majorityMultiple = False
+                for judge in majority: 
+                    if majorityMultiple == True: 
+                        print(" and ", end = "")
+                    print("LORD " + judge, end="")
+                    majorityMultiple = True
+                print(". ", end="")
+                
+    
+              
+        
+    
+        # checks to see if any of the judges agreed with all of the fellow judges
+        allJudges = []
+        for lord in agreeJudges: 
+            multiple_agree = False
+            for judge in judges: 
+                if judge != "NONE":
+                    if judge not in majority:
+                        if lord[0] in judge:
+                            if(lord[1][0] == "ALL"):
+                                allJudges.append(judge)
+                                
+        for judge in allJudges: 
+            print("LORD " + judge + " delivered an opinion agreeing with the reasoning of all of his fellow Lords. ", end="")
+                     
+                
+        
+        agreements = {}
+        for lord in agreeJudges: 
+            multiple_agree = False
+            for judge in judges: 
+                if judge != "NONE":
+                    if judge not in majority:
+                        if judge not in allJudges:
+                            if lord[0] in judge:
+                                    currAgreements = []
+                             
+                                    if len(lord[1]) > 1: 
+                                        for i in range(len(lord[1])): 
+                                       
+                                            if lord[1][i] == "SELF":
+                                                print("LORD " + judge + " emphasised the importance of his own reasoning.", end="")
+                                            if lord[1][0] == "ALL":
+                                                print("LORD " + judge + " agreed with all of his fellow Lords", end="")
+                                            else: 
+                                                for jdg in judges: 
+                                                    if lord[1][i] in jdg: 
+                                                        currAgreements.append(lord[1][i])
+                                                        if jdg == "ALL":
+                                                            print("LORD " + judge +  " all of his fellow Lords", end="")
+                                                   
+                                            multiple_agree = True
+                                    else:
+                                        if(lord[1][0] == "ALL"):
+                                             print("LORD " + judge + " all of his fellow Lords", end = "")
+                                        else:
+                                    
+                                            newlord = lord[1][0]
+                                            currAgreements.append(newlord)
+                           
+                                    sortedAgreements = sorted(currAgreements) # to sort the judges
+                                    judgeStr = ""
+                                    multiple = False
+                                    if(len(sortedAgreements)) > 1: 
+                                        multiple = True
+                                    first = True
+                                    for judgee in sortedAgreements: 
+                                        if multiple == True and first == False: 
+                                            newStr = " and LORD " + judgee
+                                            judgeStr = judgeStr + newStr
+                                        else: 
+                                            newStr = "LORD " + judgee
+                                            judgeStr = newStr
+                                        first= False
+                                    if judgeStr not in agreements: 
+                                        val = "LORD " + judge
+                                        agreements.update({judgeStr : val})
+                                    elif judgeStr in agreements:
+                                        oldStr = agreements.get(judgeStr)
+                                        newStr = oldStr + " and LORD " + judge
+                                        agreements.update({judgeStr : newStr})
+        # to not duplicate the sentences
+        for agreeTo, agreeFrom in agreements.items():
+            print(agreeFrom + " delivered an opinion agreeing with " + agreeTo + ". ", end = "")
+            
+        agreeJdgs = []
+        for lord in agreeJudges: 
+            agreeJdgs.append(lord[0])
+        
+        disagreeJdgs = []
+        for judge in judges: 
+            if judge != "NONE":
+                if judge not in agreeJdgs and judge not in majority: 
+                    disagreeJdgs.append(judge)
+           
+        if len(disagreeJdgs) > 0:
+            for disJudge in disagreeJdgs:
+                print("LORD " + disJudge + " did not agree with the line of reasoning of his fellow Lords.", end="")
+            print("\"")
+            
+        print("\n")
+        
+        print("REASONS FOR THE JUDGMENT")
+        
+        print("\n")
+            
+        for judge in majority: 
+                    sentences = self.createMajorityStatements(judge, backgroundSentences, framingSentences, disposalSentences,  
+                                                              backgroundDist, framingDist, disposalDist)
+                    self.printMajorityOpinions(sentences, judge)
 
         
             
