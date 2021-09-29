@@ -294,7 +294,7 @@ class summary():
     def createICLRSummary(self, agreeJudges, judges, majority, rankedData, sentencesNum):
         backgroundSentences, framingSentences, proceedingsSentences, factSentences, disposalSentences = self.getRankedSentbyRole(rankedData)
         # this will get the appropriate distribution, top ranked Fact from all judges
-        fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences)
+        fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences, False)
     
         print("\n")
         for sentence in fact: 
@@ -308,22 +308,39 @@ class summary():
         self.writeJudgmentParagraph(majority, agreeJudges,  backgroundSentences, framingSentences, 
                                     disposalSentences, judges, sentencesNum, rankedData)
                 
-    def getICLRFactandProceedingsDistribution(self, rankedData, summaryLength, factSentences, proceedingsSentences):
+    def getICLRFactandProceedingsDistribution(self, rankedData, summaryLength, factSentences, proceedingsSentences, UKSC):
         #  rhetorical distribution for these summaries are based on the distribution provided by Hachey and Grover
 
-        factDist = 10.3
-        proceedingsDist = 18.4
-        i = 0 
-        factSentenceToPrint = []
-        proSentenceToPrint = []
-                
-        distribution = summaryLength / 100
-        distribution = distribution * factDist
-        fact_Dist = round(distribution)
+        if UKSC == False: 
+    
+            factDist = 10.3
+            proceedingsDist = 18.4
+            i = 0 
+            factSentenceToPrint = []
+            proSentenceToPrint = []
+                    
+            distribution = summaryLength / 100
+            distribution = distribution * factDist
+            fact_Dist = round(distribution)
+            
+            distribution = summaryLength / 100
+            distribution = distribution * proceedingsDist
+            proceedings_Dist = round(distribution)
         
-        distribution = summaryLength / 100
-        distribution = distribution * proceedingsDist
-        proceedings_Dist = round(distribution)
+        if UKSC == True: 
+            factDist = 15
+            proceedingsDist = 15
+            i = 0 
+            factSentenceToPrint = []
+            proSentenceToPrint = []
+                    
+            distribution = 30 / 100
+            distribution = distribution * factDist
+            fact_Dist = round(distribution)
+            
+            distribution = 30 / 100
+            distribution = distribution * proceedingsDist
+            proceedings_Dist = round(distribution)
 
         for sentence in factSentences:
             if i < fact_Dist:
@@ -716,7 +733,7 @@ class summary():
     def createUKSCSummary(self, agreeJudges, judges, majority, rankedData, sentencesNum):
         backgroundSentences, framingSentences, proceedingsSentences, factSentences, disposalSentences = self.getRankedSentbyRole(rankedData)
         # this will get the appropriate distribution, top ranked Fact from all judges
-        fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences)
+        fact, pro = self.getICLRFactandProceedingsDistribution(rankedData, sentencesNum, factSentences, proceedingsSentences, True)
     
         print("\n")
         
@@ -906,7 +923,6 @@ class summary():
         if len(disagreeJdgs) > 0:
             for disJudge in disagreeJdgs:
                 print("LORD " + disJudge + " did not agree with the line of reasoning of his fellow Lords.", end="")
-            print("\"")
             
         print("\n")
         
