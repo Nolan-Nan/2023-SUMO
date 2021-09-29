@@ -320,10 +320,10 @@ class ml:
                     
                 clf = clf.fit(X, Y)
                 
-               # import pickle
-               # f = open('crel.pickle', 'wb')
-              #  pickle.dump(clf, f)
-              #  f.close()
+                import pickle
+                f = open('RELEVANCE.pickle', 'wb')
+                pickle.dump(clf, f)
+                f.close()
                 print(score)
                 # to print averaged recall and precision 
                 

@@ -36,6 +36,14 @@ once you have the above dependancies you will be able to run the pipeline by run
     TODO: 
         HTML parser for cases not in the corpus, need to do the verb group and cue phrase matching first - which 
         would require retraining all the models based on the new feature set
+        
+        
+    TO DO FOR LINKING NEW CLASSIFIERS - 
+        update the labels for the rhetorical to match the way the RF classifier is TRAINED 
+        update the RHETORICAL classifier to include the right pickled ones 
+        
+    PLAN - SATURDAY - UPDATE THE CLASSIFIERS 
+        
        
 
 @author: amyconroy
