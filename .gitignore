@@ -1,14 +1,8 @@
-/training&testing/ASMO
-/training&testing/rogue
-/training&testing/SUMO
-/training&testing/training/data
-/training&testing/training/seq
-/training&testing/UKHL_pipeline/data
-/training&testing/machine_learning/sum_corpus
-/training&testing/machine_learning/data
+
+/training_and_testing/*
 *.pickle
 *.csv
 *.dot
 *.pyc
-/training&testing/machine_learning/ASMO
 .DS_Store
+/env/*
