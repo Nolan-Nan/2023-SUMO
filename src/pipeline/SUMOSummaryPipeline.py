@@ -67,6 +67,7 @@ class pipeline():
         labelling.labelling(casenum)
         import featureExtractor
         featureExtractor.featureExtractor(casenum)
+        # integrated cue phrases above, now need to add cue phrases below 
         import ml
         ml.ml(casenum, True)
         print("\n UKHL PIPELINE SUMMARIES: \n")

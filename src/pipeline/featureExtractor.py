@@ -52,11 +52,21 @@ class featureExtractor():
         self.person_ent_X = np.array([]) 
         
         ##for cue phrase feature-set
-        self.asp_X = np.array([])
-        self.modal_X = np.array([])
-        self.voice_X = np.array([])
-        self.negcue_X = np.array([])
-        self.tense_X = np.array([])
+        self.new_tense_X = np.array([])
+        self.new_modal_X = np.array([])
+        self.modal_pos_bool_X = np.array([])
+        self.modal_dep_bool_X = np.array([])
+        self.modal_dep_count_X = np.array([])
+        self.modal_pos_count_X = np.array([])
+        self.new_dep_X = np.array([])
+        self.new_tag_X = np.array([])
+        self.negtoken_X = np.array([])
+        self.verbstop_X = np.array([]) 
+        self.newvoice_X = np.array([])
+        self.second_pos_X = np.array([])
+        self.second_dep_X = np.array([])
+        self.second_tag_X = np.array([])
+        self.second_stop_X = np.array([])
         
         #for storing Xs values
         self.case_flag = []
@@ -192,6 +202,13 @@ class featureExtractor():
         quoteblock = 0
         inquotes = False
         word_inq = 0
+        
+        import cuephrases
+        self.new_tense_X, self.new_modal_X, self.modal_pos_bool_X, self.modal_dep_bool_X, \
+            self.modal_dep_count_X, self.modal_pos_count_X, self.new_dep_X, self.new_tag_X,\
+                self.negtoken_X, self.verbstop_X, self.newvoice_X, self.second_pos_X, \
+                    self.second_dep_X, self.second_tag_X, self.second_stop_X = cuephrases.cuePhrases(casenum)
+        
         with open(caseFile, 'r') as infile:
           reader = csv.DictReader(infile)  
           for row in reader:
@@ -203,46 +220,7 @@ class featureExtractor():
                 self.case_flag.append(casenum)
                 self.sent_flag.append(row['sentence_id'])
                 self.judgename.append(row['judge'])
-        
-                import nvGroups
-                asp, modal, voice, negation, tense, pasttense = nvGroups.get_verb_features(casenum, row['sentence_id'])
-                self.pasttense_X = np.append(self.pasttense_X, [pasttense])
-                if asp == 'SIMPLE':
-                    self.asp_X = np.append(self.asp_X, [1])
-                elif asp == 'PERF':
-                    self.asp_X = np.append(self.asp_X, [2/3])
-                elif asp == 'PROG':
-                    self.asp_X = np.append(self.asp_X, [1/3])
-                else:
-                    self.asp_X = np.append(self.asp_X, [0])
-                if modal == 'NO':
-                    self.modal_X = np.append(self.modal_X, [1])
-                elif modal == 'YES':
-                    self.modal_X = np.append(self.modal_X, [1/2])
-                else:
-                    self.modal_X = np.append(self.modal_X, [0])
-                if voice == 'ACT':
-                    self.voice_X = np.append(self.voice_X, [1])
-                elif voice == 'PASS':
-                    self.voice_X = np.append(self.voice_X, [1/2])
-                else:
-                    self.voice_X = np.append(self.voice_X, [0])
-                if negation == 'yes':
-                    self.negcue_X = np.append(self.negcue_X, [1])
-                else:
-                    self.negcue_X = np.append(self.negcue_X, [0])
-                if tense == 'PRES':
-                    self.tense_X = np.append(self.tense_X, [1])
-                elif tense == 'PRESorBASE':
-                    self.tense_X = np.append(self.tense_X, [3/4])
-                elif tense == 'PAST':
-                    self.tense_X = np.append(self.tense_X, [2/4])
-                elif tense == 'INF':
-                    self.tense_X = np.append(self.tense_X, [1/4])
-                else:
-                    self.tense_X = np.append(self.tense_X, [0])
-        
-                # ENTITIES FEATURE SET
+
         
                 tfidf.get_doc(casenum)
                 sent_max_tfidf, sent_intop20_tfidf, sent_avg_tfidf = tfidf.get_sent_features(row['text'])
@@ -375,10 +353,10 @@ class featureExtractor():
         with open('summarydata/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
             fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
             'loc4', 'loc5', 'loc6', 'sentlen',
-            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'aspect', 'modal',
-            'voice', 'negation', 'tense', 'wordlist', 'past tense', 
+            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 
             'provision ent', 'instrument ent', 'court ent', 'case name ent', 'citation bl ent', 'judge ent', 
-            'loc ent', 'org ent', 'date ent', 'person ent','judgename']        
+            'loc ent', 'org ent', 'date ent', 'person ent','judgename', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative', 
+            'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']        
     
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
@@ -387,10 +365,12 @@ class featureExtractor():
                 writer.writerow({'case_id': self.case_flag[v], 'sent_id': self.sent_flag[v], 'agree': self.agree_X[v],
                 'outcome': self.outcome_X[v], 'loc1': self.loc1_X[v], 'loc2': self.loc2_X[v], 'loc3': self.loc3_X[v], 'loc4': self.loc4_X[v], 
                 'loc5': self.loc5_X[v], 'loc6': self.loc6_X[v], 'sentlen': self.sentlen_X[v], 'HGsentlen': self.HGsentlen_X[v], 'quoteblock': self.qb_X[v], 'inline_q': self.inq_X[v], 
-                 'tfidf_max': self.tfidf_max_X[v], 'tfidf_top20': self.tfidf_top20_X[v], 'tfidf_HGavg': self.tfidf_HGavg_X[v],'aspect': self.asp_X[v],
-                'modal': self.modal_X[v], 'voice': self.voice_X[v], 'negation': self.negcue_X[v], 'tense': self.tense_X[v],  'wordlist': self.wordlist_X[v],
-                'past tense': self.pasttense_X[v], 'provision ent' : self.provision_ent_X[v], 'instrument ent' : self.instrument_ent_X[v], 'court ent' : self.court_ent_X[v], 
+                 'tfidf_max': self.tfidf_max_X[v], 'tfidf_top20': self.tfidf_top20_X[v], 'tfidf_HGavg': self.tfidf_HGavg_X[v],
+                'provision ent' : self.provision_ent_X[v], 'instrument ent' : self.instrument_ent_X[v], 'court ent' : self.court_ent_X[v], 
                 'case name ent' : self.casename_ent_X[v], 'citation bl ent' : self.citation_ent_X[v], 'judge ent' : self.judge_ent_X[v], 'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : 
-                self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v]})     
+                self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v], 'cp tense': self.new_tense_X[v], 'cp modal': self.new_modal_X[v], 'cp pos bool' :  self.modal_pos_bool_X[v], 'cp dep bool': self.modal_dep_bool_X[v], 
+                'cp dep count':  self.modal_dep_count_X[v], 'cp pos count': self.modal_pos_count_X[v], 'cp dep': self.new_dep_X[v], 'cp tag': self.new_tag_X[v], 'cp negative': self.negtoken_X[v],
+                'cp stop': self.verbstop_X[v], 'cp voice' : self.newvoice_X[v], 'cp second pos': self.second_pos_X[v], 'cp second dep' : self.second_dep_X[v], 
+                'cp second tag' : self.second_tag_X[v], 'cp second stop' : self.second_stop_X[v]})     
             
         
