@@ -174,7 +174,7 @@ class ml():
             if label == "0.0":  
                 self.rhet_X = np.append(self.rhet_X, [0]) 
     
-    def get_rel_features(self):
+    def get_rel_features(self): # switch this to all 8 features
         features = self.location 
         features = np.vstack((features, self.rhet_X))
         features = np.vstack((features, self.tfidf_top20))
@@ -195,7 +195,7 @@ class ml():
         features = np.vstack((features,)).T
         return features
     
-    def getSVCRhetPredictions(self):
+    def getSVCRhetPredictions(self): 
         f = open("c.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
@@ -275,7 +275,7 @@ class ml():
         # get the predictions 
 
         
-    def relevanceClassification(self):
+    def relevanceClassification(self): # pick the relevance classifier, switch this here
         f = open("crf_relevance.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
