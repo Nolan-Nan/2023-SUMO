@@ -29,6 +29,9 @@ import scipy
 import matplotlib.pyplot as plt
 
 import pickle
+import sys
+sys.setrecursionlimit(10000)
+
 
 class crf():
     def initialize(self):
@@ -139,6 +142,8 @@ class crf():
         
         from seq_init import create_tagged_sentences_list
         sentences_list = []
+        
+
        
             
         # TRAIN THEN SAVE
@@ -181,15 +186,19 @@ class crf():
         print(metrics.flat_f1_score(y_test, y_pred,
                       average='weighted', labels=labels))
         
+        
+        
         sorted_labels = sorted(
             labels,
             key=lambda name: (name[1:], name[0])
             )
         
-        print(metrics.flat_classification_report(
-            y_test, y_pred, labels=labels, digits=3
-            ))  
+     #   print(metrics.flat_classification_report(
+     #       y_test, y_pred, labels=labels, digits=3
+     #       ))  
         from collections import Counter
+        
+        
      
         print("Top likely transitions:")
         
@@ -204,14 +213,18 @@ class crf():
         print("\nTop negative:")
         self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
         
-        import eli5
-        from PIL import Image
         
-        expl = eli5.explain_weights(crf, top=10)
-        print(expl)
-        print((expl.targets[0].target, expl.targets[0].score, expl.targets[0].proba))
-        text = eli5.formatters.text.format_as_text(expl)
-        print(text)
+        #import eli5
+       # from PIL import Image
+        
+       # expl = eli5.explain_weights(crf, top=10)
+      #  print(expl)
+       # print((expl.targets[0].target, expl.targets[0].score, expl.targets[0].proba))
+      #  text = eli5.formatters.text.format_as_text(expl)
+     #   print(text)
+        
+       
+        
         
         
 # CROSS VAL
@@ -274,16 +287,21 @@ class crf():
         print("\nTop negative:")
         self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
         
+        
+        
         import eli5
         expl = eli5.explain_weights(crf, top=10)
         print(expl)
         print((expl.targets[0].target, expl.targets[0].score, expl.targets[0].proba))
         text = eli5.formatters.text.format_as_text(expl)
         print(text)
-
+        
+        
+        
         f = open('RHETORICAL.pickle', 'wb')
         pickle.dump(crf, f)
         f.close()
+        
         
 # =============================================================================
 #         f = open("crf.pickle", "rb")
@@ -1271,5 +1289,6 @@ class crf():
         self.blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, 
         self.citation_blackstone, self.judge_blackstone
         self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+
 crf = crf()
 crf.train_crf()

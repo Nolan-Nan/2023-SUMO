@@ -11,3 +11,4 @@
 *.dot
 *.pyc
 /training&testing/machine_learning/ASMO
+.DS_Store

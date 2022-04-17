@@ -408,7 +408,7 @@ class ml():
             if label == 'NONE':
                 self.rhet_predictions = np.append(self.rhet_predictions [0])   
     
-    # TODO - CHANGE THIS TO THE WAY THAT YOU DO IT FOR THE RELEVANCE OTHERWISE
+    # TODO - CHANGE THIS TO THE WAY THAT YOU DO IT FOR THE RELEVANCE OTHERWISE to match same feature sets
     def rewriteFeatures(self, casenum):
         with open('summarydata/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
                 fieldnames = ['sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
