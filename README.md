@@ -8,4 +8,4 @@ Contains current WIP training files and the pipeline.
 - [X] Remove the relevance CRF code
 - [X] Integrate the DTC classifier into the pipeline
 - [ ] Integrate ASMO into the pipeline
-- [ ] Train CRF classifier using best performing normal ML classifier for rhet labels
+- [ ] Re=train CRF classifier using best performing normal ML classifier for rhet labels
