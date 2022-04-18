@@ -1,12 +1,12 @@
-from user.user import User
-from corpus.corpus import Corpus
-from corpus.visualise import Visualise
-from classifier.classifier import Classifier
-from classifier.perfect import Perfect
-from majority.majority2 import Majority
-from majority.baselines import Baseline
-from majority.OptBaseline import Optimal
-from corpus.stats import Stats
+from ASMO.user.user import User
+from ASMO.corpus.corpus import Corpus
+from ASMO.corpus.visualise import Visualise
+from ASMO.classifier.classifier import Classifier
+from ASMO.classifier.perfect import Perfect
+from ASMO.majority.majority2 import Majority
+from ASMO.majority.baselines import Baseline
+from ASMO.majority.OptBaseline import Optimal
+from ASMO.corpus.stats import Stats
 
 class Pipeline:
     # ---- Corpus Settings ----
@@ -14,7 +14,7 @@ class Pipeline:
     ip = "ec2-18-182-64-196.ap-northeast-1.compute.amazonaws.com" #Amazon EC2 IP
     user = "ubuntu"
     annotators = ["gr", "alice", "jasleen"]
-    corPath = "data/corpus/corpus/"
+    corPath = "corpus/corpus/"
     annPath = "./annotator/anno/"
     mainAnno = "gr" # Select the annotator to train with
     download = False # Downloads latest data from www.holj.ml

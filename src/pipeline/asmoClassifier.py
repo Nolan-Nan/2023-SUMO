@@ -230,6 +230,10 @@ class Classifier:
 
         corpus = self.corp_downsample(corpus)
         X = corpus[["body", "pos"]]
+        print("XXXXXXX")
+        print(X)
+        with open('readme.txt', 'w') as f:
+            f.write(X)
         y = corpus["relation"]
 
 
@@ -245,6 +249,10 @@ class Classifier:
         'partagr': "NAN", 'partdisa': "NAN", 'fulldisa': "NAN", 'factagr': "NAN"})
 
         X = corpus[["body", "pos"]]
+        print("XXXXXXX")
+        print(X)
+        with open('readme.txt', 'w') as f:
+            f.write(X)
         y = corpus["relation"]
 
 
@@ -380,6 +388,10 @@ class Classifier:
         # svm = SVC(kernel='linear')
         svm = LogisticRegression()
         svm.fit(X, y)
+        print("XXXXXXX")
+        print(X)
+        with open('readme.txt', 'w') as f:
+            f.write(X)    
 
         n = 10
 
@@ -414,7 +426,10 @@ class Classifier:
         # Split dataset
         X_train, X_test, y_train, y_test = train_test_split(
         self.X, self.y, test_size= self.test_size, random_state=42)
-
+        print("XXXXXXX")
+        print(self.X)
+        with open('readme.txt', 'w') as f:
+            f.write(self.X)
         # Fit training set
         clf.fit(X_train, y_train)
 
