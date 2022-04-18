@@ -196,7 +196,7 @@ class ml():
                 self.rhet_X = np.append(self.rhet_X, [0]) 
 
         
-    def get_rel_features(self): # switch this to all 8 features
+    def get_rel_features(self): 
         features = self.location 
         features = np.vstack((features, self.quotation))
         features = np.vstack((features, self.asmo))
@@ -205,18 +205,14 @@ class ml():
         features = np.vstack((features, self.rhet_X))    
         features = np.vstack((features, self.HGents))
         features = np.vstack((features, self.new_cue_phrases))
+        features = np.vstack((features, self.wordlist))
         features = np.vstack((features,)).T
         return features
         
-    def get_svc_features(self):
-        features = self.location
-        features = np.vstack((features, self.quote))
+    def get_rhet_dtc_features(self):
+        features = self.quotation
         features = np.vstack((features, self.asmo))
-        features = np.vstack((features, self.cue_phrase))
         features = np.vstack((features, self.sent_length))
-        features = np.vstack((features, self.tfidf_top20))
-        features = np.vstack((features, self.blackstone))
-        features = np.vstack((features, self.spacy))
         features = np.vstack((features,)).T
         return features
     
@@ -225,7 +221,7 @@ class ml():
         classifier = pickle.load(f)
         f.close()
         
-        features = self.get_svc_features()
+        features = self.get_rhet_dtc_features()
         self.SVCpred = classifier.predict(features)
         
         
@@ -1051,6 +1047,7 @@ class ml():
                 self.second_dep_X = np.append(self.second_dep_X, [float(row['cp second dep'])])
                 self.second_tag_X = np.append(self.second_tag_X, [float(row['cp second tag'])])
                 self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
+                self.wordlist_X = np.append(self.wordlist_X, [float(row['wordlist'])])
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
         self.quotation = self.inq_X, self.qb_X
@@ -1059,5 +1056,5 @@ class ml():
         self.tfidf_max = self.tfidf_max_X
         self.HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
         self.new_cue_phrases = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
-
+        self.wordlist = self.wordlist_X 
         
