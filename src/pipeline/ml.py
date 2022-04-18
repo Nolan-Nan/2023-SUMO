@@ -97,7 +97,7 @@ class ml():
         self.rhet_role = np.array([])
         self.blackstone = np.array([])
         self.spacy = np.array([])
-        self.SVCpred = []
+        self.SVCpred = [] # change the name to reflect that its DTC now
         self.rhet_predictions = np.array([])
         self.RelPredictions = []
         
