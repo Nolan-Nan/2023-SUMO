@@ -208,7 +208,6 @@ class Classifier:
     def get_prediction(self, MJ_corpus):
         if self.train:
             classifier = self.best_classifier()
-
 #            save_data("classifier", classifier) #save
         else:
             classifier = load_data("classifier") #NOTE write test
@@ -381,6 +380,8 @@ class Classifier:
         # svm = SVC(kernel='linear')
         svm = LogisticRegression()
         svm.fit(X, y)
+        
+        print(X)
 
         n = 10
 
@@ -415,11 +416,11 @@ class Classifier:
 
         # Split dataset
         X_train, X_test, y_train, y_test = train_test_split(
-        self.X, self.y, test_size= self.test_size, random_state=42)
+        self.X, self.y, test_size= self.test_size, random_state=42) # getting close - want to go here to get the pos
         print("XXXXXXX")
-        print(self.X)
+        print(X_train)
         with open('readme.txt', 'w') as f:
-            f.write(str(self.X))
+            f.write(str(X_train))
         # Fit training set
         clf.fit(X_train, y_train)
 
