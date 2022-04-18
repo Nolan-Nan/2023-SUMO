@@ -8,3 +8,4 @@ Contains current WIP training files and the pipeline.
 - [ ] Remove the relevance CRF code
 - [ ] Integrate the DTC classifier into the pipeline
 - [ ] Integrate ASMO into the pipeline
+- [ ] Train CRF classifier using best performing normal ML classifier
