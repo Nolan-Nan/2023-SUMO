@@ -107,6 +107,28 @@ class ml():
         
         self.RFpred = []
         
+                # new cue phrases
+        # modal data on the entire sentence (count and boolean values)
+        self.modal_pos_bool_X = np.array([])
+        self. modal_dep_bool_X = np.array([])
+        self.modal_dep_count_X = np.array([])
+        self.modal_pos_count_X = np.array([])
+        
+        # verb data on the first verb
+        self.new_modal_X = np.array([])
+        self.new_tense_X = np.array([])
+        self.new_dep_X = np.array([])
+        self.new_tag_X = np.array([])
+        self.new_negative_X = np.array([])
+        self.new_stop_X = np.array([])
+        self.new_voice_X = np.array([])
+        
+        # data on the token after the verb 
+        self.second_pos_X = np.array([]) 
+        self.second_dep_X = np.array([]) 
+        self.second_tag_X = np.array([]) 
+        self.second_stop_X = np.array([])
+        
         
         # FUNCTION CALLS
         if rhetRole:
@@ -117,12 +139,11 @@ class ml():
             print("Rhetorical classification complete")
             self.rewriteFeatures(casenum)
             print("Beginning relevance classification")
-            self.__init__(casenum, False)
+            self.__init__(casenum, False) # Re-init the features
         else:
             self.relevanceData(casenum)
             self.cleanRhetLabel()
             self.create_RhetTarget()
-            self.RFRelPredictions()
             self.relevanceClassification()
             self.rewriteRelFeatures(casenum)
             print("Relevance classification complete")
@@ -173,13 +194,17 @@ class ml():
                 self.rhet_X = np.append(self.rhet_X, [1/6])        
             if label == "0.0":  
                 self.rhet_X = np.append(self.rhet_X, [0]) 
-    
+
+        
     def get_rel_features(self): # switch this to all 8 features
         features = self.location 
-        features = np.vstack((features, self.rhet_X))
-        features = np.vstack((features, self.tfidf_top20))
-        features = np.vstack((features, self.blackstone))
-        features = np.vstack((features, self.spacy))
+        features = np.vstack((features, self.quotation))
+        features = np.vstack((features, self.asmo))
+        features = np.vstack((features, self.sent_length))
+        features = np.vstack((features, self.tfidf_max))
+        features = np.vstack((features, self.rhet_X))    
+        features = np.vstack((features, self.HGents))
+        features = np.vstack((features, self.new_cue_phrases))
         features = np.vstack((features,)).T
         return features
         
@@ -205,22 +230,16 @@ class ml():
         
         
     def createRhetFeaturesList(self, casenum): 
-        f = open("crf_rhetcorrect.pickle", "rb")
-        classifier = pickle.load(f)
-        f.close()
         all_featureset = []
         previous_judgename = '' 
         y = 0
         newspeech = True
-        testfeats = []
         featureset = []
         tag_history = []
         tagcount = 0 # this is the counter for each sentence in a speech
         judges = self.judgename
         newSpeechLookAheadBy1 = False # checks if the judges are different
         newSpeechLookAheadBy2 = False # indicates a new speech
-        test_feat = {}
-        
         
         for judge in judges:
              featureset = []
@@ -275,12 +294,12 @@ class ml():
         # get the predictions 
 
         
-    def relevanceClassification(self): # pick the relevance classifier, switch this here
-        f = open("crf_relevance.pickle", "rb")
+    def relevanceClassification(self): 
+        f = open("RELEVANCE.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
-        case_features = self.createRelFeaturesList()
+        case_features = self.get_rel_features()
         self.RelPredictions = classifier.predict(case_features)
         ranks = []
         
@@ -291,16 +310,7 @@ class ml():
             ranking = yesandno.get('yes')
             ranks.append(ranking)
         self.ranking = ranks
-        
-    def RFRelPredictions(self):
-        f = open("crel.pickle", "rb")
-        classifier = pickle.load(f)
-        f.close()
-        
-        features = self.get_rel_features()
-        self.RFpred = classifier.predict(features)
-        self.cleanRelLabels()
-        # NEED TO THEN CLEAN REL LABELS FROM 1.0 to 0.0
+
         
     # create the necessary feature sets
     def cleanRelLabels(self):
@@ -320,62 +330,7 @@ class ml():
             
         self.RFpred = rellabels
         
-    def createRelFeaturesList(self):
-        all_featureset = []
   
-        # init
-        previous_judgename = '' 
-        y = 0
-        newspeech = True
-        featureset = []
-        tagcount = 0 # this is the counter for each sentence in a speech
-        judges = self.judgename
-        newSpeechLookAheadBy1 = False # checks if the judges are different
-        newSpeechLookAheadBy2 = False # indicates a new speech
-        tags = self.rhetlabel
-        tag_history = []
-        
-        
-        for judge in judges:
-             featureset = []
-             newSpeechLookAheadBy1 = False 
-             newSpeechLookAheadBy2 = False 
-             tag = tags[y]
-             rel = self.RFpred[y]
-             
-             
-             if len(judges) == y+2: 
-                 newSpeechLookAheadBy2 = True 
-             elif len(judges) == y+1: 
-                 newSpeechLookAheadBy1 = True
-             elif judges[y+1] != judge:
-                 newSpeechLookAheadBy1 = True
-             elif judges[y+2] != judge:
-                 newSpeechLookAheadBy2 = True
-             if judge != previous_judgename: 
-                 tagcount = 1
-                 newspeech = True
-                 rel_history = []
-                 tag_history = [] # previously assigned tags for that speech
-                 featureset.append(self.relevanceFeatures(tagcount, y, tag_history, newspeech, 
-                                                     newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
-                 all_featureset.append(featureset)
-                 rel_history.append(rel)
-                 tag_history.append(tag)
-                 y += 1 
-                 tagcount += 1
-             else: 
-                 newspeech = False
-                 featureset.append(self.relevanceFeatures(tagcount, y, tag_history, newspeech, 
-                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
-                 all_featureset.append(featureset)
-                 rel_history.append(rel)
-                 tag_history.append(tag)
-                 y += 1 
-                 tagcount += 1   
-             previous_judgename = judge 
-        
-        return all_featureset  
     
     def covertRhetToArray(self, rhetorical_predictions):
         for label in rhetorical_predictions:
@@ -998,571 +953,7 @@ class ml():
         return sentence_features
 
         
-    def relevanceFeatures(self, sentence_id, y, tag_history, newspeech, newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history):
-        sentence_features = {}
-        
-        if newspeech: # first sentence of a speech, sentence 0 reserved for a new case start
-                sentence_features.update({"r-1" : "<START>", 
-                                      "r-2 r-1" : "<START> <START>", # previous label and current features
-                                      'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : "<START>", 
-                                      "rel-2 rel-1" : "<START> <START>",
-                                      "length" : (self.sent_length[y]), 
-                                      "length+1" : (self.sent_length[y+1]), 
-                                      "length+2" : (self.sent_length[y+2]), 
-                                      "tfdif" : (self.tfidf_top20[y]), 
-                                      "tfdif+1" : (self.tfidf_top20[y+1]), 
-                                      "tfdif+2" : (self.tfidf_top20[y+2]), 
-                                      "loc1" : (self.loc1_X[y]),
-                                      "loc1+1" : (self.loc1_X[y+1]),
-                                      "loc1+2" : (self.loc1_X[y+2]),
-                                      "loc2" : (self.loc2_X[y]),
-                                      "loc2+1" : (self.loc2_X[y+1]),
-                                      "loc2+2" : (self.loc2_X[y+2]),
-                                      "loc3" : (self.loc3_X[y]),
-                                      "loc3+1" : (self.loc3_X[y+1]),
-                                      "loc3+2" : (self.loc3_X[y+2]),
-                                      "loc4" : (self.loc4_X[y]),
-                                      "loc4+1" : (self.loc4_X[y+1]),
-                                      "loc4+2" : (self.loc4_X[y+2]),
-                                      "loc5" : (self.loc5_X[y]),
-                                      "loc5+1" : (self.loc5_X[y+1]),
-                                      "loc5+2" : (self.loc5_X[y+2]),
-                                      "loc6" : (self.loc6_X[y]),
-                                      "loc6+1" : (self.loc6_X[y+1]),
-                                      "loc6+2" : (self.loc6_X[y+2]),
-                                      "quote1" : (self.inq_X[y]),
-                                      "quote1+1" : (self.inq_X[y+1]),
-                                      "quote1+2" : (self.inq_X[y+2]),
-                                      "quote2" : (self.qb_X[y]),
-                                      "quote2+1" : (self.qb_X[y+1]),
-                                      "quote2+2" : (self.qb_X[y+2]),
-                                      "asmo1" : (self.agree_X[y]),
-                                      "asmo1+1" : (self.agree_X[y+1]),
-                                      "asmo1+2" : (self.agree_X[y+2]),
-                                      "asmo2" : (self.outcome_X[y]),
-                                      "asmo2+1" : (self.outcome_X[y+1]),
-                                      "asmo2+2" : (self.outcome_X[y+2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]),
-                                      "spacy1" : (self.loc_ent_X[y]),
-                                      "spacy1+1" : (self.loc_ent_X[y+1]),
-                                      "spacy1+2" : (self.loc_ent_X[y+2]),
-                                      "spacy2" : (self.org_ent_X[y]),
-                                      "spacy2+1" : (self.org_ent_X[y+1]),
-                                      "spacy2+2" : (self.org_ent_X[y+2]),
-                                      "spacy3" : (self.date_ent_X[y]),
-                                      "spacy3+1" : (self.date_ent_X[y+1]),
-                                      "spacy3+2" : (self.date_ent_X[y+2]),
-                                      "spacy4" : (self.person_ent_X[y]),
-                                      "spacy4+1" : (self.person_ent_X[y+1]),
-                                      "spacy4+2" : (self.person_ent_X[y+2])
-                                      })
-        # second word of the sentence
-        elif sentence_id == 2 and (not newSpeechLookAheadBy1 and not newSpeechLookAheadBy2): 
-                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
-                                      "r-2 r-1" : "<START> %s" % (tag_history[sentence_id-2]),
-                                      'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "<START> %s" % (rel_history[sentence_id-2]),
-                                      "length" : (self.sent_length[y]), 
-                                      "length+1" : (self.sent_length[y+1]), 
-                                      "length+2" : (self.sent_length[y+2]), 
-                                      "length-1" : (self.sent_length[y-1]), 
-                                      "tfdif" : (self.tfidf_top20[y]), 
-                                      "tfdif+1" : (self.tfidf_top20[y+1]), 
-                                      "tfdif+2" : (self.tfidf_top20[y+2]), 
-                                      "tfdif-1" : (self.tfidf_top20[y-1]), 
-                                      "loc1" : (self.loc1_X[y]),
-                                      "loc1+1" : (self.loc1_X[y+1]),
-                                      "loc1+2" : (self.loc1_X[y+2]),
-                                      "loc1-1" : (self.loc1_X[y-1]),
-                                      "loc2" : (self.loc2_X[y]),
-                                      "loc2+1" : (self.loc2_X[y+1]),
-                                      "loc2+2" : (self.loc2_X[y+2]),
-                                      "loc2-1" : (self.loc1_X[y-1]),
-                                      "loc3" : (self.loc3_X[y]),
-                                      "loc3+1" : (self.loc3_X[y+1]),
-                                      "loc3+2" : (self.loc3_X[y+2]),
-                                      "loc3-1" : (self.loc1_X[y-1]),
-                                      "loc4" : (self.loc4_X[y]),
-                                      "loc4+1" : (self.loc4_X[y+1]),
-                                      "loc4+2" : (self.loc4_X[y+2]),
-                                      "loc4-1" : (self.loc1_X[y-1]),
-                                      "loc5" : (self.loc5_X[y]),
-                                      "loc5+1" : (self.loc5_X[y+1]),
-                                      "loc5+2" : (self.loc5_X[y+2]),
-                                      "loc5-1" : (self.loc1_X[y-1]),
-                                      "loc6" : (self.loc6_X[y]),
-                                      "loc6+1" : (self.loc6_X[y+1]),
-                                      "loc6+2" : (self.loc6_X[y+2]),
-                                      "loc6-1" : (self.loc1_X[y-1]),
-                                      "quote1" : (self.inq_X[y]),
-                                      "quote1+1" : (self.inq_X[y+1]),
-                                      "quote1+2" : (self.inq_X[y+2]),
-                                      "quote1-1" : (self.inq_X[y-1]),
-                                      "quote2" : (self.qb_X[y]),
-                                      "quote2+1" : (self.qb_X[y+1]),
-                                      "quote2+2" : (self.qb_X[y+2]),
-                                      "quote2-1" : (self.qb_X[y-1]),
-                                      "asmo1" : (self.agree_X[y]),
-                                      "asmo1+1" : (self.agree_X[y+1]),
-                                      "asmo1+2" : (self.agree_X[y+2]),
-                                      "asmo1-1" : (self.agree_X[y-1]),
-                                      "asmo2" : (self.outcome_X[y]),
-                                      "asmo2+1" : (self.outcome_X[y+1]),
-                                      "asmo2+2" : (self.outcome_X[y+2]),
-                                      "asmo2-1" : (self.outcome_X[y-1]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]),
-                                      "spacy1" : (self.loc_ent_X[y]),
-                                      "spacy1+1" : (self.loc_ent_X[y+1]),
-                                      "spacy1+2" : (self.loc_ent_X[y+2]),
-                                      "spacy1-1" : (self.loc_ent_X[y-1]),
-                                      "spacy2" : (self.org_ent_X[y]),
-                                      "spacy2+1" : (self.org_ent_X[y+1]),
-                                      "spacy2+2" : (self.org_ent_X[y+2]),
-                                      "spacy2-1" : (self.org_ent_X[y-1]),
-                                      "spacy3" : (self.date_ent_X[y]),
-                                      "spacy3+1" : (self.date_ent_X[y+1]),
-                                      "spacy3+2" : (self.date_ent_X[y+2]),
-                                      "spacy3-1" : (self.date_ent_X[y-1]),
-                                      "spacy4" : (self.person_ent_X[y]),
-                                      "spacy4+1" : (self.person_ent_X[y+1]),
-                                      "spacy4+2" : (self.person_ent_X[y+2]),
-                                      "spacy4-1" : (self.person_ent_X[y-1])
-                                      })
-                
-        elif newSpeechLookAheadBy1:
-                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
-                                      'bias': 1.0,
-                                      "r" : tag,
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
-                                      "length" : (self.sent_length[y]), 
-                                      "length-1" : (self.sent_length[y-1]), 
-                                      "length-2" : (self.sent_length[y-2]), 
-                                      "tfdif" : (self.tfidf_top20[y]),  
-                                      "tfdif-1" : (self.tfidf_top20[y-1]), 
-                                      "tfdif-2" : (self.tfidf_top20[y-2]), 
-                                      "loc1" : (self.loc1_X[y]),
-                                      "loc1-1" : (self.loc1_X[y-1]),
-                                      "loc1-2" : (self.loc1_X[y-2]),
-                                      "loc2" : (self.loc1_X[y]),
-                                      "loc2-1" : (self.loc1_X[y-1]),
-                                      "loc2-2" : (self.loc1_X[y-2]),
-                                      "loc3" : (self.loc1_X[y]),
-                                      "loc3-1" : (self.loc1_X[y-1]),
-                                      "loc3-2" : (self.loc1_X[y-2]),
-                                      "loc4" : (self.loc1_X[y]),
-                                      "loc4-1" : (self.loc1_X[y-1]),
-                                      "loc4-2" : (self.loc1_X[y-2]),
-                                      "loc5" : (self.loc1_X[y]),
-                                      "loc5-1" : (self.loc1_X[y-1]),
-                                      "loc5-2" : (self.loc1_X[y-2]),
-                                      "loc6" :  (self.loc1_X[y]),
-                                      "loc6-1" : (self.loc1_X[y-1]),
-                                      "loc6-2" : (self.loc1_X[y-2]),
-                                      "quote1" : (self.inq_X[y]),
-                                      "quote1-1" : (self.inq_X[y-1]),
-                                      "quote1-2" : (self.inq_X[y-2]),
-                                      "quote2" :  (self.qb_X[y]),
-                                      "quote2-1" : (self.qb_X[y-1]),
-                                      "quote2-2" : (self.inq_X[y-2]),
-                                      "asmo1" : (self.agree_X[y]),
-                                      "asmo1-1" : (self.agree_X[y-1]),
-                                      "asmo1-2" : (self.agree_X[y-2]),
-                                      "asmo2" : (self.outcome_X[y]),
-                                      "asmo2-1" : (self.outcome_X[y-1]),
-                                      "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]),
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]),
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" :  (self.citation_blackstone[y]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]),
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
-                                      "spacy1" : (self.loc_ent_X[y]),
-                                      "spacy1-1" : (self.loc_ent_X[y-1]),
-                                      "spacy1-2" : (self.loc_ent_X[y-2]),
-                                      "spacy2" : (self.org_ent_X[y]),
-                                      "spacy2-1" : (self.org_ent_X[y-1]),
-                                      "spacy2-2" : (self.org_ent_X[y-2]),
-                                      "spacy3" : (self.date_ent_X[y]),
-                                      "spacy3-1" : (self.date_ent_X[y-1]),
-                                      "spacy3-2" : (self.date_ent_X[y-2]),
-                                      "spacy4" : (self.person_ent_X[y]),
-                                      "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
-                                      })
-        elif newSpeechLookAheadBy2:
-                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
-                                      'bias': 1.0,
-                                      "r" : tag,
-                                      "length" : (self.sent_length[y]), 
-                                      "length+1" : (self.sent_length[y+1]), 
-                                      "length-1" : (self.sent_length[y-1]), 
-                                      "length-2" : (self.sent_length[y-2]), 
-                                      "tfdif" : (self.tfidf_top20[y]), 
-                                      "tfdif+1" : (self.tfidf_top20[y+1]), 
-                                      "tfdif-1" : (self.tfidf_top20[y-1]), 
-                                      "tfdif-2" : (self.tfidf_top20[y-2]), 
-                                      "loc1" : (self.loc1_X[y]),
-                                      "loc1+1" : (self.loc1_X[y+1]),
-                                      "loc1-1" : (self.loc1_X[y-1]),
-                                      "loc1-2" : (self.loc1_X[y-2]),
-                                      "loc2" : (self.loc2_X[y]),
-                                      "loc2+1" : (self.loc2_X[y+1]),
-                                      "loc2-1" : (self.loc1_X[y-1]),
-                                      "loc2-2" : (self.loc1_X[y-2]),
-                                      "loc3" : (self.loc3_X[y]),
-                                      "loc3+1" : (self.loc3_X[y+1]),
-                                      "loc3-1" : (self.loc1_X[y-1]),
-                                      "loc3-2" : (self.loc1_X[y-2]),
-                                      "loc4" : (self.loc4_X[y]),
-                                      "loc4+1" : (self.loc4_X[y+1]),
-                                      "loc4-1" : (self.loc1_X[y-1]),
-                                      "loc4-2" : (self.loc1_X[y-2]),
-                                      "loc5" : (self.loc5_X[y]),
-                                      "loc5+1" : (self.loc5_X[y+1]),
-                                      "loc5-1" : (self.loc1_X[y-1]),
-                                      "loc5-2" : (self.loc1_X[y-2]),
-                                      "loc6" : (self.loc6_X[y]),
-                                      "loc6+1" : (self.loc6_X[y+1]),
-                                      "loc6-1" : (self.loc1_X[y-1]),
-                                      "loc6-2" : (self.loc1_X[y-2]),
-                                      "quote1" : (self.inq_X[y]),
-                                      "quote1+1" : (self.inq_X[y+1]),
-                                      "quote1-1" : (self.inq_X[y-1]),
-                                      "quote1-2" : (self.inq_X[y-2]),
-                                      "quote2" : (self.qb_X[y]),
-                                      "quote2+1" : (self.qb_X[y+1]),
-                                      "quote2-1" : (self.qb_X[y-1]),
-                                      "quote2-2" : (self.inq_X[y-2]),
-                                      "asmo1" : (self.agree_X[y]),
-                                      "asmo1+1" : (self.agree_X[y+1]),
-                                      "asmo1-1" : (self.agree_X[y-1]),
-                                      "asmo1-2" : (self.agree_X[y-2]),
-                                      "asmo2" : (self.outcome_X[y]),
-                                      "asmo2+1" : (self.outcome_X[y+1]),
-                                      "asmo2-1" : (self.outcome_X[y-1]),
-                                      "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]),
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
-                                      "spacy1" : (self.loc_ent_X[y]),
-                                      "spacy1+1" : (self.loc_ent_X[y+1]),
-                                      "spacy1-1" : (self.loc_ent_X[y-1]),
-                                      "spacy1-2" : (self.loc_ent_X[y-2]),
-                                      "spacy2" : (self.org_ent_X[y]),
-                                      "spacy2+1" : (self.org_ent_X[y+1]),
-                                      "spacy2-1" : (self.org_ent_X[y-1]),
-                                      "spacy2-2" : (self.org_ent_X[y-2]),
-                                      "spacy3" : (self.date_ent_X[y]),
-                                      "spacy3+1" : (self.date_ent_X[y+1]),
-                                      "spacy3-1" : (self.date_ent_X[y-1]),
-                                      "spacy3-2" : (self.date_ent_X[y-2]),
-                                      "spacy4" : (self.person_ent_X[y]),
-                                      "spacy4+1" : (self.person_ent_X[y+1]),
-                                      "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
-                                      })   
-            
-        else: 
-                sentence_features.update({"r-1" : tag_history[sentence_id-2], 
-                                      "r-2 r-1" : "%s %s" % (tag_history[sentence_id-3], tag_history[sentence_id-2]),
-                                      "rel-1" : rel_history[sentence_id-2], 
-                                      "rel-2 rel-1" : "%s %s" % (rel_history[sentence_id-3], rel_history[sentence_id-2]),
-                                      'bias': 1.0,
-                                      "r" : tag,
-                                      "length" : (self.sent_length[y]), 
-                                      "length+1" : (self.sent_length[y+1]), 
-                                      "length+2" : (self.sent_length[y+2]), 
-                                      "length-1" : (self.sent_length[y-1]), 
-                                      "length-2" : (self.sent_length[y-2]), 
-                                      "tfdif" : (self.tfidf_top20[y]), 
-                                      "tfdif+1" : (self.tfidf_top20[y+1]), 
-                                      "tfdif+2" : (self.tfidf_top20[y+2]), 
-                                      "tfdif-1" : (self.tfidf_top20[y-1]), 
-                                      "tfdif-2" : (self.tfidf_top20[y-2]), 
-                                      "loc1" : (self.loc1_X[y]),
-                                      "loc1+1" : (self.loc1_X[y+1]),
-                                      "loc1+2" : (self.loc1_X[y+2]),
-                                      "loc1-1" : (self.loc1_X[y-1]),
-                                      "loc1-2" : (self.loc1_X[y-2]),
-                                      "loc2" : (self.loc2_X[y]),
-                                      "loc2+1" : (self.loc2_X[y+1]),
-                                      "loc2+2" : (self.loc2_X[y+2]),
-                                      "loc2-1" : (self.loc1_X[y-1]),
-                                      "loc2-2" : (self.loc1_X[y-2]),
-                                      "loc3" : (self.loc3_X[y]),
-                                      "loc3+1" : (self.loc3_X[y+1]),
-                                      "loc3+2" : (self.loc3_X[y+2]),
-                                      "loc3-1" : (self.loc1_X[y-1]),
-                                      "loc3-2" : (self.loc1_X[y-2]),
-                                      "loc4" : (self.loc4_X[y]),
-                                      "loc4+1" : (self.loc4_X[y+1]),
-                                      "loc4+2" : (self.loc4_X[y+2]),
-                                      "loc4-1" : (self.loc1_X[y-1]),
-                                      "loc4-2" : (self.loc1_X[y-2]),
-                                      "loc5" : (self.loc5_X[y]),
-                                      "loc5+1" : (self.loc5_X[y+1]),
-                                      "loc5+2" : (self.loc5_X[y+2]),
-                                      "loc5-1" : (self.loc1_X[y-1]),
-                                      "loc5-2" : (self.loc1_X[y-2]),
-                                      "loc6" : (self.loc6_X[y]),
-                                      "loc6+1" : (self.loc6_X[y+1]),
-                                      "loc6+2" : (self.loc6_X[y+2]),
-                                      "loc6-1" : (self.loc1_X[y-1]),
-                                      "loc6-2" : (self.loc1_X[y-2]),
-                                      "quote1" : (self.inq_X[y]),
-                                      "quote1+1" : (self.inq_X[y+1]),
-                                      "quote1+2" : (self.inq_X[y+2]),
-                                      "quote1-1" : (self.inq_X[y-1]),
-                                      "quote1-2" : (self.inq_X[y-2]),
-                                      "quote2" : (self.qb_X[y]),
-                                      "quote2+1" : (self.qb_X[y+1]),
-                                      "quote2+2" : (self.qb_X[y+2]),
-                                      "quote2-1" : (self.qb_X[y-1]),
-                                      "quote2-2" : (self.inq_X[y-2]),
-                                      "asmo1" : (self.agree_X[y]),
-                                      "asmo1+1" : (self.agree_X[y+1]),
-                                      "asmo1+2" : (self.agree_X[y+2]),
-                                      "asmo1-1" : (self.agree_X[y-1]),
-                                      "asmo1-2" : (self.agree_X[y-2]),
-                                      "asmo2" : (self.outcome_X[y]),
-                                      "asmo2+1" : (self.outcome_X[y+1]),
-                                      "asmo2+2" : (self.outcome_X[y+2]),
-                                      "asmo2-1" : (self.outcome_X[y-1]),
-                                      "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
-                                      "spacy1" : (self.loc_ent_X[y]),
-                                      "spacy1+1" : (self.loc_ent_X[y+1]),
-                                      "spacy1+2" : (self.loc_ent_X[y+2]),
-                                      "spacy1-1" : (self.loc_ent_X[y-1]),
-                                      "spacy1-2" : (self.loc_ent_X[y-2]),
-                                      "spacy2" : (self.org_ent_X[y]),
-                                      "spacy2+1" : (self.org_ent_X[y+1]),
-                                      "spacy2+2" : (self.org_ent_X[y+2]),
-                                      "spacy2-1" : (self.org_ent_X[y-1]),
-                                      "spacy2-2" : (self.org_ent_X[y-2]),
-                                      "spacy3" : (self.date_ent_X[y]),
-                                      "spacy3+1" : (self.date_ent_X[y+1]),
-                                      "spacy3+2" : (self.date_ent_X[y+2]),
-                                      "spacy3-1" : (self.date_ent_X[y-1]),
-                                      "spacy3-2" : (self.date_ent_X[y-2]),
-                                      "spacy4" : (self.person_ent_X[y]),
-                                      "spacy4+1" : (self.person_ent_X[y+1]),
-                                      "spacy4+2" : (self.person_ent_X[y+2]),
-                                      "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
-                                      })  
-            
-        return sentence_features
-    
-    
-    
-    
+
     def rhetData(self, casenum):
         with open('summarydata/UKHL_'+casenum+'_features.csv', 'r') as infile:
             reader = csv.DictReader(infile)
@@ -1622,15 +1013,13 @@ class ml():
                 self.loc4_X = np.append(self.loc4_X, [float(row['loc4'])])
                 self.loc5_X = np.append(self.loc5_X, [float(row['loc5'])])
                 self.loc6_X = np.append(self.loc6_X, [float(row['loc6'])])
+
                 self.sentlen_X = np.append(self.sentlen_X, [float(row['sentlen'])])
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
-                self.tfidf_top20_X = np.append(self.tfidf_top20_X, [float(row['tfidf_top20'])])
-                self.asp_X = np.append(self.asp_X, [float(row['aspect'])])
-                self.modal_X = np.append(self.modal_X, [float(row['modal'])])
-                self.voice_X = np.append(self.voice_X, [float(row['voice'])])
-                self.negcue_X = np.append(self.negcue_X, [float(row['negation'])])
-                self.tense_X = np.append(self.tense_X, [float(row['tense'])])
+                self.rhet_X = np.append(self.rhet_X, [float(row['rhet'])])
+                self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_max'])])
+
                 self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
                 self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
                 self.court_blackstone = np.append(self.court_blackstone, [float(row['court ent'])])
@@ -1641,18 +1030,34 @@ class ml():
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
-                self.judgename.append(row['judgename'])
-                self.rhetlabel.append(row['rhet label'])
-                self.sent_id.append(row['sent_id'])
+                self.time_ent_X = np.append(self.time_ent_X, [float(row['time ent'])])
+                self.gpe_ent_X = np.append(self.gpe_ent_X, [float(row['gpe ent'])])
+                self.fac_ent_X = np.append(self.fac_ent_X, [float(row['fac ent'])])
+                self.ordinal_ent_X = np.append(self.ordinal_ent_X, [float(row['ordinal ent'])])
+    
+                self.modal_pos_bool_X =  np.append(self.modal_pos_bool_X, [float(row['cp pos bool'])])
+                self.modal_dep_bool_X = np.append(self.modal_dep_bool_X, [float(row['cp dep bool'])])
+                self.modal_dep_count_X = np.append(self.modal_dep_count_X, [float(row['cp dep count'])])
+                self.modal_pos_count_X = np.append(self.modal_pos_count_X, [float(row['cp pos count'])])
+                self.new_modal_X = np.append(self.new_modal_X, [float(row['cp modal'])])
+                self.new_tense_X = np.append(self.new_tense_X, [float(row['cp tense'])])
+                self.new_dep_X = np.append(self.new_dep_X, [float(row['cp dep'])])
+                self.new_tag_X = np.append(self.new_tag_X, [float(row['cp tag'])])
+                self.new_negative_X = np.append(self.new_negative_X, [float(row['cp negative'])])
+                self.new_stop_X = np.append(self.new_stop_X, [float(row['cp stop'])])
+                self.new_voice_X = np.append(self.new_voice_X, [float(row['cp voice'])])
+  
+                self.second_pos_X = np.append(self.second_pos_X, [float(row['cp second pos'])])
+                self.second_dep_X = np.append(self.second_dep_X, [float(row['cp second dep'])])
+                self.second_tag_X = np.append(self.second_tag_X, [float(row['cp second tag'])])
+                self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
-        self.quote = self.inq_X, self.qb_X
+        self.quotation = self.inq_X, self.qb_X
         self.asmo = self.agree_X, self.outcome_X
-        self.cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
-        self.sent_length =  self.sentlen_X
-        self.tfidf_top20 = self.tfidf_top20_X 
-        self.blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
-        self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        self.sent_length = self.sentlen_X
+        self.tfidf_max = self.tfidf_max_X
+        self.HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        self.new_cue_phrases = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
 
-        
         
