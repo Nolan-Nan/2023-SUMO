@@ -11,3 +11,5 @@
 /src/summarydata
 /src/data
 /src/pipeline/data
+*.txt
+*.html

@@ -14,7 +14,7 @@ class Pipeline:
     ip = "ec2-18-182-64-196.ap-northeast-1.compute.amazonaws.com" #Amazon EC2 IP
     user = "ubuntu"
     annotators = ["gr", "alice", "jasleen"]
-    corPath = "corpus/corpus/"
+    corPath = "data/corpus/corpus/"
     annPath = "./annotator/anno/"
     mainAnno = "gr" # Select the annotator to train with
     download = False # Downloads latest data from www.holj.ml
