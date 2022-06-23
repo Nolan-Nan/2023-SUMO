@@ -6,7 +6,6 @@ Created on Mon Apr 18 21:18:04 2022
 @author: amyconroy
 """
 
-
     def parse_offline(self, annotator, file):
         all = []
         with open("corpus/annodata/" + annotator + "/" + file, 'r') as f:
@@ -36,7 +35,7 @@ Created on Mon Apr 18 21:18:04 2022
             return all
         
         
-        use the above to create the parser, pass in the file -> get this data 
+     #   use the above to create the parser, pass in the file -> get this data 
         
         
     def get_prediction(self, MJ_corpus):
@@ -44,12 +43,12 @@ Created on Mon Apr 18 21:18:04 2022
             classifier = self.best_classifier()
 #            save_data("classifier", classifier) #save
         else:
-            classifier = load_data("classifier") #NOTE write test
+            classifier = load_data("classifier") 
             
-            this will need to be added in with the rest of the info from the classifier - I think you will just
-            need to remove the stuff that trains, only allow to pass the classifier in 
+      #      this will need to be added in with the rest of the info from the classifier - I think you will just
+     #       need to remove the stuff that trains, only allow to pass the classifier in 
             
             
-        load the classifier after getting the above data (can we do this with sumo ... probably)
+     #   load the classifier after getting the above data (can we do this with sumo ... probably)
         
         

@@ -84,7 +84,7 @@ class ml():
         
         self.rhet_X = np.array([])
         
-        self.sent_id = []
+
         self.ranking = []
         
         
@@ -134,7 +134,7 @@ class ml():
         if rhetRole:
             print("Beginning rhetorical classification")
             self.rhetData(casenum)
-            self.getSVCRhetPredictions()
+            self.rhet_predict()
             self.rhetClassifiction(casenum)
             print("Rhetorical classification complete")
             self.rewriteFeatures(casenum)
@@ -176,24 +176,6 @@ class ml():
         self.rhetlabel = []
         self.rhetlabel = newlabels
     
-    def create_RhetTarget(self):
-        labels = self.rhetlabel
-        
-        for label in labels:
-            if label == "2.0":    
-                self.rhet_X = np.append(self.rhet_X, [2/6])        
-            if label == "3.0":      
-                self.rhet_X = np.append(self.rhet_X, [3/6])        
-            if label == "4.0":      
-                self.rhet_X = np.append(self.rhet_X, [4/6])        
-            if label == "5.0":   
-                self.rhet_X = np.append(self.rhet_X, [5/6])        
-            if label == "6.0":      
-                self.rhet_X = np.append(self.rhet_X, [1])        
-            if label == "1.0":      
-                self.rhet_X = np.append(self.rhet_X, [1/6])        
-            if label == "0.0":  
-                self.rhet_X = np.append(self.rhet_X, [0]) 
 
         
     def get_rel_features(self): 
@@ -204,25 +186,52 @@ class ml():
         features = np.vstack((features, self.tfidf_max))
         features = np.vstack((features, self.rhet_X))    
         features = np.vstack((features, self.HGents))
-        features = np.vstack((features, self.new_cue_phrases))
-        features = np.vstack((features, self.wordlist))
+        features = np.vstack((features, self.cue_phrase))
         features = np.vstack((features,)).T
         return features
-        
-    def get_rhet_dtc_features(self):
-        features = self.quotation
-        features = np.vstack((features, self.asmo))
-        features = np.vstack((features, self.sent_length))
-        features = np.vstack((features,)).T
-        return features
-    
-    def getSVCRhetPredictions(self): 
-        f = open("c.pickle", "rb")
+
+    def rhet_predict(self): 
+        f = open("RHETORICAL.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
         features = self.get_rhet_dtc_features()
-        self.SVCpred = classifier.predict(features)
+        self.rhet_pred = classifier.predict(features)
+        print(len(self.rhet_pred))
+        self.create_RhetTarget()
+        
+    def get_rhet_dtc_features(self): 
+        features = self.quote
+        features = np.vstack((features, self.asmo))
+        features = np.vstack((features, self.location))
+        features = np.vstack((features,)).T
+        return features
+    
+    def create_RhetTarget(self):
+        labels = self.rhet_pred
+        self.rhetlabel = labels
+        
+        for label in labels:
+            print(label)
+            if label == 2.0:    
+                print("yes I predict fact")
+                self.rhet_X = np.append(self.rhet_X, [2/6])        
+            if label == 3.0:      
+                self.rhet_X = np.append(self.rhet_X, [3/6])        
+            if label == 4.0:      
+                self.rhet_X = np.append(self.rhet_X, [4/6])        
+            if label == 5.0:   
+                self.rhet_X = np.append(self.rhet_X, [5/6])        
+            if label == 6.0:      
+                self.rhet_X = np.append(self.rhet_X, [1])        
+            if label == 1.0:      
+                self.rhet_X = np.append(self.rhet_X, [1/6])        
+            if label == 0.0:  
+                self.rhet_X = np.append(self.rhet_X, [0]) 
+        
+        print(len(self.rhet_X))
+        
+
         
         
     def createRhetFeaturesList(self, casenum): 
@@ -259,7 +268,7 @@ class ml():
                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2)
                  featureset.append(newfeatures)
                  all_featureset.append(featureset)
-                 tag = self.SVCpred[y]
+                 tag = self.rhet_X[y]
                  tag_history.append(tag)
                  y += 1 
                  tagcount += 1
@@ -269,7 +278,7 @@ class ml():
                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2)
                  featureset.append(newfeatures)
                  all_featureset.append(featureset)
-                 tag = self.SVCpred[y]
+                 tag = self.rhet_X[y]
                  tag_history.append(tag)
                  y += 1 
                  tagcount += 1   
@@ -279,7 +288,7 @@ class ml():
         return all_featureset    
         
     def rhetClassifiction(self, casenum):
-        f = open("crf_rhetcorrect.pickle", "rb")
+        f = open("RHETORICAL_CRF.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         case_features = self.createRhetFeaturesList(casenum)
@@ -296,16 +305,26 @@ class ml():
         f.close()
         
         case_features = self.get_rel_features()
-        self.RelPredictions = classifier.predict(case_features)
+        curr_RelPredictions = classifier.predict(case_features)
+        for prediction in curr_RelPredictions: 
+            if prediction == 1: 
+
+                self.RelPredictions = np.append(self.RelPredictions, ['yes'])
+            else:
+                self.RelPredictions = np.append(self.RelPredictions, ['no'])
+
         ranks = []
         
-        rank = classifier.predict_marginals(case_features)
+        rank = classifier.predict_proba(case_features)
+
+
         for v in enumerate(rank):
-            sentence = rank[v[0]]
-            yesandno = sentence[0]
-            ranking = yesandno.get('yes')
-            ranks.append(ranking)
+            yes = v[1]
+            yes_confidence = yes[1]
+            ranks.append(yes_confidence)
         self.ranking = ranks
+        
+ 
 
         
     # create the necessary feature sets
@@ -328,7 +347,7 @@ class ml():
         
   
     
-    def covertRhetToArray(self, rhetorical_predictions):
+    def ConvertRhetToArray(self, rhetorical_predictions):
         for label in rhetorical_predictions:
             if label == 'FACT':     
                 self.rhet_predictions = np.append(self.rhet_predictions, [2])       
@@ -349,10 +368,10 @@ class ml():
     def rewriteFeatures(self, casenum):
         with open('summarydata/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
                 fieldnames = ['sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
-                'loc4', 'loc5', 'loc6', 'sentlen', 'quoteblock', 'inline_q', 'tfidf_top20', 'aspect', 'modal',
-                'voice', 'negation', 'tense',  'provision ent', 'instrument ent', 'court ent', 
+                'loc4', 'loc5', 'loc6', 'sentlen', 'quoteblock', 'inline_q', 'tfidf_top20', 'provision ent', 'instrument ent', 'court ent', 
                 'case name ent', 'citation bl ent', 'judge ent', 'loc ent', 'org ent', 'date ent', 
-                'person ent','judgename', 'rhet label']        
+                'person ent','judgename', 'rhet label', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative', 
+        'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']        
         
                 writer = csv.DictWriter(outfile, fieldnames=fieldnames)
                 writer.writeheader()
@@ -361,21 +380,27 @@ class ml():
                     writer.writerow({'sent_id': self.sent_id[v], 'agree': self.agree_X[v],
                     'outcome': self.outcome_X[v], 'loc1': self.loc1_X[v], 'loc2': self.loc2_X[v], 'loc3': self.loc3_X[v], 'loc4': self.loc4_X[v], 
                     'loc5': self.loc5_X[v], 'loc6': self.loc6_X[v], 'sentlen': self.sentlen_X[v], 'quoteblock': self.qb_X[v], 'inline_q': self.inq_X[v], 
-                     'tfidf_top20': self.tfidf_top20_X[v], 'aspect': self.asp_X[v],'modal': self.modal_X[v], 'voice': self.voice_X[v], 
-                     'negation': self.negcue_X[v], 'tense': self.tense_X[v], 'provision ent' : self.provision_blackstone[v], 'instrument ent' : 
+                     'tfidf_top20': self.tfidf_top20_X[v], 'provision ent' : self.provision_blackstone[v], 'instrument ent' : 
                         self.instrument_blackstone[v], 'court ent' : self.court_blackstone[v], 
                     'case name ent' : self.case_blackstone[v], 'citation bl ent' : self.citation_blackstone[v], 'judge ent' : self.judge_blackstone[v],
                     'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : 
-                    self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v], 'rhet label' : self.rhet_predictions[v]}) 
-                        
+                    self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v], 'rhet label' : self.rhet_predictions[v], 
+                    'cp tense': self.new_tense_X[v], 'cp modal': self.new_modal_X[v], 'cp pos bool' :  self.modal_pos_bool_X[v], 'cp dep bool': self.modal_dep_bool_X[v], 
+                        'cp dep count':  self.modal_dep_count_X[v], 'cp pos count': self.modal_pos_count_X[v], 'cp dep': self.new_dep_X[v], 'cp tag': self.new_tag_X[v], 'cp negative': self.new_negative_X[v],
+                        'cp stop': self.new_stop_X[v], 'cp voice' : self.new_voice_X[v], 'cp second pos': self.second_pos_X[v], 'cp second dep' : self.second_dep_X[v], 
+                        'cp second tag' : self.second_tag_X[v], 'cp second stop' : self.second_stop_X[v]}) 
+         
+
+
     
     def rewriteRelFeatures(self, casenum):
+
         with open('summarydata/UKHL_'+casenum+'_classification.csv', 'w', newline='') as outfile:
                     fieldnames = ['sent_id', 'rhet label', 'relevant', 'yes confidence']        
             
                     writer = csv.DictWriter(outfile, fieldnames=fieldnames)
                     writer.writeheader()
-            
+                        
                     for v in range(len(self.sent_id)):
                         writer.writerow({'sent_id': self.sent_id[v], 'rhet label' : self.rhetlabel[v], 
                         'relevant': self.RelPredictions[v], 'yes confidence' : self.ranking[v]}) 
@@ -437,21 +462,45 @@ class ml():
                                       "asmo2" : (self.outcome_X[y]),
                                       "asmo2+1" : (self.outcome_X[y+1]),
                                       "asmo2+2" : (self.outcome_X[y+2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
+                                      "cue1" : (self.modal_dep_bool_X[y]), 
+                                      "cue1+1" : (self.modal_dep_bool_X[y+1]), 
+                                      "cue1+2" : (self.modal_dep_bool_X[y+2]), 
+                                      "cue2" : (self.modal_dep_count_X[y]), 
+                                      "cue2+1" : (self.modal_dep_count_X[y+1]), 
+                                      "cue2+2" : (self.modal_dep_count_X[y+2]), 
+                                      "cue3" : (self.new_modal_X[y]), 
+                                      "cue3+1" : (self.new_modal_X[y+1]), 
+                                      "cue3+2" : (self.new_modal_X[y+2]), 
+                                      "cue4" : (self.new_tense_X[y]), 
+                                      "cue4+1" : (self.new_tense_X[y+1]), 
+                                      "cue4+2" : (self.new_tense_X[y+2]), 
+                                      "cue5" : (self.new_dep_X[y]), 
+                                      "cue5+1" : (self.new_dep_X[y+1]), 
+                                      "cue5+2" : (self.new_dep_X[y+2]), 
+                                      "cue6" : (self.new_tag_X[y]), 
+                                      "cue6+1" : (self.new_tag_X[y+1]), 
+                                      "cue6+2" : (self.new_tag_X[y+2]), 
+                                      "cue7" : (self.new_negative_X[y]), 
+                                      "cue7+1" : (self.new_negative_X[y+1]), 
+                                      "cue7+2" : (self.new_negative_X[y+2]), 
+                                      "cue8" : (self.new_stop_X[y]), 
+                                      "cue8+1" : (self.new_stop_X[y+1]), 
+                                      "cue8+2" : (self.new_stop_X[y+2]), 
+                                      "cue9" : (self.new_voice_X[y]), 
+                                      "cue9+1" : (self.new_voice_X[y+1]), 
+                                      "cue9+2" : (self.new_voice_X[y+2]), 
+                                      "cue10" : (self.second_pos_X[y]), 
+                                      "cue10+1" : (self.second_pos_X[y+1]), 
+                                      "cue10+2" : (self.second_pos_X[y+2]), 
+                                      "cue11" : (self.second_dep_X[y]), 
+                                      "cue11+1" : (self.second_dep_X[y+1]), 
+                                      "cue11+2" : (self.second_dep_X[y+2]), 
+                                      "cue12" : (self.second_tag_X[y]), 
+                                      "cue12+1" : (self.second_tag_X[y+1]), 
+                                      "cue12+2" : (self.second_tag_X[y+2]), 
+                                      "cue13" : (self.second_stop_X[y]), 
+                                      "cue13+1" : (self.second_stop_X[y+1]), 
+                                      "cue13+2" : (self.second_stop_X[y+2]), 
                                       "bl1" : (self.provision_blackstone[y]), 
                                       "bl1+1" : (self.provision_blackstone[y+1]), 
                                       "bl1+2" : (self.provision_blackstone[y+2]), 
@@ -540,26 +589,58 @@ class ml():
                                       "asmo2+1" : (self.outcome_X[y+1]),
                                       "asmo2+2" : (self.outcome_X[y+2]),
                                       "asmo2-1" : (self.outcome_X[y-1]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
+                                      "cue1" : (self.modal_dep_bool_X[y]), 
+                                      "cue1+1" : (self.modal_dep_bool_X[y+1]), 
+                                      "cue1+2" : (self.modal_dep_bool_X[y+2]), 
+                                      "cue1-1" : (self.modal_dep_bool_X[y-1]), 
+                                      "cue2" : (self.modal_dep_count_X[y]), 
+                                      "cue2+1" : (self.modal_dep_count_X[y+1]), 
+                                      "cue2+2" : (self.modal_dep_count_X[y+2]), 
+                                      "cue2-1" : (self.modal_dep_count_X[y-1]), 
+                                      "cue3" : (self.new_modal_X[y]), 
+                                      "cue3+1" : (self.new_modal_X[y+1]), 
+                                      "cue3+2" : (self.new_modal_X[y+2]), 
+                                      "cue3-1" : (self.new_modal_X[y-1]), 
+                                      "cue4" : (self.new_tense_X[y]), 
+                                      "cue4+1" : (self.new_tense_X[y+1]), 
+                                      "cue4+2" : (self.new_tense_X[y+2]), 
+                                      "cue4-1" : (self.new_tense_X[y-1]), 
+                                      "cue5" : (self.new_dep_X[y]), 
+                                      "cue5+1" : (self.new_dep_X[y+1]), 
+                                      "cue5+2" : (self.new_dep_X[y+2]), 
+                                      "cue5-1" : (self.new_dep_X[y-1]), 
+                                      "cue6" : (self.new_tag_X[y]), 
+                                      "cue6+1" : (self.new_tag_X[y+1]), 
+                                      "cue6+2" : (self.new_tag_X[y+2]), 
+                                      "cue6-1" : (self.new_tag_X[y-1]), 
+                                      "cue7" : (self.new_negative_X[y]), 
+                                      "cue7+1" : (self.new_negative_X[y+1]), 
+                                      "cue7+2" : (self.new_negative_X[y+2]), 
+                                      "cue7-1" : (self.new_negative_X[y-1]), 
+                                      "cue8" : (self.new_stop_X[y]), 
+                                      "cue8+1" : (self.new_stop_X[y+1]), 
+                                      "cue8+2" : (self.new_stop_X[y+2]), 
+                                      "cue8-1" : (self.new_stop_X[y-1]), 
+                                      "cue9" : (self.new_voice_X[y]), 
+                                      "cue9+1" : (self.new_voice_X[y+1]), 
+                                      "cue9+2" : (self.new_voice_X[y+2]), 
+                                      "cue9-1" : (self.new_voice_X[y-1]), 
+                                      "cue10" : (self.second_pos_X[y]), 
+                                      "cue10+1" : (self.second_pos_X[y+1]), 
+                                      "cue10+2" : (self.second_pos_X[y+2]), 
+                                      "cue10-1" : (self.second_pos_X[y-1]), 
+                                      "cue11" : (self.second_dep_X[y]), 
+                                      "cue11+1" : (self.second_dep_X[y+1]), 
+                                      "cue11+2" : (self.second_dep_X[y+2]), 
+                                      "cue11-1" : (self.second_dep_X[y-1]), 
+                                      "cue12" : (self.second_tag_X[y]), 
+                                      "cue12+1" : (self.second_tag_X[y+1]), 
+                                      "cue12+2" : (self.second_tag_X[y+2]), 
+                                      "cue12-1" : (self.second_tag_X[y-1]), 
+                                      "cue13" : (self.second_stop_X[y]), 
+                                      "cue13+1" : (self.second_stop_X[y+1]), 
+                                      "cue13+2" : (self.second_stop_X[y+2]), 
+                                      "cue13-1" : (self.second_stop_X[y-1]), 
                                       "bl1" : (self.provision_blackstone[y]), 
                                       "bl1+1" : (self.provision_blackstone[y+1]), 
                                       "bl1+2" : (self.provision_blackstone[y+2]), 
@@ -645,21 +726,45 @@ class ml():
                                       "asmo2" : (self.outcome_X[y]),
                                       "asmo2-1" : (self.outcome_X[y-1]),
                                       "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
+                                      "cue1" : (self.modal_dep_bool_X[y]), 
+                                      "cue1-2" : (self.modal_dep_bool_X[y-2]), 
+                                      "cue1-1" : (self.modal_dep_bool_X[y-1]), 
+                                      "cue2" : (self.modal_dep_count_X[y]), 
+                                      "cue2-2" : (self.modal_dep_count_X[y-2]), 
+                                      "cue2-1" : (self.modal_dep_count_X[y-1]), 
+                                      "cue3" : (self.new_modal_X[y]), 
+                                      "cue3-1" : (self.new_modal_X[y-1]), 
+                                      "cue3-2" : (self.new_modal_X[y-2]), 
+                                      "cue4" : (self.new_tense_X[y]), 
+                                      "cue4-2" : (self.new_tense_X[y-2]), 
+                                      "cue4-1" : (self.new_tense_X[y-1]), 
+                                      "cue5" : (self.new_dep_X[y]), 
+                                      "cue5-2" : (self.new_dep_X[y-2]), 
+                                      "cue5-1" : (self.new_dep_X[y-1]), 
+                                      "cue6" : (self.new_tag_X[y]), 
+                                      "cue6-2" : (self.new_tag_X[y-2]), 
+                                      "cue6-1" : (self.new_tag_X[y-1]), 
+                                      "cue7" : (self.new_negative_X[y]),  
+                                      "cue7-2" : (self.new_negative_X[y-2]), 
+                                      "cue7-1" : (self.new_negative_X[y-1]), 
+                                      "cue8" : (self.new_stop_X[y]), 
+                                      "cue8-2" : (self.new_stop_X[y-2]), 
+                                      "cue8-1" : (self.new_stop_X[y-1]), 
+                                      "cue9" : (self.new_voice_X[y]), 
+                                      "cue9-2" : (self.new_voice_X[y-2]), 
+                                      "cue9-1" : (self.new_voice_X[y-1]), 
+                                      "cue10" : (self.second_pos_X[y]), 
+                                      "cue10-2" : (self.second_pos_X[y-2]), 
+                                      "cue10-1" : (self.second_pos_X[y-1]), 
+                                      "cue11" : (self.second_dep_X[y]), 
+                                      "cue11-2" : (self.second_dep_X[y-2]), 
+                                      "cue11-1" : (self.second_dep_X[y-1]), 
+                                      "cue12" : (self.second_tag_X[y]), 
+                                      "cue12-2" : (self.second_tag_X[y-2]), 
+                                      "cue12-1" : (self.second_tag_X[y-1]), 
+                                      "cue13" : (self.second_stop_X[y]), 
+                                      "cue13-2" : (self.second_stop_X[y-2]), 
+                                      "cue13-1" : (self.second_stop_X[y-1]), 
                                       "bl1" : (self.provision_blackstone[y]), 
                                       "bl1-1" : (self.provision_blackstone[y-1]), 
                                       "bl1-2" : (self.provision_blackstone[y-2]), 
@@ -744,26 +849,58 @@ class ml():
                                       "asmo2+1" : (self.outcome_X[y+1]),
                                       "asmo2-1" : (self.outcome_X[y-1]),
                                       "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]),
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
+                                      "cue1" : (self.modal_dep_bool_X[y]), 
+                                      "cue1+1" : (self.modal_dep_bool_X[y+1]), 
+                                      "cue1-2" : (self.modal_dep_bool_X[y-2]), 
+                                      "cue1-1" : (self.modal_dep_bool_X[y-1]), 
+                                      "cue2" : (self.modal_dep_count_X[y]), 
+                                      "cue2+1" : (self.modal_dep_count_X[y+1]), 
+                                      "cue2-2" : (self.modal_dep_count_X[y-2]), 
+                                      "cue2-1" : (self.modal_dep_count_X[y-1]), 
+                                      "cue3" : (self.new_modal_X[y]), 
+                                      "cue3+1" : (self.new_modal_X[y+1]), 
+                                      "cue3-1" : (self.new_modal_X[y-1]), 
+                                      "cue3-2" : (self.new_modal_X[y-2]), 
+                                      "cue4" : (self.new_tense_X[y]), 
+                                      "cue4+1" : (self.new_tense_X[y+1]), 
+                                      "cue4-2" : (self.new_tense_X[y-2]), 
+                                      "cue4-1" : (self.new_tense_X[y-1]), 
+                                      "cue5" : (self.new_dep_X[y]), 
+                                      "cue5+1" : (self.new_dep_X[y+1]), 
+                                      "cue5-2" : (self.new_dep_X[y-2]), 
+                                      "cue5-1" : (self.new_dep_X[y-1]), 
+                                      "cue6" : (self.new_tag_X[y]), 
+                                      "cue6+1" : (self.new_tag_X[y+1]), 
+                                      "cue6-2" : (self.new_tag_X[y-2]), 
+                                      "cue6-1" : (self.new_tag_X[y-1]), 
+                                      "cue7" : (self.new_negative_X[y]),
+                                      "cue7+1" : (self.new_negative_X[y+1]), 
+                                      "cue7-2" : (self.new_negative_X[y-2]), 
+                                      "cue7-1" : (self.new_negative_X[y-1]), 
+                                      "cue8" : (self.new_stop_X[y]), 
+                                      "cue8+1" : (self.new_stop_X[y+1]), 
+                                      "cue8-2" : (self.new_stop_X[y-2]), 
+                                      "cue8-1" : (self.new_stop_X[y-1]), 
+                                      "cue9" : (self.new_voice_X[y]), 
+                                      "cue9+1" : (self.new_voice_X[y+1]), 
+                                      "cue9-2" : (self.new_voice_X[y-2]), 
+                                      "cue9-1" : (self.new_voice_X[y-1]), 
+                                      "cue10" : (self.second_pos_X[y]), 
+                                      "cue10+1" : (self.second_pos_X[y+1]), 
+                                      "cue10-2" : (self.second_pos_X[y-2]), 
+                                      "cue10-1" : (self.second_pos_X[y-1]), 
+                                      "cue11" : (self.second_dep_X[y]), 
+                                      "cue11+1" : (self.second_dep_X[y+1]), 
+                                      "cue11-2" : (self.second_dep_X[y-2]), 
+                                      "cue11-1" : (self.second_dep_X[y-1]), 
+                                      "cue12" : (self.second_tag_X[y]), 
+                                      "cue12+1" : (self.second_tag_X[y+1]), 
+                                      "cue12-2" : (self.second_tag_X[y-2]), 
+                                      "cue12-1" : (self.second_tag_X[y-1]), 
+                                      "cue13" : (self.second_stop_X[y]), 
+                                      "cue13+1" : (self.second_stop_X[y+1]), 
+                                      "cue13-2" : (self.second_stop_X[y-2]), 
+                                      "cue13-1" : (self.second_stop_X[y-1]), 
                                       "bl1" : (self.provision_blackstone[y]), 
                                       "bl1+1" : (self.provision_blackstone[y+1]), 
                                       "bl1-1" : (self.provision_blackstone[y-1]), 
@@ -870,31 +1007,71 @@ class ml():
                                       "asmo2+2" : (self.outcome_X[y+2]),
                                       "asmo2-1" : (self.outcome_X[y-1]),
                                       "asmo2-2" : (self.outcome_X[y-2]),
-                                      "cue1" : (self.asp_X[y]), 
-                                      "cue1+1" : (self.asp_X[y+1]), 
-                                      "cue1+2" : (self.asp_X[y+2]), 
-                                      "cue1-1" : (self.asp_X[y-1]), 
-                                      "cue1-2" : (self.asp_X[y-2]), 
-                                      "cue2" : (self.modal_X[y]), 
-                                      "cue2+1" : (self.modal_X[y+1]), 
-                                      "cue2+2" : (self.modal_X[y+2]), 
-                                      "cue2-1" : (self.modal_X[y-1]), 
-                                      "cue2-2" : (self.modal_X[y-2]), 
-                                      "cue3" : (self.voice_X[y]), 
-                                      "cue3+1" : (self.voice_X[y+1]), 
-                                      "cue3+2" : (self.voice_X[y+2]), 
-                                      "cue3-1" : (self.voice_X[y-1]), 
-                                      "cue3-2" : (self.voice_X[y-2]), 
-                                      "cue4" : (self.negcue_X[y]), 
-                                      "cue4+1" : (self.negcue_X[y+1]), 
-                                      "cue4+2" : (self.negcue_X[y+2]), 
-                                      "cue4-1" : (self.negcue_X[y-1]), 
-                                      "cue4-2" : (self.negcue_X[y-2]), 
-                                      "cue5" : (self.tense_X[y]), 
-                                      "cue5+1" : (self.tense_X[y+1]), 
-                                      "cue5+2" : (self.tense_X[y+2]), 
-                                      "cue5-1" : (self.tense_X[y-1]), 
-                                      "cue5-2" : (self.tense_X[y-2]), 
+                                      "cue1" : (self.modal_dep_bool_X[y]), 
+                                      "cue1+1" : (self.modal_dep_bool_X[y+1]), 
+                                      "cue1+2" : (self.modal_dep_bool_X[y+2]), 
+                                      "cue1-2" : (self.modal_dep_bool_X[y-2]), 
+                                      "cue1-1" : (self.modal_dep_bool_X[y-1]), 
+                                      "cue2" : (self.modal_dep_count_X[y]), 
+                                      "cue2+1" : (self.modal_dep_count_X[y+1]), 
+                                      "cue2+2" : (self.modal_dep_count_X[y+2]), 
+                                      "cue2-2" : (self.modal_dep_count_X[y-2]), 
+                                      "cue2-1" : (self.modal_dep_count_X[y-1]), 
+                                      "cue3" : (self.new_modal_X[y]), 
+                                      "cue3+1" : (self.new_modal_X[y+1]), 
+                                      "cue3+2" : (self.new_modal_X[y+2]),
+                                      "cue3-1" : (self.new_modal_X[y-1]), 
+                                      "cue3-2" : (self.new_modal_X[y-2]), 
+                                      "cue4" : (self.new_tense_X[y]), 
+                                      "cue4+1" : (self.new_tense_X[y+1]), 
+                                      "cue4+2" : (self.new_tense_X[y+2]), 
+                                      "cue4-2" : (self.new_tense_X[y-2]), 
+                                      "cue4-1" : (self.new_tense_X[y-1]), 
+                                      "cue5" : (self.new_dep_X[y]), 
+                                      "cue5+1" : (self.new_dep_X[y+1]), 
+                                      "cue5+2" : (self.new_dep_X[y+2]), 
+                                      "cue5-2" : (self.new_dep_X[y-2]), 
+                                      "cue5-1" : (self.new_dep_X[y-1]), 
+                                      "cue6" : (self.new_tag_X[y]), 
+                                      "cue6+1" : (self.new_tag_X[y+1]), 
+                                      "cue6+2" : (self.new_tag_X[y+2]), 
+                                      "cue6-2" : (self.new_tag_X[y-2]), 
+                                      "cue6-1" : (self.new_tag_X[y-1]), 
+                                      "cue7" : (self.new_negative_X[y]),
+                                      "cue7+1" : (self.new_negative_X[y+1]), 
+                                      "cue7+2" : (self.new_negative_X[y+2]), 
+                                      "cue7-2" : (self.new_negative_X[y-2]), 
+                                      "cue7-1" : (self.new_negative_X[y-1]), 
+                                      "cue8" : (self.new_stop_X[y]), 
+                                      "cue8+1" : (self.new_stop_X[y+1]), 
+                                      "cue8+2" : (self.new_stop_X[y+2]), 
+                                      "cue8-2" : (self.new_stop_X[y-2]), 
+                                      "cue8-1" : (self.new_stop_X[y-1]), 
+                                      "cue9" : (self.new_voice_X[y]), 
+                                      "cue9+1" : (self.new_voice_X[y+1]), 
+                                      "cue9+2" : (self.new_voice_X[y+2]), 
+                                      "cue9-2" : (self.new_voice_X[y-2]), 
+                                      "cue9-1" : (self.new_voice_X[y-1]), 
+                                      "cue10" : (self.second_pos_X[y]), 
+                                      "cue10+1" : (self.second_pos_X[y+1]), 
+                                      "cue10+2" : (self.second_pos_X[y+2]), 
+                                      "cue10-2" : (self.second_pos_X[y-2]), 
+                                      "cue10-1" : (self.second_pos_X[y-1]), 
+                                      "cue11" : (self.second_dep_X[y]), 
+                                      "cue11+1" : (self.second_dep_X[y+1]), 
+                                      "cue11+2" : (self.second_dep_X[y+2]), 
+                                      "cue11-2" : (self.second_dep_X[y-2]), 
+                                      "cue11-1" : (self.second_dep_X[y-1]), 
+                                      "cue12" : (self.second_tag_X[y]), 
+                                      "cue12+1" : (self.second_tag_X[y+1]), 
+                                      "cue12+2" : (self.second_tag_X[y+2]), 
+                                      "cue12-2" : (self.second_tag_X[y-2]), 
+                                      "cue12-1" : (self.second_tag_X[y-1]), 
+                                      "cue13" : (self.second_stop_X[y]), 
+                                      "cue13+1" : (self.second_stop_X[y+1]),
+                                      "cue13+2" : (self.second_stop_X[y+2]),
+                                      "cue13-2" : (self.second_stop_X[y-2]), 
+                                      "cue13-1" : (self.second_stop_X[y-1]), 
                                       "bl1" : (self.provision_blackstone[y]), 
                                       "bl1+1" : (self.provision_blackstone[y+1]), 
                                       "bl1+2" : (self.provision_blackstone[y+2]), 
@@ -951,6 +1128,7 @@ class ml():
         
 
     def rhetData(self, casenum):
+        self.sent_id = []
         with open('summarydata/UKHL_'+casenum+'_features.csv', 'r') as infile:
             reader = csv.DictReader(infile)
 
@@ -968,11 +1146,7 @@ class ml():
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
                 self.tfidf_top20_X = np.append(self.tfidf_top20_X, [float(row['tfidf_top20'])])
-                self.asp_X = np.append(self.asp_X, [float(row['aspect'])])
-                self.modal_X = np.append(self.modal_X, [float(row['modal'])])
-                self.voice_X = np.append(self.voice_X, [float(row['voice'])])
-                self.negcue_X = np.append(self.negcue_X, [float(row['negation'])])
-                self.tense_X = np.append(self.tense_X, [float(row['tense'])])
+                
                 self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
                 self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
                 self.court_blackstone = np.append(self.court_blackstone, [float(row['court ent'])])
@@ -985,11 +1159,28 @@ class ml():
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
                 self.judgename.append(row['judgename'])
                 self.sent_id.append(row['sent_id'])
+                
+                self.modal_pos_bool_X =  np.append(self.modal_pos_bool_X, [float(row['cp pos bool'])])
+                self.modal_dep_bool_X = np.append(self.modal_dep_bool_X, [float(row['cp dep bool'])])
+                self.modal_dep_count_X = np.append(self.modal_dep_count_X, [float(row['cp dep count'])])
+                self.modal_pos_count_X = np.append(self.modal_pos_count_X, [float(row['cp pos count'])])
+                self.new_modal_X = np.append(self.new_modal_X, [float(row['cp modal'])])
+                self.new_tense_X = np.append(self.new_tense_X, [float(row['cp tense'])])
+                self.new_dep_X = np.append(self.new_dep_X, [float(row['cp dep'])])
+                self.new_tag_X = np.append(self.new_tag_X, [float(row['cp tag'])])
+                self.new_negative_X = np.append(self.new_negative_X, [float(row['cp negative'])])
+                self.new_stop_X = np.append(self.new_stop_X, [float(row['cp stop'])])
+                self.new_voice_X = np.append(self.new_voice_X, [float(row['cp voice'])])
+  
+                self.second_pos_X = np.append(self.second_pos_X, [float(row['cp second pos'])])
+                self.second_dep_X = np.append(self.second_dep_X, [float(row['cp second dep'])])
+                self.second_tag_X = np.append(self.second_tag_X, [float(row['cp second tag'])])
+                self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
         self.quote = self.inq_X, self.qb_X
         self.asmo = self.agree_X, self.outcome_X
-        self.cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
+        self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
         self.sent_length =  self.sentlen_X
         self.tfidf_top20 = self.tfidf_top20_X 
         self.blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
@@ -1013,8 +1204,8 @@ class ml():
                 self.sentlen_X = np.append(self.sentlen_X, [float(row['sentlen'])])
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
-                self.rhet_X = np.append(self.rhet_X, [float(row['rhet'])])
-                self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_max'])])
+  
+                self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_top20'])])
 
                 self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
                 self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
@@ -1026,10 +1217,6 @@ class ml():
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
-                self.time_ent_X = np.append(self.time_ent_X, [float(row['time ent'])])
-                self.gpe_ent_X = np.append(self.gpe_ent_X, [float(row['gpe ent'])])
-                self.fac_ent_X = np.append(self.fac_ent_X, [float(row['fac ent'])])
-                self.ordinal_ent_X = np.append(self.ordinal_ent_X, [float(row['ordinal ent'])])
     
                 self.modal_pos_bool_X =  np.append(self.modal_pos_bool_X, [float(row['cp pos bool'])])
                 self.modal_dep_bool_X = np.append(self.modal_dep_bool_X, [float(row['cp dep bool'])])
@@ -1047,7 +1234,7 @@ class ml():
                 self.second_dep_X = np.append(self.second_dep_X, [float(row['cp second dep'])])
                 self.second_tag_X = np.append(self.second_tag_X, [float(row['cp second tag'])])
                 self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
-                self.wordlist_X = np.append(self.wordlist_X, [float(row['wordlist'])])
+
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
         self.quotation = self.inq_X, self.qb_X
@@ -1055,6 +1242,6 @@ class ml():
         self.sent_length = self.sentlen_X
         self.tfidf_max = self.tfidf_max_X
         self.HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
-        self.new_cue_phrases = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
-        self.wordlist = self.wordlist_X 
+        self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
+     
         

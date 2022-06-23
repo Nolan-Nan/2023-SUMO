@@ -173,7 +173,8 @@ class summary():
         relevantSentences = []
         summarySentences = []
         for data in MLData:
-            if data['relevant'] == '[\'yes\']':
+            
+            if data['relevant'] == 'yes':
                 relevantSentences.append(data['sent id'])
                 
         for sentence in sentences:
@@ -341,6 +342,8 @@ class summary():
             distribution = distribution * proceedingsDist
             proceedings_Dist = round(distribution)
 
+        print("HELLLOOOO")
+        print(factSentences)
         for sentence in factSentences:
             if i < fact_Dist:
                 sentId = int(sentence['sent id'])

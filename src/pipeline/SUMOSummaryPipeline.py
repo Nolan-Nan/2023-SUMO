@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Pipeline for generating the summaries. 
 
@@ -28,9 +26,7 @@ you will also need the following serialized models:
     crf_rhetcorrect.pickle
     crf_relevance.pickle
     crel.pickle
-    
-once you have the above dependancies you will be able to run the pipeline by running this file: 
-    UKHLSummaryPipeline.py
+   
     
     TODO: 
         HTML parser for cases not in the corpus, need to do the verb group and cue phrase matching first - which 
@@ -43,7 +39,6 @@ once you have the above dependancies you will be able to run the pipeline by run
         
     PLAN - SATURDAY - UPDATE THE CLASSIFIERS 
         
-       
 
 @author: amyconroy
 """
@@ -70,11 +65,11 @@ class pipeline():
         # integrated cue phrases above, now need to add cue phrases below 
         import ml
         ml.ml(casenum, True)
-        print("\n UKHL PIPELINE SUMMARIES: \n")
+        print("\n SUMO PIPELINE SUMMARIES: \n")
         import summary
         summary.summary(casenum)
         print("\n")
-        print("\n UKHL Summary Pipeline Complete.")
+        print("\n SUMO Summary Pipeline Complete.")
         
         
 pipeline = pipeline()
