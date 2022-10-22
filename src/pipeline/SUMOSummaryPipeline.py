@@ -37,8 +37,7 @@ you will also need the following serialized models:
         update the labels for the rhetorical to match the way the RF classifier is TRAINED 
         update the RHETORICAL classifier to include the right pickled ones 
         
-    PLAN - SATURDAY - UPDATE THE CLASSIFIERS 
-        
+
 
 @author: amyconroy
 """
