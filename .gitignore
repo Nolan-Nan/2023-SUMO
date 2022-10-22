@@ -13,3 +13,4 @@
 /src/pipeline/data
 *.txt
 *.html
+/venv/*
