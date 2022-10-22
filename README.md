@@ -18,18 +18,18 @@ Contains current WIP training files and the pipeline.
 current classifiers: 
 RHETORICAL - DTC -> CRF classifier 
 
-              precision    recall  f1-score   support
+             precision    recall  f1-score   support
 
-         1.0      0.831     0.884     0.857      4736
-         4.0      0.898     0.849     0.873       873
-         5.0      0.847     0.732     0.785       272
-         6.0      0.818     0.737     0.775      3260
-         3.0      0.943     0.929     0.936       196
-         2.0      0.857     0.857     0.857         7
+         1.0      0.915     0.779     0.841       953
+         2.0      0.860     0.865     0.863      1222
+         3.0      0.796     0.817     0.807      2534
+         5.0      0.702     0.766     0.733      3495
+         4.0      0.834     0.867     0.850      3409
+         6.0      0.729     0.481     0.580      1014
 
-   micro avg      0.836     0.826     0.831      9344
-   macro avg      0.866     0.831     0.847      9344
-weighted avg      0.836     0.826     0.829      9344
+   micro avg      0.789     0.791     0.790     12627
+   macro avg      0.806     0.762     0.779     12627
+weighted avg      0.790     0.791     0.788     12627
 
 RELEVANCE - RF classifier (41.2% F-Score)
 PRECISION MEAN

@@ -191,7 +191,7 @@ class ml():
         return features
 
     def rhet_predict(self): 
-        f = open("RHETORICAL.pickle", "rb")
+        f = open("RHETORICAL_OCT22.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
@@ -201,9 +201,9 @@ class ml():
         self.create_RhetTarget()
         
     def get_rhet_dtc_features(self): 
-        features = self.quote
-        features = np.vstack((features, self.asmo))
-        features = np.vstack((features, self.location))
+        features = self.location
+     #   features = np.vstack((features, self.asmo))
+    #    features = np.vstack((features, self.location))
         features = np.vstack((features,)).T
         return features
     
@@ -288,7 +288,7 @@ class ml():
         return all_featureset    
         
     def rhetClassifiction(self, casenum):
-        f = open("RHETORICAL_CRF.pickle", "rb")
+        f = open("RHETORICAL_CRF_OCT22.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         case_features = self.createRhetFeaturesList(casenum)

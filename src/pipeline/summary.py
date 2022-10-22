@@ -276,7 +276,7 @@ class summary():
                     'text' : sentence['text']
                 }
                 sentenceToPrint.append(sentenceUpdate)
-                print(" test 2" + (sentence['sent id']) + " : " + sentence['judge'] + " : " + sentence['text']) 
+
             else: 
                 break
             i += 1
@@ -342,8 +342,7 @@ class summary():
             distribution = distribution * proceedingsDist
             proceedings_Dist = round(distribution)
 
-        print("HELLLOOOO")
-        print(factSentences)
+     
         for sentence in factSentences:
             if i < fact_Dist:
                 sentId = int(sentence['sent id'])
