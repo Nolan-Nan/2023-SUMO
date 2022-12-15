@@ -3,6 +3,7 @@
 /training_and_testing/outdated/*
 /training_and_testing/ASMO/*
 /training_and_testing/sum_corpus/*
+
 *.pickle
 *.csv
 *.dot
