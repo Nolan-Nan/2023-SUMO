@@ -1,0 +1,12 @@
+This directory contains the 6 judgment files used for pilot studies of the
+corpus in the summer 2003 SUM papers.
+
+These have preliminary versions of xml-isation, automatic linguistic
+annotation, and each has human rhetorical status annotation of one lord's
+speech.
+
+Rhetorical status annotation follows the pilot rhetorical scheme. The top-level
+version of this hierarchical scheme and the detailed break-down can be viewed
+respectively at:
+  http://www.ltg.ed.ac.uk/SUM/rhet_scheme.html#pilotDET
+  http://www.ltg.ed.ac.uk/SUM/rhet_scheme.html#pilotTOP
