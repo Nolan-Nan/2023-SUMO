@@ -1,12 +1,9 @@
-<<<<<<< HEAD
+
 /training_and_testing/rogue/*
 /training_and_testing/data/*
 /training_and_testing/outdated/*
 /training_and_testing/ASMO/*
 /training_and_testing/sum_corpus/*
-=======
->>>>>>> parent of 80915a7 (Merge pull request #1 from amyconroy/test)
-
 *.pickle
 *.csv
 *.dot
@@ -22,9 +19,7 @@
 *.txt
 *.html
 /venv/*
-<<<<<<< HEAD
 *.zip
 *.xml
 *.all
-=======
->>>>>>> parent of 80915a7 (Merge pull request #1 from amyconroy/test)
+
