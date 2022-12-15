@@ -212,9 +212,11 @@ class ml():
         self.rhetlabel = labels
         
         for label in labels:
+            
+            # TODO: this needs to be ammended to be strings instead, once the 
+            # working CRF training code is integrated here .. 
             print(label)
             if label == 2.0:    
-                print("yes I predict fact")
                 self.rhet_X = np.append(self.rhet_X, [2/6])        
             if label == 3.0:      
                 self.rhet_X = np.append(self.rhet_X, [3/6])        
@@ -269,6 +271,7 @@ class ml():
                  featureset.append(newfeatures)
                  all_featureset.append(featureset)
                  tag = self.rhet_X[y]
+                 print(type(tag))
                  tag_history.append(tag)
                  y += 1 
                  tagcount += 1

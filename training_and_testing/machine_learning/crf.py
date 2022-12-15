@@ -152,21 +152,14 @@ class crf():
         self.pull_training_data()
 
         X_train = self.create_speeches_features_list()
-        print("len 1")
-        print(len(X_train))
         y_train = self.sent_to_rhetlabel()
-        print("len 2")
-        print(len(y_train))
+
 
         self.initialize()
         self.pull_testing_data()
         X_test = self.create_speeches_features_list()
-        print("len 3")
-        print(len(X_test))
 
         y_test = self.sent_to_rhetlabel()
-        print("len 4")
-        print(len(y_test))
 
 # TEST / TRAIN
         crf = sklearn_crfsuite.CRF(
@@ -176,12 +169,12 @@ class crf():
               max_iterations=100,
               all_possible_transitions=True
               )
+
         crf.fit(X_train, y_train)
 
 
         labels = list(crf.classes_)
         labels.remove('0.0')
-        print(labels)
 
         y_pred = crf.predict(X_test)
         print(metrics.flat_f1_score(y_test, y_pred,
@@ -262,7 +255,7 @@ class crf():
         y_pred = crf.predict(X_test)
         labels = list(crf.classes_)
         labels.remove('0.0')
-        print(labels)
+
         print(metrics.flat_classification_report(
             y_test, y_pred, labels=labels, digits=3
         ))
@@ -339,28 +332,27 @@ class crf():
 
     def sent_to_rhetlabel(self):
         labels = self.rhetlabel
-        print("TEST LABELS")
-        print(labels)
-        print(len(labels))
+
         rhet_labels = []
 
+    # TODO: integrate this logic into the pipeline code!! 
 
         for label in labels:
-            if label == 'FACT':
+            if label == 2.0:
                 label = '2.0'
-            if label == 'PROCEEDINGS':
+            if label == 3.0:
                 label = '3.0'
-            if label == 'BACKGROUND':
+            if label == 4.0:
                 label = '4.0'
-            if label == 'FRAMING':
+            if label == 5.0:
                 label = '5.0'
-            if label == 'DISPOSAL':
+            if label == 6.0:
                 label = '6.0'
-            if label == 'TEXTUAL':
+            if label == 1.0:
                 label = '1.0'
-            if label == 'NONE':
+            if label == 0.0:
                 label = '0.0'
-            print(label)
+
             individual_label = []
             individual_label.append(label)
             rhet_labels.append(individual_label)
@@ -370,7 +362,10 @@ class crf():
 
     def create_speeches_features_list(self):
         all_featureset = []
-
+        print(type(self.rhetlabel))
+        self.rhet_predict()
+        print(type(self.rhet_X))
+        
         # init
         previous_judgename = ''
         y = 0
@@ -388,23 +383,7 @@ class crf():
              featureset = []
              newSpeechLookAheadBy1 = False
              newSpeechLookAheadBy2 = False
-             label = tags[y]
-             if label == 'FACT':
-                label = '2.0'
-             if label == 'PROCEEDINGS':
-                label = '3.0'
-             if label == 'BACKGROUND':
-                label = '4.0'
-             if label == 'FRAMING':
-                label = '5.0'
-             if label == 'DISPOSAL':
-                label = '6.0'
-             if label == 'TEXTUAL':
-                label = '1.0'
-             if label == 'NONE':
-                label = '0.0'
-       #      print(judge)
-      #       print(len(judges))
+
 
              if len(judges) == y+2:
                  newSpeechLookAheadBy2 = True
@@ -421,7 +400,8 @@ class crf():
                  featureset.append(self.get_features(tagcount, y, tag_history, newspeech,
                                                      newSpeechLookAheadBy1, newSpeechLookAheadBy2))
                  all_featureset.append(featureset)
-                 tag_history.append(label)
+                 tag = tags[y]
+                 tag_history.append(tag)
              #    print(tag_history)
                  y += 1
                  tagcount += 1
@@ -430,14 +410,58 @@ class crf():
                  featureset.append(self.get_features(tagcount, y, tag_history, newspeech,
                                                       newSpeechLookAheadBy1, newSpeechLookAheadBy2))
                  all_featureset.append(featureset)
-                 tag_history.append(label)
+                 tag = tags[y]
+                 tag_history.append(tag)
              #    print(tag_history)
                  y += 1
                  tagcount += 1
              previous_judgename = judge
 
-        print(len(all_featureset))
+
         return all_featureset
+    
+    
+    def rhet_predict(self): 
+        f = open("RHETORICAL_OCT22.pickle", "rb")
+        classifier = pickle.load(f)
+        f.close()
+        
+        features = self.get_rhet_dtc_features()
+        self.rhet_pred = classifier.predict(features)
+        self.create_RhetTarget()
+        
+    def get_rhet_dtc_features(self): 
+        features = self.location
+     #   features = np.vstack((features, self.asmo))
+    #    features = np.vstack((features, self.location))
+        features = np.vstack((features,)).T
+        return features
+    
+    def create_RhetTarget(self):
+        labels = self.rhet_pred
+        self.rhetlabel = labels
+        
+
+        
+# =============================================================================
+#         for label in labels:
+#             if label == 2.0:    
+#                 self.rhet_X.append      
+#             if label == 3.0:      
+#                 self.rhet_X = np.append(self.rhet_X, [3/6])        
+#             if label == 4.0:      
+#                 self.rhet_X = np.append(self.rhet_X, [4/6])        
+#             if label == 5.0:   
+#                 self.rhet_X = np.append(self.rhet_X, [5/6])        
+#             if label == 6.0:      
+#                 self.rhet_X = np.append(self.rhet_X, [1])        
+#             if label == 1.0:      
+#                 self.rhet_X = np.append(self.rhet_X, [1/6])        
+#             if label == 0.0:  
+#                 self.rhet_X = np.append(self.rhet_X, [0]) 
+# =============================================================================
+        
+  
 
     def get_features(self, sentence_id, y, tag_history, newspeech, newSpeechLookAheadBy1, newSpeechLookAheadBy2):
             # creates a dict
@@ -446,8 +470,6 @@ class crf():
 
 
             sentence_features = {}
-            print(y)
-            print(sentence_id)
 
   # NB - need not a super long way to access the 2D array
         # s refers to the sentence, r refers to rhetorical role
@@ -1153,7 +1175,7 @@ class crf():
                                       "spacy4-2" : (self.person_ent_X[y-2])
                                       })
 
-       #     print(sentence_features)
+       
             return sentence_features
 
         # here it assigns relevant training data to the np.array, then can use the index to pull out the right rows

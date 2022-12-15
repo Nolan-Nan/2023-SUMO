@@ -50,6 +50,9 @@ RHETORICAL - DTC -> CRF classifier
    macro avg      0.806     0.762     0.779     12627
 weighted avg      0.790     0.791     0.788     12627
 
+There may be some misalignment between the code in src/pipeline and the training_and_testing
+code. 
+
 RELEVANCE - RF classifier (41.2% F-Score)
 PRECISION MEAN
 0.3272512120188103

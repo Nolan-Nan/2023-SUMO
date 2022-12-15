@@ -322,7 +322,8 @@ class ml:
                 clf = clf.fit(X, Y)
 
                 import pickle
-                f = open('RELEVANCE.pickle', 'wb')
+                # CHANGE THIS NAME from 'test' to the classifier name you are writing, this will need to be updated in the other files / pipeline files
+                f = open('test.pickle', 'wb')
                 pickle.dump(clf, f)
                 f.close()
                 print(score)
