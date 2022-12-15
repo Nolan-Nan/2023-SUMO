@@ -1,4 +1,9 @@
-/training_and_testing/*
+/training_and_testing/rogue/*
+/training_and_testing/data/*
+/training_and_testing/outdated/*
+/training_and_testing/ASMO/*
+/training_and_testing/sum_corpus/*
+
 *.pickle
 *.csv
 *.dot
