@@ -1,4 +1,4 @@
-/training_and_testing/*
+
 *.pickle
 *.csv
 *.dot
@@ -14,3 +14,9 @@
 *.txt
 *.html
 /venv/*
+
+*.xml
+*.all
+*.jar
+*.iml
+*.properties

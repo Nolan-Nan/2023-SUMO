@@ -21,11 +21,8 @@ how data is stored when the summary is created:
      ml.py
      summary.py 
      
-you will also need the following serialized models:
-    c.pickle
-    crf_rhetcorrect.pickle
-    crf_relevance.pickle
-    crel.pickle
+
+
    
     
     TODO: 
