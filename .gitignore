@@ -1,4 +1,4 @@
-/training_and_testing/*
+
 *.pickle
 *.csv
 *.dot
@@ -11,3 +11,12 @@
 /src/summarydata
 /src/data
 /src/pipeline/data
+*.txt
+*.html
+/venv/*
+
+*.xml
+*.all
+*.jar
+*.iml
+*.properties
