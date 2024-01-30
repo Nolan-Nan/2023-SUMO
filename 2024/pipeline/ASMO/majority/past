@@ -1,0 +1,113 @@
+def find_majority(self):
+    """
+    returns list of judges for each case
+    """
+    cases = self.corpus.case.unique()
+    majority = []
+    casenum = []
+    for case in cases:
+        # print(case)
+        judges = self.split_judges(case)
+        citations = []
+        for judgement in judges:
+
+            sent = self.split_sent(judgement)
+            name = []
+
+            for s in sent:
+                if self.extractNER(s) != None:
+                    name += self.extractNER(s)
+                # print(s)
+
+            name = list(set(name)) # remove duplicates
+            name.sort() # order
+            citations.append(tuple(name)) # tuples can be counted by counter
+
+        citations = [c for c in citations if c] # remove empty tuples
+        counter = collections.Counter(citations)
+        # print(counter)
+        if self.check_repetition(counter):
+            majority.append([])
+        elif counter.most_common(1)[0][1] < 2: # At least two concurrences for a majority in 5 judges case NOTE what about 7 judges etc.
+            majority.append([])
+        elif counter:
+            common = counter.most_common(1)[0][0]
+            majority.append(list(common))
+        else:
+            majority.append([])
+        casenum.append(case)
+
+
+    mj = pd.DataFrame({"mj": majority, "case": casenum})
+    self.print_results(mj)
+
+    return mj
+
+def check_repetition(self, counter):
+    values = []
+    for item, value in counter.items():
+        values.append(value)
+
+    maximum = max(values)
+    max_val = [i for i in values if i == maximum]
+    if len(max_val) != 1:
+        return True
+    else:
+        return False
+
+def print_results(self, mj):
+    print("\nPredicted MJ: \n", mj.to_string())
+    majority = self.corpus.drop_duplicates(subset = "case")[["case", "mj"]]
+    positives = majority.reset_index()["mj"] == mj.reset_index()["mj"]
+    print("\nMetrics: \n", positives.value_counts())
+    counts = positives.value_counts().tolist()
+    accuracy = counts[0]/(counts[0]+counts[1]) * 100
+    print("\nAccuracy: ", "%.2f" % accuracy, "%")
+
+    print("\nWrongly decided: \n", majority.reset_index()[positives == False])
+
+    self.print_nomj()
+
+def print_nomj(self):
+    empty = len(self.corpus[self.corpus["mj"].str.len() == 0].case.unique())
+    nonempty = len(self.corpus[self.corpus["mj"].str.len() > 0].case.unique())
+    nomj = empty/(nonempty+empty) * 100
+    print("\nNoMJ%: ", "%.2f" % nomj, "%")
+
+def split_sent(self, judgement):
+    judge = judgement[0]
+    print(judge)
+    df = pd.DataFrame({'body':judgement[1:]}) #ignore judge name
+    pred = self.classifier.predict(df)
+    sent = df[pred == "Conc"]
+    sent = sent["body"].tolist()
+    return sent
+
+def split_judges(self, case):
+    casedf = self.corpus.loc[self.corpus["case"] == case]
+    body = casedf["body"].tolist()
+    body = self.isplit(body, '-------------NEW JUDGE---------------')
+    body = body[1:] #remove html link
+    return body
+
+@staticmethod
+def isplit(iterable,splitters):
+    return [list(g) for k,g in itertools.groupby(iterable,lambda x:x in splitters) if not k]
+
+def get_majority(self):
+    return self.majority
+
+def extractNER(self, sentence):
+    sentence = sentence.translate(str.maketrans("", "", string.punctuation))
+    sentence = sentence.split(" ")
+
+    indices = [i for i, x in enumerate(sentence) if x == "Lord" or x == "Lady" or x == "Baroness"]
+    names = []
+    for i in indices:
+        if i+1 < len(sentence):
+            name = sentence[i] + " " + sentence[i+1]
+            names.append(name.upper())
+    if names:
+        return names
+    else:
+        return None

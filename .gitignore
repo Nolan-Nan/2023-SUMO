@@ -21,3 +21,4 @@
 *.iml
 *.properties
 training_and_testing/machine_learning/test.py
+.idea
