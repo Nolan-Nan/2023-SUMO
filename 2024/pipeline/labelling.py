@@ -11,6 +11,8 @@ down graded spacy to spacy==2.1.8
 @author: amyconroy
 """
 import csv
+import os
+
 import numpy as np
 
 
@@ -23,23 +25,30 @@ class labelling():
     def NER(self, casenum):
         import spacy
         # Load the model
-        blackstoneNLP = spacy.load("en_blackstone_proto")
         spacyNLP = spacy.load("en_core_web_sm")
     
         sentid_X = np.array([])
-        # BLACKSTONE ENTITIES
-        provision_ent_X = np.array([])
-        instrument_ent_X = np.array([]) 
-        court_ent_X = np.array([])
-        casename_ent_X = np.array([]) 
-        citation_ent_X = np.array([]) 
-        judge_ent_X = np.array([])
+
         #SPACY ENTITIES
         loc_ent_X = np.array([])
         org_ent_X = np.array([]) 
         date_ent_X = np.array([])
-        person_ent_X = np.array([]) 
-        
+        person_ent_X = np.array([])
+        fac_ent_X = np.array([])
+        norp_ent_X = np.array([])
+        gpe_ent_X = np.array([])
+        event_ent_X = np.array([])
+        law_ent_X = np.array([])
+        time_ent_X = np.array([])
+        work_of_art_ent_X = np.array([])
+        ordinal_ent_X = np.array([])
+        cardinal_ent_X = np.array([])
+        money_ent_X = np.array([])
+        percent_ent_X = np.array([])
+        product_ent_X = np.array([])
+        quantity_ent_X = np.array([])
+
+
         y = 0
     
         # Iterate through the entities identified by the model
@@ -50,57 +59,7 @@ class labelling():
                 or row['role'] == '<sub-heading>' or row['role'] == '<separator>' or row['role'] == '<new-case>':
                         continue
                 y += 1
-                sentid_X = np.append(sentid_X, row['sentence_id'])  
-                text = row['text']
-                doc = blackstoneNLP(text)
-                label = [(ent.label_) for ent in doc.ents]
-             
-                provision_flag = False
-                court_flag = False
-                case_flag = False
-                judge_flag = False
-                instrument_flag = False
-                citation_flag = False
-    
-                for v in range(len(label)):
-                    lbl = label[v]
-                    if lbl == 'PROVISION':
-                        provision_flag = True
-                    if lbl == 'COURT': 
-                        court_flag = True
-                    if lbl == 'CASENAME':
-                        case_flag = True
-                    if lbl == 'JUDGE':
-                        judge_flag = True
-                    if lbl == 'INSTRUMENT': 
-                        instrument_flag = True
-                    if lbl == 'CITATION':
-                        citation_flag = True
-                    
-                if provision_flag:
-                    provision_ent_X = np.append(provision_ent_X, [1])
-                else: 
-                    provision_ent_X = np.append(provision_ent_X, [0])
-                if court_flag:  
-                    court_ent_X = np.append(court_ent_X, [1])
-                else:
-                   court_ent_X = np.append(court_ent_X, [0])
-                if case_flag:
-                    casename_ent_X = np.append(casename_ent_X, [1])
-                else:
-                    casename_ent_X = np.append(casename_ent_X, [0])
-                if judge_flag:
-                    judge_ent_X = np.append(judge_ent_X, [1])
-                else:
-                    judge_ent_X = np.append(judge_ent_X, [0])
-                if instrument_flag:
-                    instrument_ent_X = np.append(instrument_ent_X, [1])
-                else:
-                    instrument_ent_X = np.append(instrument_ent_X, [0])
-                if citation_flag:
-                    citation_ent_X = np.append(citation_ent_X, [1])
-                else: 
-                    citation_ent_X = np.append(citation_ent_X, [0])
+                sentid_X = np.append(sentid_X, row['sentence_id'])
                     
                 text = row['text']
                 doc = spacyNLP(text)
@@ -110,6 +69,19 @@ class labelling():
                 org_flag = False
                 date_flag = False
                 person_flag = False
+                fac_flag = False
+                norp_flag = False
+                gpe_flag = False
+                event_flag = False
+                law_flag = False
+                time_flag = False
+                work_of_art_flag = False
+                ordinal_flag = False
+                cardinal_flag = False
+                money_flag = False
+                percent_flag = False
+                product_flag = False
+                quantity_flag = False
         
                 for v in range(len(label)):
                     lbl = label[v]
@@ -121,57 +93,128 @@ class labelling():
                         date_flag = True
                     if lbl == 'PERSON':
                         person_flag = True
+                    if lbl == 'FAC':
+                        fac_flag = True
+                    if lbl == 'NORP':
+                        norp_flag = True
+                    if lbl == 'GPE':
+                        gpe_flag = True
+                    if lbl == 'EVENT':
+                        event_flag = True
+                    if lbl == 'LAW':
+                        law_flag = True
+                    if lbl == 'TIME':
+                        time_flag = True
+                    if lbl == 'WORK_OF_ART':
+                        work_of_art_flag = True
+                    if lbl == 'ORDINAL':
+                        ordinal_flag = True
+                    if lbl == 'CARDINAL':
+                        cardinal_flag = True
+                    if lbl == 'MONEY':
+                        money_flag = True
+                    if lbl == 'PERCENT':
+                        percent_flag = True
+                    if lbl == 'PRODUCT':
+                        product_flag = True
+                    if lbl == 'QUANTITY':
+                        quantity_flag = True
           
                         
-                if case_flag == False and judge_flag == False:
-                    if person_flag: 
-                        person_ent_X = np.append(person_ent_X, [1])
-                    else: 
-                        person_ent_X = np.append(person_ent_X, [0])
+                if person_flag:
+                    person_ent_X = np.append(person_ent_X, [1])
                 else:
-                    person_ent_X = np.append(person_ent_X, [0]) 
+                    person_ent_X = np.append(person_ent_X, [0])
                 
-                if citation_flag == False:
-                    if date_flag: 
-                         date_ent_X = np.append(date_ent_X, [1])
-                    else: 
-                        date_ent_X = np.append(date_ent_X, [0])
-                else: 
-                    date_ent_X = np.append(date_ent_X, [0])  
+                if date_flag:
+                    date_ent_X = np.append(date_ent_X, [1])
+                else:
+                    date_ent_X = np.append(date_ent_X, [0])
                   
-                if court_flag == False:     
-                    if org_flag: 
-                        org_ent_X = np.append(org_ent_X, [1])
-                    else:  
-                        org_ent_X = np.append(org_ent_X, [0])
-                else:  
+                if org_flag:
+                    org_ent_X = np.append(org_ent_X, [1])
+                else:
                     org_ent_X = np.append(org_ent_X, [0])
+
                 if loc_flag: 
                     loc_ent_X = np.append(loc_ent_X, [1])
                 else: 
                     loc_ent_X = np.append(loc_ent_X, [0])
-                
-               
-                
-                
-                
 
+                if fac_flag:
+                    fac_ent_X = np.append(fac_ent_X,[1])
+                else:
+                    fac_ent_X = np.append(fac_ent_X,[0])
+                if norp_flag:
+                    norp_ent_X = np.append(norp_ent_X,[1])
+                else:
+                    norp_ent_X = np.append(norp_ent_X,[0])
+                if gpe_flag:
+                    gpe_ent_X= np.append(gpe_ent_X,[1])
+                else:
+                    gpe_ent_X= np.append(gpe_ent_X,[0])
+                if event_flag:
+                    event_ent_X= np.append(event_ent_X,[1])
+                else:
+                    event_ent_X= np.append(event_ent_X,[0])
+                if law_flag:
+                    law_ent_X= np.append(law_ent_X,[1])
+                else:
+                    law_ent_X= np.append(law_ent_X,[0])
+                if time_flag:
+                    time_ent_X= np.append(time_ent_X,[1])
+                else:
+                    time_ent_X= np.append(time_ent_X,[0])
+                if work_of_art_flag:
+                    work_of_art_ent_X= np.append(work_of_art_ent_X,[1])
+                else:
+                    work_of_art_ent_X= np.append(work_of_art_ent_X,[0])
+                if ordinal_flag:
+                    ordinal_ent_X= np.append(ordinal_ent_X,[1])
+                else:
+                    ordinal_ent_X= np.append(ordinal_ent_X,[0])
+                if cardinal_flag:
+                    cardinal_ent_X= np.append(cardinal_ent_X,[1])
+                else:
+                    cardinal_ent_X= np.append(cardinal_ent_X,[0])
+                if money_flag:
+                    money_ent_X= np.append(money_ent_X,[1])
+                else:
+                    money_ent_X= np.append(money_ent_X,[0])
+                if percent_flag:
+                    percent_ent_X= np.append(percent_ent_X,[1])
+                else:
+                    percent_ent_X= np.append(percent_ent_X,[0])
+                if product_flag:
+                    product_ent_X= np.append(product_ent_X,[1])
+                else:
+                    product_ent_X= np.append(product_ent_X,[0])
+                if quantity_flag:
+                    quantity_ent_X= np.append(quantity_ent_X,[1])
+                else:
+                    quantity_ent_X= np.append(quantity_ent_X,[0])
+
+        directory = './summarydata-spacy/'
+        os.makedirs(directory, exist_ok=True)
             
-        with open('./summarydata/UKHL_'+casenum+'.csv','w', newline='')as outfile:
-            fieldnames = ['sent id', 'provision ent', 'instrument ent', 'court ent', 'case name ent', 'citation bl ent', 'judge ent',
-                          'loc ent', 'org ent', 'date ent', 'person ent']        
+        with open('./summarydata-spacy/UKHL_'+casenum+'.csv','w', newline='')as outfile:
+            fieldnames = ['sent id','loc ent', 'org ent', 'date ent', 'person ent',
+                          'fac_ent','norp_ent','gpe_ent','event_ent', 'law_ent', 'time_ent',
+                          'work_of_art_ent','ordinal_ent','cardinal_ent','money_ent','percent_ent',
+                          'product_ent','quantity_ent']
 
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
             writer.writeheader()
         
 
             for v in range(y):
-                writer.writerow({'sent id' : sentid_X[v], 'provision ent' : provision_ent_X[v], 'instrument ent' : instrument_ent_X[v], 'court ent' : court_ent_X[v], 
-                                 'case name ent' : casename_ent_X[v], 'citation bl ent' : citation_ent_X[v], 'judge ent' : judge_ent_X[v],
-                                 'loc ent' : loc_ent_X[v], 'org ent' : org_ent_X[v], 'date ent' : date_ent_X[v], 
-                                 'person ent' : person_ent_X[v]})
+                writer.writerow({'sent id' : sentid_X[v],'loc ent' : loc_ent_X[v], 'org ent' : org_ent_X[v], 'date ent' : date_ent_X[v],
+                                 'person ent' : person_ent_X[v] , 'fac_ent' : fac_ent_X[v],'norp_ent' : norp_ent_X[v],'gpe_ent' : gpe_ent_X[v],
+                                 'event_ent' : event_ent_X[v], 'law_ent' : law_ent_X[v], 'time_ent' : time_ent_X[v],
+                                 'work_of_art_ent' : work_of_art_ent_X[v],'ordinal_ent' : ordinal_ent_X[v],'cardinal_ent' : cardinal_ent_X[v],
+                                 'money_ent' : money_ent_X[v],'percent_ent' : percent_ent_X[v], 'product_ent' : product_ent_X[v],'quantity_ent' : quantity_ent_X[v]})
         
-        filename = './summarydata/UKHL_'+casenum+'.csv'
+        filename = './summarydata-spacy/UKHL_'+casenum+'.csv'
         
         return filename
          

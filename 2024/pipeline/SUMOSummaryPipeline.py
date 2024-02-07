@@ -48,6 +48,7 @@ class pipeline():
              # here we would go and make it to the similar csv file, label, get ASMO, then follow same pipeline
              
     def prepareCase(self, casenum):
+
         print("\n PREPARING THE DATA FOR SUMMARISATION\n")
         import labelling
         labelling.labelling(casenum)

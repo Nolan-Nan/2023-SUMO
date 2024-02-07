@@ -36,21 +36,27 @@ class featureExtractor():
         # for updated entity feature-set
         self.citationent_X = np.array([])
         self.casenameent_X = np.array([])
-        
-        # using blackstones feature-set
-        self.provision_ent_X = np.array([])
-        self.instrument_ent_X = np.array([]) 
-        self.court_ent_X = np.array([])
-        self.casename_ent_X = np.array([]) 
-        self.citation_ent_X = np.array([]) 
-        self.judge_ent_X = np.array([])
+
         
         # updated NER from spacy 
         self.loc_ent_X = np.array([])
         self.org_ent_X = np.array([]) 
         self.date_ent_X = np.array([])
-        self.person_ent_X = np.array([]) 
-        
+        self.person_ent_X = np.array([])
+        self.fac_ent_X = np.array([])
+        self.norp_ent_X = np.array([])
+        self.gpe_ent_X = np.array([])
+        self.event_ent_X = np.array([])
+        self.law_ent_X = np.array([])
+        self.time_ent_X = np.array([])
+        self.work_of_art_ent_X = np.array([])
+        self.ordinal_ent_X = np.array([])
+        self.cardinal_ent_X = np.array([])
+        self.money_ent_X = np.array([])
+        self.percent_ent_X = np.array([])
+        self.product_ent_X = np.array([])
+        self.quantity_ent_X = np.array([])
+
         ##for cue phrase feature-set
         self.new_tense_X = np.array([])
         self.new_modal_X = np.array([])
@@ -171,22 +177,29 @@ class featureExtractor():
             return math.log(score+1, 16)
         
     def getEntities(self, casenum):
-        entitiesFile = 'summarydata/UKHL_'+casenum+'.csv'
+        entitiesFile = 'summarydata-spacy/UKHL_'+casenum+'.csv'
         
         with open(entitiesFile, 'r') as infile:
             reader = csv.DictReader(infile)
             
             for row in reader:
-                self.provision_ent_X = np.append(self.provision_ent_X, row['provision ent'])
-                self.court_ent_X = np.append(self.court_ent_X, row['court ent'])
-                self.casename_ent_X = np.append(self.casename_ent_X, row['case name ent'])
-                self.judge_ent_X = np.append(self.judge_ent_X, row['judge ent'])
-                self.instrument_ent_X = np.append(self.instrument_ent_X, row['instrument ent'])
-                self.citation_ent_X = np.append(self.citation_ent_X, row['citation bl ent'])
                 self.loc_ent_X = np.append(self.loc_ent_X, row['loc ent'])
                 self.org_ent_X = np.append(self.org_ent_X, row['org ent'])
                 self.date_ent_X = np.append(self.date_ent_X, row['date ent'])
                 self.person_ent_X =np.append(self.person_ent_X, row['person ent'])
+                self.fac_ent_X = np.append(self.fac_ent_X, row['fac_ent'])
+                self.norp_ent_X = np.append(self.norp_ent_X, row['norp_ent'])
+                self.gpe_ent_X = np.append(self.gpe_ent_X, row['gpe_ent'])
+                self.event_ent_X = np.append(self.event_ent_X, row['event_ent'])
+                self.law_ent_X = np.append(self.law_ent_X, row['law_ent'])
+                self.time_ent_X = np.append(self.time_ent_X, row['time_ent'])
+                self.work_of_art_ent_X = np.append(self.work_of_art_ent_X, row['work_of_art_ent'])
+                self.ordinal_ent_X = np.append(self.ordinal_ent_X, row['ordinal_ent'])
+                self.cardinal_ent_X = np.append(self.cardinal_ent_X, row['cardinal_ent'])
+                self.money_ent_X = np.append(self.money_ent_X, row['money_ent'])
+                self.percent_ent_X = np.append(self.percent_ent_X, row['percent_ent'])
+                self.product_ent_X = np.append(self.product_ent_X, row['product_ent'])
+                self.quantity_ent_X = np.append(self.quantity_ent_X, row['quantity_ent'])
             
     def createFeatures(self, casenum):
         caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
@@ -350,12 +363,13 @@ class featureExtractor():
                     self.outcome_X = np.append(self.outcome_X, [1])
                     
     def outputData(self, casenum):
-        with open('summarydata/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
             fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
             'loc4', 'loc5', 'loc6', 'sentlen',
-            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 
-            'provision ent', 'instrument ent', 'court ent', 'case name ent', 'citation bl ent', 'judge ent', 
-            'loc ent', 'org ent', 'date ent', 'person ent','judgename', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative', 
+            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg',
+            'loc ent', 'org ent', 'date ent', 'person ent','fac_ent', 'norp_ent', 'gpe_ent', 'event_ent', 'law_ent', 'time_ent',
+            'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent','product_ent', 'quantity_ent',
+            'judgename', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative',
             'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']        
     
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -366,9 +380,11 @@ class featureExtractor():
                 'outcome': self.outcome_X[v], 'loc1': self.loc1_X[v], 'loc2': self.loc2_X[v], 'loc3': self.loc3_X[v], 'loc4': self.loc4_X[v], 
                 'loc5': self.loc5_X[v], 'loc6': self.loc6_X[v], 'sentlen': self.sentlen_X[v], 'HGsentlen': self.HGsentlen_X[v], 'quoteblock': self.qb_X[v], 'inline_q': self.inq_X[v], 
                  'tfidf_max': self.tfidf_max_X[v], 'tfidf_top20': self.tfidf_top20_X[v], 'tfidf_HGavg': self.tfidf_HGavg_X[v],
-                'provision ent' : self.provision_ent_X[v], 'instrument ent' : self.instrument_ent_X[v], 'court ent' : self.court_ent_X[v], 
-                'case name ent' : self.casename_ent_X[v], 'citation bl ent' : self.citation_ent_X[v], 'judge ent' : self.judge_ent_X[v], 'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : 
-                self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v], 'cp tense': self.new_tense_X[v], 'cp modal': self.new_modal_X[v], 'cp pos bool' :  self.modal_pos_bool_X[v], 'cp dep bool': self.modal_dep_bool_X[v], 
+                'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : self.date_ent_X[v], 'person ent' : self.person_ent_X[v],
+                 'fac_ent': self.fac_ent_X[v], 'norp_ent': self.norp_ent_X[v],'gpe_ent': self.gpe_ent_X[v],'event_ent': self.event_ent_X[v],
+                'law_ent': self.law_ent_X[v], 'time_ent': self.time_ent_X[v],'work_of_art_ent': self.work_of_art_ent_X[v], 'ordinal_ent': self.ordinal_ent_X[v],
+                 'cardinal_ent': self.cardinal_ent_X[v],'money_ent': self.money_ent_X[v], 'percent_ent': self.percent_ent_X[v],'product_ent': self.product_ent_X[v], 'quantity_ent': self.quantity_ent_X[v],
+                'judgename' : self.judgename[v], 'cp tense': self.new_tense_X[v], 'cp modal': self.new_modal_X[v], 'cp pos bool' :  self.modal_pos_bool_X[v], 'cp dep bool': self.modal_dep_bool_X[v],
                 'cp dep count':  self.modal_dep_count_X[v], 'cp pos count': self.modal_pos_count_X[v], 'cp dep': self.new_dep_X[v], 'cp tag': self.new_tag_X[v], 'cp negative': self.negtoken_X[v],
                 'cp stop': self.verbstop_X[v], 'cp voice' : self.newvoice_X[v], 'cp second pos': self.second_pos_X[v], 'cp second dep' : self.second_dep_X[v], 
                 'cp second tag' : self.second_tag_X[v], 'cp second stop' : self.second_stop_X[v]})     

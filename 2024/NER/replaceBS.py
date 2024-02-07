@@ -1,4 +1,4 @@
-import spacy
+'''import spacy
 from spacy.training.example import Example
 from sklearn.model_selection import train_test_split
 import json
@@ -67,4 +67,47 @@ scorer = nlp.evaluate(docs, gold_dicts)
 print("Precision:", scorer.precision)
 print("Recall:", scorer.recall)
 print("F1 score:", scorer.fscore)
-nlp.to_disk("ner_model")
+nlp.to_disk("ner_model")'''
+
+import json
+import spacy
+from spacy.tokens import DocBin
+from tqdm import tqdm
+from spacy.util import filter_spans
+
+nlp = spacy.blank("en") # load a new spacy model
+doc_bin = DocBin()
+
+with open('NER_TRAIN/NER_TRAIN_JUDGEMENT.json', 'r') as f:
+    data = json.load(f)
+
+#training_data = {'classes': ["COURT", "PETITIONER", "RESPONDENT", "JUDGE", "LAWYER", "DATE", "ORG", "GPE", "STATUTE", "PROVISION", "PRECEDENT", "CASE_NUMBER", "WITNESS", "OTHER_PERSON"], 'annotations': []}
+training_data = {'classes': ["COURT", "PETITIONER", "RESPONDENT", "JUDGE", "LAWYER", "ORG", "GPE", "STATUTE", "PROVISION", "PRECEDENT", "CASE_NUMBER", "WITNESS", "OTHER_PERSON"], 'annotations': []}
+
+for example in data:
+    temp_dict = {}
+    temp_dict['text'] = example.get("data", {}).get("text", "")
+    temp_dict['entities'] = []
+    for annotation in example['annotations'][0]["result"]:
+        start = annotation["value"]["start"]
+        end = annotation["value"]["end"]
+        label = annotation["value"]["labels"][0]
+        temp_dict['entities'].append((start, end, label))
+    training_data['annotations'].append(temp_dict)
+
+for training_example in tqdm(training_data['annotations']):
+    text = training_example['text']
+    labels = training_example['entities']
+    doc = nlp.make_doc(text)
+    ents = []
+    for start, end, label in labels:
+        span = doc.char_span(start, end, label=label, alignment_mode="contract")
+        if span is None:
+            print("Skipping entity")
+        else:
+            ents.append(span)
+    filtered_ents = filter_spans(ents)
+    doc.ents = filtered_ents
+    doc_bin.add(doc)
+
+doc_bin.to_disk("./training_data.spacy") # save the docbin object

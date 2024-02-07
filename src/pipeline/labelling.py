@@ -151,10 +151,7 @@ class labelling():
                 else: 
                     loc_ent_X = np.append(loc_ent_X, [0])
                 
-               
-                
-                
-                
+
 
             
         with open('./summarydata/UKHL_'+casenum+'.csv','w', newline='')as outfile:

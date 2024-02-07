@@ -12,7 +12,7 @@ import pandas as pd
 from random import shuffle
 
 from collections import Counter
-from ASMO.data.storage import save_data, load_data
+from ..data.storage import save_data, load_data
 
 class Corpus:
 

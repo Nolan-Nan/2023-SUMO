@@ -319,11 +319,15 @@ def verb(doc, nlp, verbDepList, verbTagList, verbTenseList, secTokenPosList, sec
                 # data for token after the first verb
                 if token.dep_ == "ROOT": 
                     rootVerb = True
-                    tense = nlp.vocab.morphology.tag_map[token.tag_].get("Tense")
-                    
+                    #tense = nlp.vocab.morphology.tag_map[token.tag_].get("Tense")
+                    tense = token.morph.get("Tense")
+
+
                     if tense != "pres" and tense != "past":
-                        verbForm = nlp.vocab.morphology.tag_map[token.tag_].get("VerbForm")
-                        if verbForm == "inf": 
+                        #verbForm = nlp.vocab.morphology.tag_map[token.tag_].get("VerbForm")
+                        verbForm = token.morph.get("VerbForm")
+
+                        if verbForm == "inf":
                             tense = verbForm
                             
                     if tense not in verbTenseList: 
