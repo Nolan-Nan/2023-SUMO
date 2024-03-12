@@ -37,6 +37,7 @@ class tfidf_calc:
         '2.45', '2.47', '2.41', '3.18', '3.21', '3.22', '3.07', '3.1',  '3.08', '3.02',
         '3.44', '3.41', '3.31', '3.32', '3.15', '3.14', '3.28']
 
+
         for v in range(len(self.case_ids)):
             if self.case_ids[v] == "N/A":
                 self.corpus.append(self.path + "NA" + ".txt")
@@ -52,20 +53,10 @@ class tfidf_calc:
         print('Longest word:', max(self.keys, key=len))
 
     def get_doc(self, document):
-        # caseList = ['1.19', '1.63', '1.68', 'NA',
-        # '1.05', '1.02', '1.04', '1.35', '1.39',
-        # '1.38', '1.42', '1.34', '1.11', '1.15',
-        # '1.26', '1.28', '1.57', '1.43', '1.55',
-        # '2.13', '2.18', '2.3', '2.35', '2.34',
-        # '2.26', '2.24', '2.29', '2.21', '2.23',
-        # '2.45', '2.47', '2.41', '3.18', '3.21',
-        # '3.22', '3.07', '3.1', '3.08', '3.02',
-        # '3.44', '3.41', '3.31', '3.32',
-        # '3.15', '3.14', '3.28']
-        # self.document = caseList.index(document)
-        self.document = self.case_ids.index(document)
         if document == 'N/A':
             document = 'NA'
+        self.document = self.case_ids.index(document)
+
 
         # encode document
         self.vector = self.vectorizer.transform([self.corpus[self.document]])

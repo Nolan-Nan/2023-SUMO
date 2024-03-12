@@ -22,79 +22,85 @@ def createRankingFile(case_flag, sent_flag, y, rank_flag):
             writer.writerow({'case_id': case_flag[v], 'sent_id': sent_flag[v], 'rank': rank_flag[v]})
 
 def get_end_par_in_lord(judge, case, current_paragraph):
-    filename = 'comsum_' + case + '.csv'
-    if case == 'N/A':
-        filename = 'comsum_' + 'NA' + '.csv'
-    with open('./data/comsum_corpus/' + filename, 'r') as infile:
-        reader = csv.DictReader(infile)
+        filename = 'UKHL_' + case + '.csv'
+        if case == 'N/A':
+            filename = 'UKHL_' + 'NA' + '.csv'
+        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            reader = csv.DictReader(infile)
 
-        ret = ''
-        for row in reader:
-            if row['judge'] == judge:
+            ret = ''
+            for row in reader:
+                if row['judge'] == judge:
+                    if row['para_id'] == '0.5':
+                        rowpar = '0'
+                    elif '.5' in row['para_id']:
+                        rowpar = row['para_id'].replace('.5', '')
+                    else:
+                        rowpar = row['para_id']
+                    if int(rowpar) >= int(current_paragraph):
+                        ret = rowpar
+
+            return ret
+
+def get_end_sent_in_lord(judge, case, current_sentence):
+        filename = 'UKHL_' + case + '.csv'
+        if case == 'N/A':
+            filename = 'UKHL_' + 'NA' + '.csv'
+        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            reader = csv.DictReader(infile)
+
+            ret = ''
+            for row in reader:
+                if row['agree'] == 'no match' or row['role'] == '<prep-date>' \
+                        or row['role'] == '<sub-heading>' or row['role'] == '<separator>' or row[
+                    'role'] == '<new-case>':
+                    continue
+                if row['judge'] == judge:
+                    if int(row['sentence_id']) >= int(current_sentence):
+                        ret = row['sentence_id']
+            return ret
+
+def get_end_sent_in_par(par, case, current_sentence):
+        filename = 'UKHL_' + case + '.csv'
+        if case == 'N/A':
+            filename = 'UKHL_' + 'NA' + '.csv'
+        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            reader = csv.DictReader(infile)
+
+            ret = ''
+            for row in reader:
+                if row['agree'] == 'no match' or row['role'] == '<prep-date>' \
+                        or row['role'] == '<sub-heading>' or row['role'] == '<separator>' or row[
+                    'role'] == '<new-case>':
+                    continue
+
                 if row['para_id'] == '0.5':
                     rowpar = '0'
                 elif '.5' in row['para_id']:
                     rowpar = row['para_id'].replace('.5', '')
                 else:
                     rowpar = row['para_id']
-                if int(rowpar) >= int(current_paragraph):
-                    ret = rowpar
-        return ret
+                if rowpar == par:
+                    if int(row['sentence_id']) >= int(current_sentence):
+                        ret = row['sentence_id']
 
-def get_end_sent_in_lord(judge, case, current_sentence):
-    filename = 'comsum_' + case + '.csv'
-    if case == 'N/A':
-        filename = 'comsum_' + 'NA' + '.csv'
-    with open('./data/comsum_corpus/' + filename, 'r') as infile:
-        reader = csv.DictReader(infile)
-
-        ret = ''
-        for row in reader:
-            if row['agree'] == 'no match' or row['role'] == '<prep-date>'\
-            or row['role'] == '<sub-heading>' or row['role'] == '<separator>' or row['role'] == '<new-case>':
-                continue
-            if row['judge'] == judge:
-                if int(row['sentence_id']) >= int(current_sentence):
-                    ret = row['sentence_id']
-        return ret
-
-def get_end_sent_in_par(par, case, current_sentence):
-    filename = 'comsum_' + case + '.csv'
-    if case == 'N/A':
-        filename = 'comsum_' + 'NA' + '.csv'
-    with open('./data/comsum_corpus/' + filename, 'r') as infile:
-        reader = csv.DictReader(infile)
-
-        ret = ''
-        for row in reader:
-            if row['agree'] == 'no match' or row['role'] == '<prep-date>'\
-            or row['role'] == '<sub-heading>' or row['role'] == '<separator>' or row['role'] == '<new-case>':
-                continue
-            if row['para_id'] == '0.5':
-                rowpar = '0'
-            elif '.5' in row['para_id']:
-                rowpar = row['para_id'].replace('.5', '')
-            else:
-                rowpar = row['para_id']
-            if rowpar == par:
-                if int(row['sentence_id']) >= int(current_sentence):
-                    ret = row['sentence_id']
-        return ret
+            return ret
 
 def storeFeatures(case_flag, sent_flag, y, agree_X, outcome_X, loc1_X, loc2_X, loc3_X, loc4_X, loc5_X, loc6_X,
 HGloc1_X, HGloc2_X, HGloc3_X, HGloc4_X, HGloc5_X, HGloc6_X, sentlen_X, HGsentlen_X, qb_X, inq_X, rhet_X, tfidf_max_X, tfidf_top20_X,
 tfidf_HGavg_X, asp_X, modal_X, voice_X, negcue_X, tense_X, caseent_X, legalent_X, enamex_X, rhet_y, wordlist_X, pasttense_X,
-provision_ent_X, instrument_ent_X, court_ent_X, casename_ent_X, citation_ent_X, judge_ent_X, loc_ent_X, org_ent_X, date_ent_X,
-person_ent_X, time_ent_X, gpe_ent_X, fac_ent_X, ordinal_ent_X, totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X,
-modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X,
-second_pos_X, second_dep_X, second_tag_X, second_stop_X):
+loc_ent_X, org_ent_X, date_ent_X, person_ent_X, fac_ent_X, norp_ent_X, gpe_ent_X, event_ent_X, law_ent_X, time_ent_X,
+work_of_art_ent_X, ordinal_ent_X, cardinal_ent_X, money_ent_X, percent_ent_X, product_ent_X, quantity_ent_X,
+totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X,
+modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X):
+
     with open('./data/MLdata.csv', 'w', newline='') as outfile:
         fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3',
         'loc4', 'loc5', 'loc6', 'HGloc1', 'HGloc2', 'HGloc3', 'HGloc4', 'HGloc5', 'HGloc6', 'sentlen',
         'HGsentlen', 'quoteblock', 'inline_q', 'rhet', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'aspect', 'modal',
         'voice', 'negation', 'tense', 'case entities', 'legal entities', 'enamex','rhet_target', 'wordlist', 'past tense',
-        'case name entity', 'provision ent', 'instrument ent', 'court ent', 'case name ent', 'citation bl ent', 'judge ent',
-        'loc ent', 'org ent', 'date ent', 'person ent', 'time ent', 'gpe ent', 'fac ent', 'ordinal ent', 'all ent', 'judgename', 'rhet label',
+        'case name entity', 'loc ent', 'org ent', 'date ent', 'person ent','fac_ent', 'norp_ent', 'gpe_ent', 'event_ent', 'law_ent', 'time_ent',
+        'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent','product_ent', 'quantity_ent', 'all ent', 'judgename', 'rhet label',
         'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative',
         'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']
 
@@ -110,10 +116,11 @@ second_pos_X, second_dep_X, second_tag_X, second_stop_X):
             'rhet': rhet_X[v], 'tfidf_max': tfidf_max_X[v], 'tfidf_top20': tfidf_top20_X[v], 'tfidf_HGavg': tfidf_HGavg_X[v],'aspect': asp_X[v],
             'modal': modal_X[v], 'voice': voice_X[v], 'negation': negcue_X[v], 'tense': tense_X[v], 'case entities': caseent_X[v],
             'legal entities': legalent_X[v], 'enamex': enamex_X[v], 'rhet_target': rhet_y[v], 'wordlist': wordlist_X[v],
-            'past tense': pasttense_X[v], 'provision ent' : provision_ent_X[v], 'instrument ent' : instrument_ent_X[v], 'court ent' : court_ent_X[v],
-            'case name ent' : casename_ent_X[v], 'citation bl ent' : citation_ent_X[v], 'judge ent' : judge_ent_X[v], 'loc ent' : loc_ent_X[v], 'org ent' : org_ent_X[v], 'date ent' :
-            date_ent_X[v], 'person ent' : person_ent_X[v], 'time ent' : time_ent_X[v], 'gpe ent' : gpe_ent_X[v],
-            'fac ent' : fac_ent_X[v], 'ordinal ent' : ordinal_ent_X[v], 'all ent' : totalner_ent_X[v], 'judgename' : judgename[v], 'rhet label' : rhetlabel[v],
+            'past tense': pasttense_X[v], 'loc ent' : loc_ent_X[v], 'org ent' : org_ent_X[v], 'date ent' : date_ent_X[v], 'person ent' : person_ent_X[v],
+            'fac_ent': fac_ent_X[v], 'norp_ent': norp_ent_X[v],'gpe_ent': gpe_ent_X[v],'event_ent': event_ent_X[v],
+            'law_ent': law_ent_X[v], 'time_ent': time_ent_X[v],'work_of_art_ent': work_of_art_ent_X[v], 'ordinal_ent': ordinal_ent_X[v],
+            'cardinal_ent': cardinal_ent_X[v],'money_ent': money_ent_X[v], 'percent_ent': percent_ent_X[v],'product_ent': product_ent_X[v], 'quantity_ent': quantity_ent_X[v],
+            'all ent' : totalner_ent_X[v], 'judgename' : judgename[v], 'rhet label' : rhetlabel[v],
             'cp tense': new_tense_X[v], 'cp modal': new_modal_X[v], 'cp pos bool' :  modal_pos_bool_X[v], 'cp dep bool': modal_dep_bool_X[v],
             'cp dep count':  modal_dep_count_X[v], 'cp pos count': modal_pos_count_X[v], 'cp dep': new_dep_X[v], 'cp tag': new_tag_X[v], 'cp negative': negtoken_X[v],
             'cp stop': verbstop_X[v], 'cp voice' : newvoice_X[v], 'cp second pos': second_pos_X[v], 'cp second dep' : second_dep_X[v],
@@ -236,7 +243,7 @@ import cuephrases
 new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X, modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X = cuephrases.cuePhrases()
 
 
-with open('data/UKHL_corpus.csv', 'r') as infile:
+with open('data/UKHL_corpus_old.csv', 'r') as infile:
     reader = csv.DictReader(infile)
 
     #for location features
@@ -373,6 +380,7 @@ with open('data/UKHL_corpus.csv', 'r') as infile:
         current_sentence = row['sentence_id']
         print("TEST SENTENCE")
         print(current_sentence)
+        print(current_case)
 
         if case != current_case:
             case = current_case
@@ -519,24 +527,145 @@ with open('data/UKHL_corpus.csv', 'r') as infile:
        # else:
        #     citationent_X = np.append(citationent_X, [0])
 
-        loc_ent_X = np.append(loc_ent_X, row['loc ent'])
-        org_ent_X = np.append(org_ent_X, row['org ent'])
-        date_ent_X = np.append(date_ent_X, row['date ent'])
-        person_ent_X = np.append(person_ent_X, row['person ent'])
-        fac_ent_X = np.append(fac_ent_X, row['fac_ent'])
-        norp_ent_X = np.append(norp_ent_X, row['norp_ent'])
-        gpe_ent_X = np.append(gpe_ent_X, row['gpe_ent'])
-        event_ent_X = np.append(event_ent_X, row['event_ent'])
-        law_ent_X = np.append(law_ent_X, row['law_ent'])
-        time_ent_X = np.append(time_ent_X, row['time_ent'])
-        work_of_art_ent_X = np.append(work_of_art_ent_X, row['work_of_art_ent'])
-        ordinal_ent_X = np.append(ordinal_ent_X, row['ordinal_ent'])
-        cardinal_ent_X = np.append(cardinal_ent_X, row['cardinal_ent'])
-        money_ent_X = np.append(money_ent_X, row['money_ent'])
-        percent_ent_X = np.append(percent_ent_X, row['percent_ent'])
-        product_ent_X = np.append(product_ent_X, row['product_ent'])
-        quantity_ent_X = np.append(quantity_ent_X, row['quantity_ent'])
-        totalner_ent_X = np.append(totalner_ent_X, row['all ent'])
+
+        import spacy
+        # Load the model
+        spacyNLP = spacy.load("en_core_web_sm")
+
+        sentid_X = np.array([])
+
+        text = row['text']
+        doc = spacyNLP(text)
+        label = [(ent.label_) for ent in doc.ents]
+
+        loc_flag = False
+        org_flag = False
+        date_flag = False
+        person_flag = False
+        fac_flag = False
+        norp_flag = False
+        gpe_flag = False
+        event_flag = False
+        law_flag = False
+        time_flag = False
+        work_of_art_flag = False
+        ordinal_flag = False
+        cardinal_flag = False
+        money_flag = False
+        percent_flag = False
+        product_flag = False
+        quantity_flag = False
+
+        for v in range(len(label)):
+            lbl = label[v]
+            if lbl == 'LOC':
+                loc_flag = True
+            if lbl == 'ORG':
+                org_flag = True
+            if lbl == 'DATE':
+                date_flag = True
+            if lbl == 'PERSON':
+                person_flag = True
+            if lbl == 'FAC':
+                fac_flag = True
+            if lbl == 'NORP':
+                norp_flag = True
+            if lbl == 'GPE':
+                gpe_flag = True
+            if lbl == 'EVENT':
+                event_flag = True
+            if lbl == 'LAW':
+                law_flag = True
+            if lbl == 'TIME':
+                time_flag = True
+            if lbl == 'WORK_OF_ART':
+                work_of_art_flag = True
+            if lbl == 'ORDINAL':
+                ordinal_flag = True
+            if lbl == 'CARDINAL':
+                cardinal_flag = True
+            if lbl == 'MONEY':
+                money_flag = True
+            if lbl == 'PERCENT':
+                percent_flag = True
+            if lbl == 'PRODUCT':
+                product_flag = True
+            if lbl == 'QUANTITY':
+                quantity_flag = True
+
+        if person_flag:
+            person_ent_X = np.append(person_ent_X, [1])
+        else:
+            person_ent_X = np.append(person_ent_X, [0])
+
+        if date_flag:
+            date_ent_X = np.append(date_ent_X, [1])
+        else:
+            date_ent_X = np.append(date_ent_X, [0])
+
+        if org_flag:
+            org_ent_X = np.append(org_ent_X, [1])
+        else:
+            org_ent_X = np.append(org_ent_X, [0])
+
+        if loc_flag:
+            loc_ent_X = np.append(loc_ent_X, [1])
+        else:
+            loc_ent_X = np.append(loc_ent_X, [0])
+
+        if fac_flag:
+            fac_ent_X = np.append(fac_ent_X, [1])
+        else:
+            fac_ent_X = np.append(fac_ent_X, [0])
+        if norp_flag:
+            norp_ent_X = np.append(norp_ent_X, [1])
+        else:
+            norp_ent_X = np.append(norp_ent_X, [0])
+        if gpe_flag:
+            gpe_ent_X = np.append(gpe_ent_X, [1])
+        else:
+            gpe_ent_X = np.append(gpe_ent_X, [0])
+        if event_flag:
+            event_ent_X = np.append(event_ent_X, [1])
+        else:
+            event_ent_X = np.append(event_ent_X, [0])
+        if law_flag:
+            law_ent_X = np.append(law_ent_X, [1])
+        else:
+            law_ent_X = np.append(law_ent_X, [0])
+        if time_flag:
+            time_ent_X = np.append(time_ent_X, [1])
+        else:
+            time_ent_X = np.append(time_ent_X, [0])
+        if work_of_art_flag:
+            work_of_art_ent_X = np.append(work_of_art_ent_X, [1])
+        else:
+            work_of_art_ent_X = np.append(work_of_art_ent_X, [0])
+        if ordinal_flag:
+            ordinal_ent_X = np.append(ordinal_ent_X, [1])
+        else:
+            ordinal_ent_X = np.append(ordinal_ent_X, [0])
+        if cardinal_flag:
+            cardinal_ent_X = np.append(cardinal_ent_X, [1])
+        else:
+            cardinal_ent_X = np.append(cardinal_ent_X, [0])
+        if money_flag:
+            money_ent_X = np.append(money_ent_X, [1])
+        else:
+            money_ent_X = np.append(money_ent_X, [0])
+        if percent_flag:
+            percent_ent_X = np.append(percent_ent_X, [1])
+        else:
+            percent_ent_X = np.append(percent_ent_X, [0])
+        if product_flag:
+            product_ent_X = np.append(product_ent_X, [1])
+        else:
+            product_ent_X = np.append(product_ent_X, [0])
+        if quantity_flag:
+            quantity_ent_X = np.append(quantity_ent_X, [1])
+        else:
+            quantity_ent_X = np.append(quantity_ent_X, [0])
+
 
 
 
