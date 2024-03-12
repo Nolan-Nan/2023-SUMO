@@ -36,7 +36,7 @@ how data is stored when the summary is created:
 
 class pipeline():
     def begin(self):
-         print("Enter 1 to select a case number, anything else to input the link of a case.")  
+         print("Enter 1 to select a trained case number, anything else to a new case.")
          answer = input()
          if answer == '1':
              print("Enter the UKHL Corpus case number (1.19, 1.63, 1.35, 2.23, 2.34, 3.21, 3.14, 1.03, 1.32, 1.7, 1.27, 2.25,")
@@ -45,8 +45,10 @@ class pipeline():
              self.prepareCase(casenum)
          else: 
              print("We do not yet support this feature.")
+             print("Enter the UKHL Corpus case number 1.02")
              # here we would go and make it to the similar csv file, label, get ASMO, then follow same pipeline
-             
+             casenum = input()
+             self.new_prepareCase(casenum)
     def prepareCase(self, casenum):
 
         print("\n PREPARING THE DATA FOR SUMMARISATION\n")

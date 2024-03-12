@@ -90,7 +90,7 @@ class Optimal():
             return None
 
     def get_judges(self, loc):
-        with open(loc) as f:
+        with open(loc, encoding='utf-8') as f:
             lines = [i.strip("\n") for i in f.readlines()]
             flag = False
             judge = None

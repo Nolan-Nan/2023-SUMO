@@ -20,8 +20,9 @@ class Baseline():
             for s in sent:
                 if self.extractNER(s) != None:
                     name += self.extractNER(s)
-                    print(name)
+
             counter = collections.Counter(name)
+            print(name)
             if name:
                 majorityA.append(counter.most_common(1)[0][0])
             else:
@@ -135,7 +136,7 @@ class Baseline():
             return None
 
     def get_judges(self, loc):
-        with open(loc) as f:
+        with open(loc, encoding='utf-8') as f:
             lines = [i.strip("\n") for i in f.readlines()]
             flag = False
             judge = None

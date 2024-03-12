@@ -7,6 +7,7 @@ from ASMO.majority.majority2 import Majority
 from ASMO.majority.baselines import Baseline
 from ASMO.majority.OptBaseline import Optimal
 from ASMO.corpus.stats import Stats
+import pandas as pd
 
 class Pipeline:
     # ---- Corpus Settings ----
@@ -21,7 +22,7 @@ class Pipeline:
     MJ_size = 0.33 # Size of the test corpus, the rest is used for training ML
 
     # ---- Classifier Settings ----
-    train = True # Retrains the classifier
+    train = False # Retrains the classifier
     test_size = 0.33 # Selects best ML algorithm/hyper-parameters by evaluating on this size of MJ corpus.
     downsample = True # Train on the same amount of positive and negative samples
     info = True # Prints the results of the algorithm/parameters performance
@@ -72,9 +73,13 @@ if __name__ == '__main__':
     print("\n\nBaselines:")
     # Print baselines
     optimal = Optimal(pip.corPath, ML_corpus)
+    print("\n\n1")
     num = optimal.find_optimal()
+    print("\n\n2")
     baselines = Baseline(num, pip.corPath, ALL_corpus)
+    print("\n\n3")
     baselines.find_majority()
+    print("\n\n4")
     baselines.find_AS()
 
     # # Visualise corpus

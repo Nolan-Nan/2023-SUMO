@@ -1,3 +1,5 @@
+import sys
+sys.path.append("..")
 from user.user import User
 from corpus.corpus import Corpus
 from corpus.visualise import Visualise
@@ -7,6 +9,7 @@ from majority.majority2 import Majority
 from majority.baselines import Baseline
 from majority.OptBaseline import Optimal
 from corpus.stats import Stats
+
 
 class Pipeline:
     # ---- Corpus Settings ----

@@ -12,7 +12,14 @@ import pandas as pd
 from random import shuffle
 
 from collections import Counter
-from ..data.storage import save_data, load_data
+
+from .storage import save_data, load_data
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+
+
+
+
 
 class Corpus:
 
@@ -32,6 +39,7 @@ class Corpus:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #NOTE security risk!!!
         ssh.connect(self.user.get_ip(), username=self.user.get_user(), key_filename=self.user.get_key())
+
         ftp = ssh.open_sftp()
 
         # Get all the annotations

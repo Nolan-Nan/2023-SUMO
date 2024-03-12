@@ -52,24 +52,24 @@ class ml():
         ## updated entities feature-set
         self.citationent_X = np.array([])
         
-        # black stone entities feature-set
-        self.judge_blackstone = np.array([])
-        self.blackstone = np.array([])
-        self.provision_blackstone = np.array([])
-        self.instrument_blackstone = np.array([])
-        self.court_blackstone = np.array([])
-        self.case_blackstone = np.array([])
-        self.citation_blackstone = np.array([])
-        
-        # spacy entities 
+        # spacy entities
         self.loc_ent_X = np.array([])
-        self.org_ent_X = np.array([]) 
+        self.org_ent_X = np.array([])
         self.date_ent_X = np.array([])
-        self.person_ent_X = np.array([]) 
-        self.time_ent_X = np.array([])
+        self.person_ent_X = np.array([])
+        self.fac_ent_X = np.array([])
+        self.norp_ent_X = np.array([])
         self.gpe_ent_X = np.array([])
-        self.fac_ent_X = np.array([]) 
+        self.event_ent_X = np.array([])
+        self.law_ent_X = np.array([])
+        self.time_ent_X = np.array([])
+        self.work_of_art_ent_X = np.array([])
         self.ordinal_ent_X = np.array([])
+        self.cardinal_ent_X = np.array([])
+        self.money_ent_X = np.array([])
+        self.percent_ent_X = np.array([])
+        self.product_ent_X = np.array([])
+        self.quantity_ent_X = np.array([])
         self.spacy = np.array([])
         self.total_spacy_X  = np.array([])
         
@@ -369,12 +369,13 @@ class ml():
     
     # TODO - CHANGE THIS TO THE WAY THAT YOU DO IT FOR THE RELEVANCE OTHERWISE to match same feature sets
     def rewriteFeatures(self, casenum):
-        with open('summarydata/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
                 fieldnames = ['sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
-                'loc4', 'loc5', 'loc6', 'sentlen', 'quoteblock', 'inline_q', 'tfidf_top20', 'provision ent', 'instrument ent', 'court ent', 
-                'case name ent', 'citation bl ent', 'judge ent', 'loc ent', 'org ent', 'date ent', 
-                'person ent','judgename', 'rhet label', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative', 
-        'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']        
+                'loc4', 'loc5', 'loc6', 'sentlen', 'quoteblock', 'inline_q', 'tfidf_top20',  'loc ent', 'org ent', 'date ent', 'person ent',
+                'fac_ent', 'norp_ent', 'gpe_ent', 'event_ent', 'law_ent', 'time_ent','work_of_art_ent', 'ordinal_ent', 'cardinal_ent',
+                'money_ent', 'percent_ent', 'product_ent', 'quantity_ent','judgename', 'rhet label', 'cp tense', 'cp modal',
+                'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative',
+                'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']
         
                 writer = csv.DictWriter(outfile, fieldnames=fieldnames)
                 writer.writeheader()
@@ -383,11 +384,12 @@ class ml():
                     writer.writerow({'sent_id': self.sent_id[v], 'agree': self.agree_X[v],
                     'outcome': self.outcome_X[v], 'loc1': self.loc1_X[v], 'loc2': self.loc2_X[v], 'loc3': self.loc3_X[v], 'loc4': self.loc4_X[v], 
                     'loc5': self.loc5_X[v], 'loc6': self.loc6_X[v], 'sentlen': self.sentlen_X[v], 'quoteblock': self.qb_X[v], 'inline_q': self.inq_X[v], 
-                     'tfidf_top20': self.tfidf_top20_X[v], 'provision ent' : self.provision_blackstone[v], 'instrument ent' : 
-                        self.instrument_blackstone[v], 'court ent' : self.court_blackstone[v], 
-                    'case name ent' : self.case_blackstone[v], 'citation bl ent' : self.citation_blackstone[v], 'judge ent' : self.judge_blackstone[v],
-                    'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : 
-                    self.date_ent_X[v], 'person ent' : self.person_ent_X[v], 'judgename' : self.judgename[v], 'rhet label' : self.rhet_predictions[v], 
+                     'tfidf_top20': self.tfidf_top20_X[v],
+                    'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : self.date_ent_X[v], 'person ent' : self.person_ent_X[v],
+                    'fac_ent': self.fac_ent_X[v], 'norp_ent': self.norp_ent_X[v], 'gpe_ent': self.gpe_ent_X[v],'event_ent': self.event_ent_X[v],
+                    'law_ent': self.law_ent_X[v], 'time_ent': self.time_ent_X[v], 'work_of_art_ent': self.work_of_art_ent_X[v], 'ordinal_ent': self.ordinal_ent_X[v],
+                    'cardinal_ent': self.cardinal_ent_X[v],'money_ent': self.money_ent_X[v], 'percent_ent': self.percent_ent_X[v],'product_ent': self.product_ent_X[v],
+                    'quantity_ent': self.quantity_ent_X[v], 'judgename' : self.judgename[v], 'rhet label' : self.rhet_predictions[v],
                     'cp tense': self.new_tense_X[v], 'cp modal': self.new_modal_X[v], 'cp pos bool' :  self.modal_pos_bool_X[v], 'cp dep bool': self.modal_dep_bool_X[v], 
                         'cp dep count':  self.modal_dep_count_X[v], 'cp pos count': self.modal_pos_count_X[v], 'cp dep': self.new_dep_X[v], 'cp tag': self.new_tag_X[v], 'cp negative': self.new_negative_X[v],
                         'cp stop': self.new_stop_X[v], 'cp voice' : self.new_voice_X[v], 'cp second pos': self.second_pos_X[v], 'cp second dep' : self.second_dep_X[v], 
@@ -398,7 +400,7 @@ class ml():
     
     def rewriteRelFeatures(self, casenum):
 
-        with open('summarydata/UKHL_'+casenum+'_classification.csv', 'w', newline='') as outfile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_classification.csv', 'w', newline='') as outfile:
                     fieldnames = ['sent_id', 'rhet label', 'relevant', 'yes confidence']        
             
                     writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -418,8 +420,7 @@ class ml():
                     'asmo' : self.asmo, 
                     'cue phrase' : self.cue_phrase, 
                     'sent length' : self.sent_length,
-                    'tfidf' : self.tfidf_top20, 
-                    'blackstone' : self.blackstone,
+                    'tfidf' : self.tfidf_top20,
                     'spacy' : self.spacy}
         
         sentence_id = (int(sentence_id))
@@ -503,25 +504,7 @@ class ml():
                                       "cue12+2" : (self.second_tag_X[y+2]), 
                                       "cue13" : (self.second_stop_X[y]), 
                                       "cue13+1" : (self.second_stop_X[y+1]), 
-                                      "cue13+2" : (self.second_stop_X[y+2]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]),
+                                      "cue13+2" : (self.second_stop_X[y+2]),
                                       "spacy1" : (self.loc_ent_X[y]),
                                       "spacy1+1" : (self.loc_ent_X[y+1]),
                                       "spacy1+2" : (self.loc_ent_X[y+2]),
@@ -533,8 +516,48 @@ class ml():
                                       "spacy3+2" : (self.date_ent_X[y+2]),
                                       "spacy4" : (self.person_ent_X[y]),
                                       "spacy4+1" : (self.person_ent_X[y+1]),
-                                      "spacy4+2" : (self.person_ent_X[y+2])
-                                      })
+                                      "spacy4+2" : (self.person_ent_X[y+2]),
+                                    "spacy5" : (self.fac_ent_X[y]),
+                                    "spacy5+1" : (self.fac_ent_X[y+1]),
+                                    "spacy5+2" : (self.fac_ent_X[y+2]),
+                                    "spacy6": (self.norp_ent_X[y]),
+                                    "spacy6+1"  : (self.norp_ent_X[y+1]),
+                                    "spacy6+2"  : (self.norp_ent_X[y+2]),
+                                    "spacy7" : (self.gpe_ent_X[y]),
+                                    "spacy7+1" : (self.gpe_ent_X[y+1]),
+                                    "spacy7+2" : (self.gpe_ent_X[y+2]),
+                                    "spacy8": (self.event_ent_X[y]),
+                                    "spacy8+1": (self.event_ent_X[y+1]),
+                                    "spacy8+2": (self.event_ent_X[y+2]),
+                                    "spacy9" : (self.law_ent_X[y]),
+                                    "spacy9+1" : (self.law_ent_X[y+1]),
+                                    "spacy9+2" : (self.law_ent_X[y+2]),
+                                    "spacy10": (self.time_ent_X[y]),
+                                    "spacy10+1"  : (self.time_ent_X[y+1]),
+                                    "spacy10+2"  : (self.time_ent_X[y+2]),
+                                    "spacy11" : (self.work_of_art_ent_X[y]),
+                                    "spacy11+1" : (self.work_of_art_ent_X[y+1]),
+                                    "spacy11+2" : (self.work_of_art_ent_X[y+2]),
+                                    "spacy12"  : (self.ordinal_ent_X[y]),
+                                    "spacy12+1" : (self.ordinal_ent_X[y+1]),
+                                    "spacy12+2" : (self.ordinal_ent_X[y+2]),
+                                    "spacy13" : (self.cardinal_ent_X[y]),
+                                    "spacy13+1" : (self.cardinal_ent_X[y+1]),
+                                    "spacy13+2" : (self.cardinal_ent_X[y+2]),
+                                    "spacy14" : (self.money_ent_X[y]),
+                                    "spacy14+1" : (self.money_ent_X[y+1]),
+                                    "spacy14+2" : (self.money_ent_X[y+2]),
+                                    "spacy15"  : (self.percent_ent_X[y]),
+                                    "spacy15+1" : (self.percent_ent_X[y+1]),
+                                    "spacy15+2" : (self.percent_ent_X[y+2]),
+                                    "spacy16" : (self.product_ent_X[y]),
+                                    "spacy16+1" : (self.product_ent_X[y+1]),
+                                    "spacy16+2" : (self.product_ent_X[y+2]),
+                                    "spacy17"  : (self.quantity_ent_X[y]),
+                                    "spacy17+1": (self.quantity_ent_X[y+1]),
+                                    "spacy17+2" : (self.quantity_ent_X[y+2]),
+
+                })
         # second word of the sentence
         
         elif sentence_id == 2 and (not newSpeechLookAheadBy1 and not newSpeechLookAheadBy2): 
@@ -643,31 +666,7 @@ class ml():
                                       "cue13" : (self.second_stop_X[y]), 
                                       "cue13+1" : (self.second_stop_X[y+1]), 
                                       "cue13+2" : (self.second_stop_X[y+2]), 
-                                      "cue13-1" : (self.second_stop_X[y-1]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]),
+                                      "cue13-1" : (self.second_stop_X[y-1]),
                                       "spacy1" : (self.loc_ent_X[y]),
                                       "spacy1+1" : (self.loc_ent_X[y+1]),
                                       "spacy1+2" : (self.loc_ent_X[y+2]),
@@ -683,7 +682,59 @@ class ml():
                                       "spacy4" : (self.person_ent_X[y]),
                                       "spacy4+1" : (self.person_ent_X[y+1]),
                                       "spacy4+2" : (self.person_ent_X[y+2]),
-                                      "spacy4-1" : (self.person_ent_X[y-1])
+                                      "spacy4-1" : (self.person_ent_X[y-1]),
+                                          "spacy5": (self.fac_ent_X[y]),
+                                          "spacy5+1": (self.fac_ent_X[y + 1]),
+                                          "spacy5+2": (self.fac_ent_X[y + 2]),
+                                          "spacy5-1": (self.fac_ent_X[y -1]),
+                                          "spacy6": (self.norp_ent_X[y]),
+                                          "spacy6+1": (self.norp_ent_X[y + 1]),
+                                          "spacy6+2": (self.norp_ent_X[y + 2]),
+                                          "spacy6-1": (self.norp_ent_X[y -1]),
+                                          "spacy7": (self.gpe_ent_X[y]),
+                                          "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                          "spacy7+2": (self.gpe_ent_X[y + 2]),
+                                          "spacy7-1": (self.gpe_ent_X[y -1]),
+                                          "spacy8": (self.event_ent_X[y]),
+                                          "spacy8+1": (self.event_ent_X[y + 1]),
+                                          "spacy8+2": (self.event_ent_X[y + 2]),
+                                          "spacy8-1": (self.event_ent_X[y -1]),
+                                          "spacy9": (self.law_ent_X[y]),
+                                          "spacy9+1": (self.law_ent_X[y + 1]),
+                                          "spacy9+2": (self.law_ent_X[y + 2]),
+                                          "spacy9-1": (self.law_ent_X[y - 1]),
+                                          "spacy10": (self.time_ent_X[y]),
+                                          "spacy10+1": (self.time_ent_X[y + 1]),
+                                          "spacy10+2": (self.time_ent_X[y + 2]),
+                                          "spacy10-1": (self.time_ent_X[y - 1]),
+                                          "spacy11": (self.work_of_art_ent_X[y]),
+                                          "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                          "spacy11+2": (self.work_of_art_ent_X[y + 2]),
+                                          "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                          "spacy12": (self.ordinal_ent_X[y]),
+                                          "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                          "spacy12+2": (self.ordinal_ent_X[y + 2]),
+                                          "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                          "spacy13": (self.cardinal_ent_X[y]),
+                                          "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                          "spacy13+2": (self.cardinal_ent_X[y + 2]),
+                                          "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                          "spacy14": (self.money_ent_X[y]),
+                                          "spacy14+1": (self.money_ent_X[y + 1]),
+                                          "spacy14+2": (self.money_ent_X[y + 2]),
+                                          "spacy14-1": (self.money_ent_X[y - 1]),
+                                          "spacy15": (self.percent_ent_X[y]),
+                                          "spacy15+1": (self.percent_ent_X[y + 1]),
+                                          "spacy15+2": (self.percent_ent_X[y + 2]),
+                                          "spacy15-1": (self.percent_ent_X[y -1]),
+                                          "spacy16": (self.product_ent_X[y]),
+                                          "spacy16+1": (self.product_ent_X[y + 1]),
+                                          "spacy16+2": (self.product_ent_X[y + 2]),
+                                          "spacy16-1": (self.product_ent_X[y - 1]),
+                                          "spacy17": (self.quantity_ent_X[y]),
+                                          "spacy17+1": (self.quantity_ent_X[y + 1]),
+                                          "spacy17+2": (self.quantity_ent_X[y + 2]),
+                                          "spacy17-1": (self.quantity_ent_X[y - 1]),
                                       })
                 
         elif newSpeechLookAheadBy1:
@@ -767,25 +818,7 @@ class ml():
                                       "cue12-1" : (self.second_tag_X[y-1]), 
                                       "cue13" : (self.second_stop_X[y]), 
                                       "cue13-2" : (self.second_stop_X[y-2]), 
-                                      "cue13-1" : (self.second_stop_X[y-1]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]),
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]),
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" :  (self.citation_blackstone[y]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]),
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
+                                      "cue13-1" : (self.second_stop_X[y-1]),
                                       "spacy1" : (self.loc_ent_X[y]),
                                       "spacy1-1" : (self.loc_ent_X[y-1]),
                                       "spacy1-2" : (self.loc_ent_X[y-2]),
@@ -797,7 +830,47 @@ class ml():
                                       "spacy3-2" : (self.date_ent_X[y-2]),
                                       "spacy4" : (self.person_ent_X[y]),
                                       "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
+                                      "spacy4-2" : (self.person_ent_X[y-2]),
+                                          "spacy5": (self.fac_ent_X[y]),
+                                          "spacy5-1": (self.fac_ent_X[y - 1]),
+                                          "spacy5-2": (self.fac_ent_X[y - 2]),
+                                          "spacy6": (self.norp_ent_X[y]),
+                                          "spacy6-1": (self.norp_ent_X[y - 1]),
+                                          "spacy6-2": (self.norp_ent_X[y - 2]),
+                                          "spacy7": (self.gpe_ent_X[y]),
+                                          "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                          "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                          "spacy8": (self.event_ent_X[y]),
+                                          "spacy8-1": (self.event_ent_X[y - 1]),
+                                          "spacy8-2": (self.event_ent_X[y - 2]),
+                                          "spacy9": (self.law_ent_X[y]),
+                                          "spacy9-1": (self.law_ent_X[y - 1]),
+                                          "spacy9-2": (self.law_ent_X[y - 2]),
+                                          "spacy10": (self.time_ent_X[y]),
+                                          "spacy10-1": (self.time_ent_X[y - 1]),
+                                          "spacy10-2": (self.time_ent_X[y - 2]),
+                                          "spacy11": (self.work_of_art_ent_X[y]),
+                                          "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                          "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                          "spacy12": (self.ordinal_ent_X[y]),
+                                          "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                          "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                          "spacy13": (self.cardinal_ent_X[y]),
+                                          "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                          "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                          "spacy14": (self.money_ent_X[y]),
+                                          "spacy14-1": (self.money_ent_X[y - 1]),
+                                          "spacy14-2": (self.money_ent_X[y - 2]),
+                                          "spacy15": (self.percent_ent_X[y]),
+                                          "spacy15-1": (self.percent_ent_X[y - 1]),
+                                          "spacy15-2": (self.percent_ent_X[y - 2]),
+                                          "spacy16": (self.product_ent_X[y]),
+                                          "spacy16-1": (self.product_ent_X[y - 1]),
+                                          "spacy16-2": (self.product_ent_X[y - 2]),
+                                          "spacy17": (self.quantity_ent_X[y]),
+                                          "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                          "spacy17-2": (self.quantity_ent_X[y - 2]),
+
                                       })
         elif newSpeechLookAheadBy2:
                 sentence_features.update({"r-1" : tag_history[sentence_id-2], 
@@ -903,31 +976,7 @@ class ml():
                                       "cue13" : (self.second_stop_X[y]), 
                                       "cue13+1" : (self.second_stop_X[y+1]), 
                                       "cue13-2" : (self.second_stop_X[y-2]), 
-                                      "cue13-1" : (self.second_stop_X[y-1]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
+                                      "cue13-1" : (self.second_stop_X[y-1]),
                                       "spacy1" : (self.loc_ent_X[y]),
                                       "spacy1+1" : (self.loc_ent_X[y+1]),
                                       "spacy1-1" : (self.loc_ent_X[y-1]),
@@ -943,7 +992,59 @@ class ml():
                                       "spacy4" : (self.person_ent_X[y]),
                                       "spacy4+1" : (self.person_ent_X[y+1]),
                                       "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
+                                      "spacy4-2" : (self.person_ent_X[y-2]),
+                                          "spacy5": (self.fac_ent_X[y]),
+                                          "spacy5-1": (self.fac_ent_X[y - 1]),
+                                          "spacy5-2": (self.fac_ent_X[y - 2]),
+                                          "spacy5+1": (self.fac_ent_X[y + 1]),
+                                          "spacy6": (self.norp_ent_X[y]),
+                                          "spacy6-1": (self.norp_ent_X[y - 1]),
+                                          "spacy6-2": (self.norp_ent_X[y - 2]),
+                                          "spacy6+1": (self.norp_ent_X[y + 1]),
+                                          "spacy7": (self.gpe_ent_X[y]),
+                                          "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                          "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                          "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                          "spacy8": (self.event_ent_X[y]),
+                                          "spacy8-1": (self.event_ent_X[y - 1]),
+                                          "spacy8-2": (self.event_ent_X[y - 2]),
+                                          "spacy8+1": (self.event_ent_X[y + 1]),
+                                          "spacy9": (self.law_ent_X[y]),
+                                          "spacy9-1": (self.law_ent_X[y - 1]),
+                                          "spacy9-2": (self.law_ent_X[y - 2]),
+                                          "spacy9+1": (self.law_ent_X[y + 1]),
+                                          "spacy10": (self.time_ent_X[y]),
+                                          "spacy10-1": (self.time_ent_X[y - 1]),
+                                          "spacy10-2": (self.time_ent_X[y - 2]),
+                                          "spacy10+1": (self.time_ent_X[y + 1]),
+                                          "spacy11": (self.work_of_art_ent_X[y]),
+                                          "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                          "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                          "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                          "spacy12": (self.ordinal_ent_X[y]),
+                                          "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                          "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                          "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                          "spacy13": (self.cardinal_ent_X[y]),
+                                          "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                          "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                          "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                          "spacy14": (self.money_ent_X[y]),
+                                          "spacy14-1": (self.money_ent_X[y - 1]),
+                                          "spacy14-2": (self.money_ent_X[y - 2]),
+                                          "spacy14+1": (self.money_ent_X[y + 1]),
+                                          "spacy15": (self.percent_ent_X[y]),
+                                          "spacy15-1": (self.percent_ent_X[y - 1]),
+                                          "spacy15-2": (self.percent_ent_X[y - 2]),
+                                          "spacy15+1": (self.percent_ent_X[y + 1]),
+                                          "spacy16": (self.product_ent_X[y]),
+                                          "spacy16-1": (self.product_ent_X[y - 1]),
+                                          "spacy16-2": (self.product_ent_X[y - 2]),
+                                          "spacy16+1": (self.product_ent_X[y + 1]),
+                                          "spacy17": (self.quantity_ent_X[y]),
+                                          "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                          "spacy17-2": (self.quantity_ent_X[y - 2]),
+                                          "spacy17+1": (self.quantity_ent_X[y + 1]),
                                       })   
         else: 
                 sentence_features.update({"r-1" : tag_history[sentence_id-2], 
@@ -1074,37 +1175,7 @@ class ml():
                                       "cue13+1" : (self.second_stop_X[y+1]),
                                       "cue13+2" : (self.second_stop_X[y+2]),
                                       "cue13-2" : (self.second_stop_X[y-2]), 
-                                      "cue13-1" : (self.second_stop_X[y-1]), 
-                                      "bl1" : (self.provision_blackstone[y]), 
-                                      "bl1+1" : (self.provision_blackstone[y+1]), 
-                                      "bl1+2" : (self.provision_blackstone[y+2]), 
-                                      "bl1-1" : (self.provision_blackstone[y-1]), 
-                                      "bl1-2" : (self.provision_blackstone[y-2]), 
-                                      "bl2" : (self.instrument_blackstone[y]), 
-                                      "bl2+1" : (self.instrument_blackstone[y+1]), 
-                                      "bl2+2" : (self.instrument_blackstone[y+2]), 
-                                      "bl2-1" : (self.instrument_blackstone[y-1]), 
-                                      "bl2-2" : (self.instrument_blackstone[y-2]), 
-                                      "bl3" : (self.court_blackstone [y]), 
-                                      "bl3+1" : (self.court_blackstone [y+1]), 
-                                      "bl3+2" : (self.court_blackstone [y+2]), 
-                                      "bl3-1" : (self.court_blackstone [y-1]), 
-                                      "bl3-2" : (self.court_blackstone [y-2]), 
-                                      "bl4" : (self.case_blackstone[y]), 
-                                      "bl4+1" : (self.case_blackstone[y+1]), 
-                                      "bl4+2" : (self.case_blackstone[y+2]), 
-                                      "bl4-1" : (self.case_blackstone[y-1]), 
-                                      "bl4-2" : (self.case_blackstone[y-2]), 
-                                      "bl5" : (self.citation_blackstone[y]), 
-                                      "bl5+1" : (self.citation_blackstone[y+1]), 
-                                      "bl5+2" : (self.citation_blackstone[y+2]), 
-                                      "bl5-1" : (self.citation_blackstone[y-1]), 
-                                      "bl5-2" : (self.citation_blackstone[y-2]), 
-                                      "bl6" : (self.judge_blackstone[y]), 
-                                      "bl6+1" : (self.judge_blackstone[y+1]), 
-                                      "bl6+2" : (self.judge_blackstone[y+2]), 
-                                      "bl6-1" : (self.judge_blackstone[y-1]), 
-                                      "bl6-2" : (self.judge_blackstone[y-2]),
+                                      "cue13-1" : (self.second_stop_X[y-1]),
                                       "spacy1" : (self.loc_ent_X[y]),
                                       "spacy1+1" : (self.loc_ent_X[y+1]),
                                       "spacy1+2" : (self.loc_ent_X[y+2]),
@@ -1124,7 +1195,72 @@ class ml():
                                       "spacy4+1" : (self.person_ent_X[y+1]),
                                       "spacy4+2" : (self.person_ent_X[y+2]),
                                       "spacy4-1" : (self.person_ent_X[y-1]),
-                                      "spacy4-2" : (self.person_ent_X[y-2])
+                                      "spacy4-2" : (self.person_ent_X[y-2]),
+                                          "spacy5": (self.fac_ent_X[y]),
+                                          "spacy5+1": (self.fac_ent_X[y + 1]),
+                                          "spacy5+2": (self.fac_ent_X[y + 2]),
+                                          "spacy5-1": (self.fac_ent_X[y - 1]),
+                                          "spacy5-2": (self.fac_ent_X[y - 2]),
+                                          "spacy6": (self.norp_ent_X[y]),
+                                          "spacy6+1": (self.norp_ent_X[y + 1]),
+                                          "spacy6+2": (self.norp_ent_X[y + 2]),
+                                          "spacy6-1": (self.norp_ent_X[y - 1]),
+                                          "spacy6-2": (self.norp_ent_X[y - 2]),
+                                          "spacy7": (self.gpe_ent_X[y]),
+                                          "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                          "spacy7+2": (self.gpe_ent_X[y + 2]),
+                                          "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                          "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                          "spacy8": (self.event_ent_X[y]),
+                                          "spacy8+1": (self.event_ent_X[y + 1]),
+                                          "spacy8+2": (self.event_ent_X[y + 2]),
+                                          "spacy8-1": (self.event_ent_X[y - 1]),
+                                          "spacy8-2": (self.event_ent_X[y - 2]),
+                                          "spacy9": (self.law_ent_X[y]),
+                                          "spacy9+1": (self.law_ent_X[y + 1]),
+                                          "spacy9+2": (self.law_ent_X[y + 2]),
+                                          "spacy9-1": (self.law_ent_X[y - 1]),
+                                          "spacy9-2": (self.law_ent_X[y - 2]),
+                                          "spacy10": (self.time_ent_X[y]),
+                                          "spacy10+1": (self.time_ent_X[y + 1]),
+                                          "spacy10+2": (self.time_ent_X[y + 2]),
+                                          "spacy10-1": (self.time_ent_X[y - 1]),
+                                          "spacy10-2": (self.time_ent_X[y - 2]),
+                                          "spacy11": (self.work_of_art_ent_X[y]),
+                                          "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                          "spacy11+2": (self.work_of_art_ent_X[y + 2]),
+                                          "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                          "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                          "spacy12": (self.ordinal_ent_X[y]),
+                                          "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                          "spacy12+2": (self.ordinal_ent_X[y + 2]),
+                                          "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                          "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                          "spacy13": (self.cardinal_ent_X[y]),
+                                          "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                          "spacy13+2": (self.cardinal_ent_X[y + 2]),
+                                          "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                          "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                          "spacy14": (self.money_ent_X[y]),
+                                          "spacy14+1": (self.money_ent_X[y + 1]),
+                                          "spacy14+2": (self.money_ent_X[y + 2]),
+                                          "spacy14-1": (self.money_ent_X[y - 1]),
+                                          "spacy14-2": (self.money_ent_X[y - 2]),
+                                          "spacy15": (self.percent_ent_X[y]),
+                                          "spacy15+1": (self.percent_ent_X[y + 1]),
+                                          "spacy15+2": (self.percent_ent_X[y + 2]),
+                                          "spacy15-1": (self.percent_ent_X[y - 1]),
+                                          "spacy15-2": (self.percent_ent_X[y - 2]),
+                                          "spacy16": (self.product_ent_X[y]),
+                                          "spacy16+1": (self.product_ent_X[y + 1]),
+                                          "spacy16+2": (self.product_ent_X[y + 2]),
+                                          "spacy16-1": (self.product_ent_X[y - 1]),
+                                          "spacy16-2": (self.product_ent_X[y - 2]),
+                                          "spacy17": (self.quantity_ent_X[y]),
+                                          "spacy17+1": (self.quantity_ent_X[y + 1]),
+                                          "spacy17+2": (self.quantity_ent_X[y + 2]),
+                                          "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                          "spacy17-2": (self.quantity_ent_X[y - 2]),
                                       })  
         return sentence_features
 
@@ -1132,7 +1268,7 @@ class ml():
 
     def rhetData(self, casenum):
         self.sent_id = []
-        with open('summarydata/UKHL_'+casenum+'_features.csv', 'r') as infile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'r') as infile:
             reader = csv.DictReader(infile)
 
         # for each row in the MLDATA cv file, get the corresponding result - add to array
@@ -1149,17 +1285,25 @@ class ml():
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
                 self.tfidf_top20_X = np.append(self.tfidf_top20_X, [float(row['tfidf_top20'])])
-                
-                self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
-                self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
-                self.court_blackstone = np.append(self.court_blackstone, [float(row['court ent'])])
-                self.case_blackstone = np.append(self.case_blackstone, [float(row['case name ent'])])
-                self.citation_blackstone = np.append(self.citation_blackstone, [float(row['citation bl ent'])])
-                self.judge_blackstone = np.append(self.judge_blackstone, [float(row['judge ent'])])
+
                 self.loc_ent_X = np.append(self.loc_ent_X, [float(row['loc ent'])])
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
+                self.fac_ent_X = np.append(self.fac_ent_X,[float(row['fac_ent'])])
+                self.norp_ent_X = np.append(self.norp_ent_X,[float(row['norp_ent'])])
+                self.gpe_ent_X= np.append(self.gpe_ent_X,[float(row['gpe_ent'])])
+                self.event_ent_X= np.append(self.event_ent_X,[float(row['event_ent'])])
+                self.law_ent_X= np.append(self.law_ent_X,[float(row['law_ent'])])
+                self.time_ent_X= np.append(self.time_ent_X,[float(row['time_ent'])])
+                self.work_of_art_ent_X= np.append(self.work_of_art_ent_X,[float(row['work_of_art_ent'])])
+                self.ordinal_ent_X= np.append(self.ordinal_ent_X,[float(row['ordinal_ent'])])
+                self.cardinal_ent_X= np.append(self.cardinal_ent_X,[float(row['cardinal_ent'])])
+                self.money_ent_X= np.append(self.money_ent_X,[float(row['money_ent'])])
+                self.percent_ent_X= np.append(self.percent_ent_X,[float(row['percent_ent'])])
+                self.product_ent_X= np.append(self.product_ent_X,[float(row['product_ent'])])
+                self.quantity_ent_X= np.append(self.quantity_ent_X,[float(row['quantity_ent'])])
+
                 self.judgename.append(row['judgename'])
                 self.sent_id.append(row['sent_id'])
                 
@@ -1185,12 +1329,14 @@ class ml():
         self.asmo = self.agree_X, self.outcome_X
         self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
         self.sent_length =  self.sentlen_X
-        self.tfidf_top20 = self.tfidf_top20_X 
-        self.blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
-        self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        self.tfidf_top20 = self.tfidf_top20_X
+        self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X,\
+                     self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
+                     self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
+
       
     def relevanceData(self, casenum):
-        with open('summarydata/UKHL_'+casenum+'_features.csv', 'r') as infile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'r') as infile:
             reader = csv.DictReader(infile)
 
         # for each row in the MLDATA cv file, get the corresponding result - add to array
@@ -1210,17 +1356,24 @@ class ml():
   
                 self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_top20'])])
 
-                self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
-                self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
-                self.court_blackstone = np.append(self.court_blackstone, [float(row['court ent'])])
-                self.case_blackstone = np.append(self.case_blackstone, [float(row['case name ent'])])
-                self.citation_blackstone = np.append(self.citation_blackstone, [float(row['citation bl ent'])])
-                self.judge_blackstone = np.append(self.judge_blackstone, [float(row['judge ent'])])
                 self.loc_ent_X = np.append(self.loc_ent_X, [float(row['loc ent'])])
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
-    
+                self.fac_ent_X = np.append(self.fac_ent_X, [float(row['fac_ent'])])
+                self.norp_ent_X = np.append(self.norp_ent_X, [float(row['norp_ent'])])
+                self.gpe_ent_X = np.append(self.gpe_ent_X, [float(row['gpe_ent'])])
+                self.event_ent_X = np.append(self.event_ent_X, [float(row['event_ent'])])
+                self.law_ent_X = np.append(self.law_ent_X, [float(row['law_ent'])])
+                self.time_ent_X = np.append(self.time_ent_X, [float(row['time_ent'])])
+                self.work_of_art_ent_X = np.append(self.work_of_art_ent_X, [float(row['work_of_art_ent'])])
+                self.ordinal_ent_X = np.append(self.ordinal_ent_X, [float(row['ordinal_ent'])])
+                self.cardinal_ent_X = np.append(self.cardinal_ent_X, [float(row['cardinal_ent'])])
+                self.money_ent_X = np.append(self.money_ent_X, [float(row['money_ent'])])
+                self.percent_ent_X = np.append(self.percent_ent_X, [float(row['percent_ent'])])
+                self.product_ent_X = np.append(self.product_ent_X, [float(row['product_ent'])])
+                self.quantity_ent_X = np.append(self.quantity_ent_X, [float(row['quantity_ent'])])
+
                 self.modal_pos_bool_X =  np.append(self.modal_pos_bool_X, [float(row['cp pos bool'])])
                 self.modal_dep_bool_X = np.append(self.modal_dep_bool_X, [float(row['cp dep bool'])])
                 self.modal_dep_count_X = np.append(self.modal_dep_count_X, [float(row['cp dep count'])])
@@ -1244,7 +1397,9 @@ class ml():
         self.asmo = self.agree_X, self.outcome_X
         self.sent_length = self.sentlen_X
         self.tfidf_max = self.tfidf_max_X
-        self.HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        self.HGents = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X,\
+                     self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
+                     self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
         self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
      
         

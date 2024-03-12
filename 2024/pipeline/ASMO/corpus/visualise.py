@@ -2,7 +2,7 @@
 Visualise the annotated sentences on a corpus.
 """
 
-from ASMO.corpus.corpus import Corpus 
+from .corpus import Corpus
 import re
 import os
 

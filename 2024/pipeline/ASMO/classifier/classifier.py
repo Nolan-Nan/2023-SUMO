@@ -1,6 +1,9 @@
 from .item_selector import ItemSelector
 from .parameters import Parameters
-from ASMO.data.storage import save_data, load_data
+
+from ..corpus.storage import save_data, load_data
+
+
 from .deparser import Deparser
 
 import sys
@@ -208,7 +211,7 @@ class Classifier:
     def get_prediction(self, MJ_corpus):
         if self.train:
             classifier = self.best_classifier()
-#            save_data("classifier", classifier) #save
+            save_data("classifier", classifier) #save
         else:
             classifier = load_data("classifier") #NOTE write test
 
@@ -224,9 +227,15 @@ class Classifier:
         Formats corpus to fit X, y format, removes unecessary categories.
         """
 
-        corpus['relation'] = corpus['relation'].map({"NAN": "NAN", "other": "NAN",
+        '''corpus['relation'] = corpus['relation'].map({"NAN": "NAN", "other": "NAN",
         "error": "NAN", 'fullagr': "fullagr", 'ackn': "ackn", 'outcome': "NAN",
-        'partagr': "NAN", 'partdisa': "NAN", 'fulldisa': "NAN", 'factagr': "NAN"})
+        'partagr': "NAN", 'partdisa': "NAN", 'fulldisa': "NAN", 'factagr': "NAN"})'''
+
+        corpus.loc[:, 'relation'] = corpus['relation'].map({"NAN": "NAN", "other": "NAN",
+                                                            "error": "NAN", 'fullagr': "fullagr",
+                                                            'ackn': "ackn", 'outcome': "NAN",
+                                                            'partagr': "NAN", 'partdisa': "NAN",
+                                                            'fulldisa': "NAN", 'factagr': "NAN"})
 
         corpus = self.corp_downsample(corpus)
         X = corpus[["body", "pos"]]
@@ -386,19 +395,19 @@ class Classifier:
         n = 10
 
         labelid = list(svm.classes_).index('fullagr')
-        feature_names = word_vectorizer.get_feature_names()
+        feature_names = word_vectorizer.get_feature_names_out()
         topn = sorted(zip(svm.coef_[labelid], feature_names))[-n:]
         for feat, coef in topn:
             print("fullagr", "feature", feat, "coef", coef)
 
         labelid = list(svm.classes_).index('ackn')
-        feature_names = word_vectorizer.get_feature_names()
+        feature_names = word_vectorizer.get_feature_names_out()
         topn = sorted(zip(svm.coef_[labelid], feature_names))[-n:]
         for feat, coef in topn:
             print("ackn", "feature", feat, "coef", coef)
 
         labelid = list(svm.classes_).index('NAN')
-        feature_names = word_vectorizer.get_feature_names()
+        feature_names = word_vectorizer.get_feature_names_out()
         topn = sorted(zip(svm.coef_[labelid], feature_names))[-n:]
         for feat, coef in topn:
             print("NAN", "feature", feat, "coef", coef)
@@ -418,7 +427,7 @@ class Classifier:
         X_train, X_test, y_train, y_test = train_test_split(
         self.X, self.y, test_size= self.test_size, random_state=42) # getting close - want to go here to get the pos
         print("XXXXXXX")
-        print(X_train)
+        #print(X_train)
         with open('readme.txt', 'w') as f:
             f.write(str(X_train))
         # Fit training set
