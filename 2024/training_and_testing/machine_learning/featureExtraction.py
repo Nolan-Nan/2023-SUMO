@@ -91,7 +91,7 @@ HGloc1_X, HGloc2_X, HGloc3_X, HGloc4_X, HGloc5_X, HGloc6_X, sentlen_X, HGsentlen
 tfidf_HGavg_X, asp_X, modal_X, voice_X, negcue_X, tense_X, caseent_X, legalent_X, enamex_X, rhet_y, wordlist_X, pasttense_X,
 loc_ent_X, org_ent_X, date_ent_X, person_ent_X, fac_ent_X, norp_ent_X, gpe_ent_X, event_ent_X, law_ent_X, time_ent_X,
 work_of_art_ent_X, ordinal_ent_X, cardinal_ent_X, money_ent_X, percent_ent_X, product_ent_X, quantity_ent_X,
-totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X,
+judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X,
 modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X):
 
     with open('./data/MLdata.csv', 'w', newline='') as outfile:
@@ -100,7 +100,7 @@ modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop
         'HGsentlen', 'quoteblock', 'inline_q', 'rhet', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'aspect', 'modal',
         'voice', 'negation', 'tense', 'case entities', 'legal entities', 'enamex','rhet_target', 'wordlist', 'past tense',
         'case name entity', 'loc ent', 'org ent', 'date ent', 'person ent','fac_ent', 'norp_ent', 'gpe_ent', 'event_ent', 'law_ent', 'time_ent',
-        'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent','product_ent', 'quantity_ent', 'all ent', 'judgename', 'rhet label',
+        'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent','product_ent', 'quantity_ent', 'judgename', 'rhet label',
         'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative',
         'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']
 
@@ -120,7 +120,7 @@ modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop
             'fac_ent': fac_ent_X[v], 'norp_ent': norp_ent_X[v],'gpe_ent': gpe_ent_X[v],'event_ent': event_ent_X[v],
             'law_ent': law_ent_X[v], 'time_ent': time_ent_X[v],'work_of_art_ent': work_of_art_ent_X[v], 'ordinal_ent': ordinal_ent_X[v],
             'cardinal_ent': cardinal_ent_X[v],'money_ent': money_ent_X[v], 'percent_ent': percent_ent_X[v],'product_ent': product_ent_X[v], 'quantity_ent': quantity_ent_X[v],
-            'all ent' : totalner_ent_X[v], 'judgename' : judgename[v], 'rhet label' : rhetlabel[v],
+            'judgename' : judgename[v], 'rhet label' : rhetlabel[v],
             'cp tense': new_tense_X[v], 'cp modal': new_modal_X[v], 'cp pos bool' :  modal_pos_bool_X[v], 'cp dep bool': modal_dep_bool_X[v],
             'cp dep count':  modal_dep_count_X[v], 'cp pos count': modal_pos_count_X[v], 'cp dep': new_dep_X[v], 'cp tag': new_tag_X[v], 'cp negative': negtoken_X[v],
             'cp stop': verbstop_X[v], 'cp voice' : newvoice_X[v], 'cp second pos': second_pos_X[v], 'cp second dep' : second_dep_X[v],
@@ -203,9 +203,6 @@ money_ent_X = np.array([])
 percent_ent_X = np.array([])
 product_ent_X = np.array([])
 quantity_ent_X = np.array([])
-spacy = np.array([])
-total_spacy_X  = np.array([])
-totalner_ent_X = np.array([])
 
 ##for cue phrase feature-set
 asp_X = np.array([])
@@ -680,7 +677,7 @@ HGloc1_X, HGloc2_X, HGloc3_X, HGloc4_X, HGloc5_X, HGloc6_X, sentlen_X, HGsentlen
 tfidf_HGavg_X, asp_X, modal_X, voice_X, negcue_X, tense_X, caseent_X, legalent_X, enamex_X, rhet_y, wordlist_X, pasttense_X,
 loc_ent_X, org_ent_X, date_ent_X, person_ent_X, fac_ent_X, norp_ent_X, gpe_ent_X, event_ent_X, law_ent_X, time_ent_X,
 work_of_art_ent_X, ordinal_ent_X, cardinal_ent_X, money_ent_X, percent_ent_X, product_ent_X, quantity_ent_X,
-totalner_ent_X, judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X,
+judgename, rhetlabel, new_tense_X, new_modal_X, modal_pos_bool_X, modal_dep_bool_X,
 modal_dep_count_X, modal_pos_count_X, new_dep_X, new_tag_X, negtoken_X, verbstop_X, newvoice_X, second_pos_X, second_dep_X, second_tag_X, second_stop_X)
 
 #rank_flag = 0
