@@ -325,7 +325,7 @@ class ml:
 
                 import pickle
                 # CHANGE THIS NAME from 'test' to the classifier name you are writing, this will need to be updated in the other files / pipeline files
-                f = open('test.pickle', 'wb')
+                f = open('c.pickle', 'wb')
                 pickle.dump(clf, f)
                 f.close()
                 print(score)
@@ -438,19 +438,19 @@ class ml:
 
     def exec(self):
         location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
-      #  HGlocation = self.HGloc1_X, self.HGloc2_X, self.HGloc3_X, self.HGloc4_X, self.HGloc5_X, self.HGloc6_X
+        HGlocation = self.HGloc1_X, self.HGloc2_X, self.HGloc3_X, self.HGloc4_X, self.HGloc5_X, self.HGloc6_X
         quotation = self.inq_X, self.qb_X
-      #  entities = self.legalent_X, self.enamex_X # ALSO WANT TO ATTEMPT ADDING THE CITATION ENTITY HERE
+        entities = self.legalent_X, self.enamex_X # ALSO WANT TO ATTEMPT ADDING THE CITATION ENTITY HERE
         asmo = self.agree_X, self.outcome_X
-      #  cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
+        cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
         sent_length = self.sentlen_X
         HGsent_length = self.HGsentlen_X
         tfidf_max = self.tfidf_max_X
-     #   tfidf_HGavg = self.tfidf_HGavg_X
-     #   tfidf_top20 = self.tfidf_top20_X
+        tfidf_HGavg = self.tfidf_HGavg_X
+        tfidf_top20 = self.tfidf_top20_X
         rhet_role = self.rhet_X
         wordlist = self.wordlist_X
-      #  pasttense = self.pasttense_X
+        pasttense = self.pasttense_X
         rhet_y = self.rhet_y
         rel_y = self.rel_y
        # citationent_X = self.citationent_X
@@ -465,7 +465,7 @@ class ml:
         modal = self.modal_dep_bool_X,  self.modal_dep_count_X   #currently without the POS data
         verb =  self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X # currently without dep and modality
         secondToken = self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
-        new_cue_phrases = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
+        new_cue_phrases = self.modal_dep_bool_X, self.modal_dep_count_X, self.new_modal_X, self.new_tense_X, self.new_dep_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
 
         import mode_selector
         mode = mode_selector.mode_selector(location, quotation, asmo,
