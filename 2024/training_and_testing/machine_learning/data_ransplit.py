@@ -23,9 +23,18 @@ def data_ransplit():
     ransplit = random.sample(caseList, 6)
 
     fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3',
-    'loc4', 'loc5', 'loc6', 'HGloc1', 'HGloc2', 'HGloc3', 'HGloc4', 'HGloc5', 'HGloc6', 'sentlen',
-    'HGsentlen', 'quoteblock', 'inline_q', 'rhet', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'aspect', 'modal',
-    'voice', 'negation', 'tense', 'case entities', 'legal entities', 'enamex','rhet_target', 'wordlist', 'past tense']
+                  'loc4', 'loc5', 'loc6', 'HGloc1', 'HGloc2', 'HGloc3', 'HGloc4', 'HGloc5', 'HGloc6', 'sentlen',
+                  'HGsentlen', 'quoteblock', 'inline_q', 'rhet', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'aspect',
+                  'modal',
+                  'voice', 'negation', 'tense', 'case entities', 'legal entities', 'enamex', 'rhet_target', 'wordlist',
+                  'past tense',
+                  'case name entity', 'loc ent', 'org ent', 'date ent', 'person ent', 'fac_ent', 'norp_ent', 'gpe_ent',
+                  'event_ent', 'law_ent', 'time_ent',
+                  'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent', 'product_ent',
+                  'quantity_ent', 'judgename', 'rhet label',
+                  'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep',
+                  'cp tag', 'cp negative',
+                  'cp stop', 'cp voice', 'cp second pos', 'cp second dep', 'cp second tag', 'cp second stop']
 
     with open("./data/MLdata.csv", "r") as infile, \
     open("./data/MLdata_train.csv", "w", newline="") as train_outfile, \
@@ -47,7 +56,13 @@ def data_ransplit():
                 'rhet': row['rhet'], 'tfidf_max': row['tfidf_max'], 'tfidf_top20': row['tfidf_top20'], 'tfidf_HGavg': row['tfidf_HGavg'], 'aspect': row['aspect'],
                 'modal': row['modal'], 'voice': row['voice'], 'negation': row['negation'], 'tense': row['tense'], 'case entities': row['case entities'],
                 'legal entities': row['legal entities'], 'enamex': row['enamex'], 'rhet_target': row['rhet_target'], 'wordlist': row['wordlist'],
-                'past tense': row['past tense']})
+                'past tense': row['past tense'],'case name entity': row['case name entity'], 'loc ent': row['loc ent'], 'org ent': row['org ent'], 'date ent': row['date ent'],
+                'person ent': row['person ent'],'fac_ent': row['fac_ent'], 'norp_ent': row['norp_ent'], 'gpe_ent': row['gpe_ent'], 'event_ent': row['event_ent'], 'law_ent': row['law_ent'],
+                'time_ent': row['time_ent'], 'work_of_art_ent': row['work_of_art_ent'], 'ordinal_ent': row['ordinal_ent'], 'cardinal_ent': row['cardinal_ent'], 'money_ent': row['money_ent'],
+                'percent_ent': row['percent_ent'],'product_ent': row['product_ent'], 'quantity_ent': row['quantity_ent'], 'judgename': row['judgename'], 'rhet label': row['rhet label'],
+                'cp tense': row['cp tense'], 'cp modal': row['cp modal'], 'cp pos bool': row['cp pos bool'], 'cp dep bool': row['cp dep bool'], 'cp dep count': row['cp dep count'],
+                'cp pos count': row['cp pos count'], 'cp dep': row['cp dep'], 'cp tag': row['cp tag'], 'cp negative': row['cp negative'],  'cp stop': row['cp stop'], 'cp voice': row['cp voice'],
+                'cp second pos': row['cp second pos'], 'cp second dep': row['cp second dep'], 'cp second tag': row['cp second tag'], 'cp second stop': row['cp second stop']})
             else:
                 train_writer.writerow({'case_id': row['case_id'], 'sent_id': row['sent_id'], 'align': row['align'], 'agree': row['agree'],
                 'outcome': row['outcome'], 'loc1': row['loc1'], 'loc2': row['loc2'], 'loc3': row['loc3'], 'loc4': row['loc4'],
@@ -56,7 +71,13 @@ def data_ransplit():
                 'rhet': row['rhet'], 'tfidf_max': row['tfidf_max'], 'tfidf_top20': row['tfidf_top20'], 'tfidf_HGavg': row['tfidf_HGavg'], 'aspect': row['aspect'],
                 'modal': row['modal'], 'voice': row['voice'], 'negation': row['negation'], 'tense': row['tense'], 'case entities': row['case entities'],
                 'legal entities': row['legal entities'], 'enamex': row['enamex'], 'rhet_target': row['rhet_target'], 'wordlist': row['wordlist'],
-                'past tense': row['past tense']})
+                'past tense': row['past tense'],'case name entity': row['case name entity'], 'loc ent': row['loc ent'], 'org ent': row['org ent'], 'date ent': row['date ent'],
+                'person ent': row['person ent'],'fac_ent': row['fac_ent'], 'norp_ent': row['norp_ent'], 'gpe_ent': row['gpe_ent'], 'event_ent': row['event_ent'], 'law_ent': row['law_ent'],
+                'time_ent': row['time_ent'], 'work_of_art_ent': row['work_of_art_ent'], 'ordinal_ent': row['ordinal_ent'], 'cardinal_ent': row['cardinal_ent'], 'money_ent': row['money_ent'],
+                'percent_ent': row['percent_ent'],'product_ent': row['product_ent'], 'quantity_ent': row['quantity_ent'], 'judgename': row['judgename'], 'rhet label': row['rhet label'],
+                'cp tense': row['cp tense'], 'cp modal': row['cp modal'], 'cp pos bool': row['cp pos bool'], 'cp dep bool': row['cp dep bool'], 'cp dep count': row['cp dep count'],
+                'cp pos count': row['cp pos count'], 'cp dep': row['cp dep'], 'cp tag': row['cp tag'], 'cp negative': row['cp negative'], 'cp stop': row['cp stop'], 'cp voice': row['cp voice'],
+                'cp second pos': row['cp second pos'], 'cp second dep': row['cp second dep'], 'cp second tag': row['cp second tag'], 'cp second stop': row['cp second stop']})
 
 def remove_testsplit():
     test_cases = []
@@ -79,4 +100,5 @@ def remove_testsplit():
             if row['case_id'] not in test_cases:
                 writer.writerow(row)
 
-remove_testsplit()
+#remove_testsplit()
+data_ransplit()

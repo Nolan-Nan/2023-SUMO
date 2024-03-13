@@ -51,24 +51,26 @@ class ml:
         ## updated entities feature-set
         self.citationent_X = np.array([])
 
-        # black stone entities feature-set
-        self.judge_blackstone = np.array([])
-        self.blackstone = np.array([])
-        self.provision_blackstone = np.array([])
-        self.instrument_blackstone = np.array([])
-        self.court_blackstone = np.array([])
-        self.case_blackstone = np.array([])
-        self.citation_blackstone = np.array([])
+
 
         # spacy entities
         self.loc_ent_X = np.array([])
         self.org_ent_X = np.array([])
         self.date_ent_X = np.array([])
         self.person_ent_X = np.array([])
-        self.time_ent_X = np.array([])
-        self.gpe_ent_X = np.array([])
         self.fac_ent_X = np.array([])
+        self.norp_ent_X = np.array([])
+        self.gpe_ent_X = np.array([])
+        self.event_ent_X = np.array([])
+        self.law_ent_X = np.array([])
+        self.time_ent_X = np.array([])
+        self.work_of_art_ent_X = np.array([])
         self.ordinal_ent_X = np.array([])
+        self.cardinal_ent_X = np.array([])
+        self.money_ent_X = np.array([])
+        self.percent_ent_X = np.array([])
+        self.product_ent_X = np.array([])
+        self.quantity_ent_X = np.array([])
         self.spacy = np.array([])
         self.total_spacy_X  = np.array([])
 
@@ -395,21 +397,26 @@ class ml:
                 self.wordlist_X = np.append(self.wordlist_X, [float(row['wordlist'])])
                 self.pasttense_X = np.append(self.pasttense_X, [float(row['past tense'])])
               #  self.citationent_X = np.append(self.citationent_X, [float(row['citation entities'])])
-                self.provision_blackstone = np.append(self.provision_blackstone, [float(row['provision ent'])])
-                self.instrument_blackstone = np.append(self.instrument_blackstone, [float(row['instrument ent'])])
-                self.court_blackstone = np.append(self.court_blackstone, [float(row['court ent'])])
-                self.case_blackstone = np.append(self.case_blackstone, [float(row['case name ent'])])
-                self.citation_blackstone = np.append(self.citation_blackstone, [float(row['citation bl ent'])])
-                self.judge_blackstone = np.append(self.judge_blackstone, [float(row['judge ent'])])
+
                 self.loc_ent_X = np.append(self.loc_ent_X, [float(row['loc ent'])])
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
                 self.person_ent_X = np.append(self.person_ent_X, [float(row['person ent'])])
-                self.time_ent_X = np.append(self.time_ent_X, [float(row['time ent'])])
-                self.gpe_ent_X = np.append(self.gpe_ent_X, [float(row['gpe ent'])])
-                self.fac_ent_X = np.append(self.fac_ent_X, [float(row['fac ent'])])
-                self.ordinal_ent_X = np.append(self.ordinal_ent_X, [float(row['ordinal ent'])])
-                self.total_spacy_X = np.append(self.total_spacy_X, [float(row['all ent'])])
+                self.fac_ent_X = np.append(self.fac_ent_X, [float(row['fac_ent'])])
+                self.norp_ent_X = np.append(self.norp_ent_X, [float(row['norp_ent'])])
+                self.gpe_ent_X = np.append(self.gpe_ent_X, [float(row['gpe_ent'])])
+                self.event_ent_X = np.append(self.event_ent_X, [float(row['event_ent'])])
+                self.law_ent_X = np.append(self.law_ent_X, [float(row['law_ent'])])
+                self.time_ent_X = np.append(self.time_ent_X, [float(row['time_ent'])])
+                self.work_of_art_ent_X = np.append(self.work_of_art_ent_X, [float(row['work_of_art_ent'])])
+                self.ordinal_ent_X = np.append(self.ordinal_ent_X, [float(row['ordinal_ent'])])
+                self.cardinal_ent_X = np.append(self.cardinal_ent_X, [float(row['cardinal_ent'])])
+                self.money_ent_X = np.append(self.money_ent_X, [float(row['money_ent'])])
+                self.percent_ent_X = np.append(self.percent_ent_X, [float(row['percent_ent'])])
+                self.product_ent_X = np.append(self.product_ent_X, [float(row['product_ent'])])
+                self.quantity_ent_X = np.append(self.quantity_ent_X, [float(row['quantity_ent'])])
+
+                #self.total_spacy_X = np.append(self.total_spacy_X, [float(row['all ent'])])
                 self.modal_pos_bool_X =  np.append(self.modal_pos_bool_X, [float(row['cp pos bool'])])
                 self.modal_dep_bool_X = np.append(self.modal_dep_bool_X, [float(row['cp dep bool'])])
                 self.modal_dep_count_X = np.append(self.modal_dep_count_X, [float(row['cp dep count'])])
@@ -450,7 +457,11 @@ class ml:
       #  blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
      #   spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.time_ent_X, self.gpe_ent_X, self.fac_ent_X, self.ordinal_ent_X
      #   total_spacy = self.total_spacy_X
-        HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        #HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        HGents = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X, \
+                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
+                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
+
         modal = self.modal_dep_bool_X,  self.modal_dep_count_X   #currently without the POS data
         verb =  self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X # currently without dep and modality
         secondToken = self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
