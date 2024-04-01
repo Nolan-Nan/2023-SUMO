@@ -20,6 +20,16 @@ class Majority:
         true_mj = self.corpus[["case", "mj"]].drop_duplicates("case").reset_index(drop=True)
         self.evaluate(pred_mj, true_mj)
 
+    def new_predict(self):
+        """
+        Creates a map (dictionary) of predicted agreements between judges for each case.
+        Resolves this map to see who does the majority agree with.
+        """
+
+        map = self.map_agreement()
+        pred_mj = self.resolve_map(map)
+        return pred_mj
+
     def evaluate(self, pred_mj, true_mj):
         """
         Prints accuracy and error report.
@@ -149,7 +159,7 @@ class Majority:
         """
         break_pos = case[case["body"] == "------------- NEW JUDGE --------------- "]["line"].tolist()
         if len(break_pos) < 5:
-            print("Warning: Case with less than 5 judges, check %d, number of judges %d" % (number, len(break_pos)))
+            print("Warning: Case with less than 5 judges, check %s, number of judges %d" % (number, len(break_pos)))
 
         judges = []
         for brk in break_pos:

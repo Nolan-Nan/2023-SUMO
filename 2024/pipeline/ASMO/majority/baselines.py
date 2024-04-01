@@ -31,7 +31,8 @@ class Baseline():
 
         mjA = pd.DataFrame({"mj": majorityA, "case": casenum})
         print("\nBASELINE A: Most Cited Judge")
-        self.print_results(mjA)
+        print(mjA)
+        #self.print_results(mjA)
 
     def find_majority(self):
         allowed = self.corpus["case"].unique().tolist()
@@ -48,7 +49,8 @@ class Baseline():
             case = str(case) + ".txt"
             loc = self.path + case # Path to a case
             judges = self.get_judges(loc) # Dictionary judge: body
-            casenum.append(int(case.strip(".txt")))
+            print(judges)
+            casenum.append(case.strip(".txt"))
             name = []
             max_sent_cnt = 0
             max_word_cnt = 0
@@ -101,13 +103,18 @@ class Baseline():
         mjD = pd.DataFrame({"mj": majorityD, "case": casenum})
 
         print("\nBASELINE A: Most Cited Judge")
-        self.print_results(mjA)
-        # print("\nBASELINE B: Most Verbose Judge (Words)")
+        print(mjA)
+        #self.print_results(mjA)
+        print("\nBASELINE B: Most Verbose Judge (Words)")
+        print(mjB)
         # self.print_results(mjB)
         print("\nBASELINE C: Most Verbose Judge (Sentences)")
-        self.print_results(mjC)
+        print(mjC)
+        #self.print_results(mjC)
         print("\nBASELINE D: Keep only judges with more than 15 sentences")
-        self.print_results(mjD)
+        print(mjD)
+        #self.print_results(mjD)
+        return mjA
 
     def print_results(self, mj):
         corpus = self.corpus.reset_index()
@@ -142,6 +149,8 @@ class Baseline():
             judge = None
             judges = {}
             for line in lines:
+                if line.startswith("LORD"):
+                    flag = True
                 if flag == True:
                     judge = self.cln_judge(line)
                     judges[judge] = {}
@@ -149,8 +158,7 @@ class Baseline():
                     flag = False
                 elif judge:
                     judges[judge]["body"].append(line)
-                if "NEW JUDGE" in line:
-                    flag = True
+
 
             return judges
 
@@ -158,5 +166,6 @@ class Baseline():
         """
         Judge name is lower-case first two words of his name.
         """
-        judge = " ".join(judge.lower().split(" ")[:2]) # keeps two lower-case names i.e. lord x
+        judge = ' '.join(judge.split()[:2]).lower() # keeps two lower-case names i.e. lord x
+
         return judge

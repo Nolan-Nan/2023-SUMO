@@ -1,33 +1,3 @@
-'''def new_corpus(self, file):
-    # make new corpus depends on the given txt file
-    all = []
-    with open("data/UKHL/" + file, 'r') as f:
-        lines = [i.strip("\n") for i in f.readlines()]
-
-        ref_sent = self.ext_ref(lines)
-        line_num, body, max_line = self.ext_sent(file)
-        case_name = int(file.strip(".txt"))
-
-        for line_num, body in zip(line_num, body):
-            try:  # Each annotation must have from, to and relation filled in
-                ref = ref_sent[line_num]
-                ref_from = ref["from"]
-                ref_to = ref["to"]
-                relation = ref["rel"]
-                position = round(line_num / max_line, 1)
-                for r_f, r_t, rel in zip(ref_from, ref_to, relation):
-                    print(case_name, line_num, body, r_f, r_t, rel, position, mj)
-                    all.append([case_name, line_num, body, r_f, r_t, rel, position, mj])
-
-            except:  # If there is no annotation, fills the blanks
-                mj, ref_from, ref_to, relation = "NAN", "NAN", "NAN", "NAN"
-                pos = round(line_num / max_line, 1)
-                all.append([case_name, line_num, body, ref_from, ref_to, relation, pos, mj])
-        corpus = pd.DataFrame.from_records(all, index="case",
-                                           columns=["case", "line", "body", "from", "to", "relation",
-                                                    "pos", "mj"])
-        save_data("new_corpus", corpus)
-        return corpus'''
 import re
 
 import pandas as pd
@@ -85,6 +55,25 @@ def new_case(filename):
         line_num += 1
 
     df = pd.DataFrame(results)
-    df.to_csv(case + '.csv', index=False)
+    df.to_csv('data/UKHL_csv/'+case + '.csv', index=False)
     return df
+
+def rewrite_rel(predicted, filename):
+    case = filename.split(".")[0]
+    original_data = pd.read_csv('data/UKHL_csv/' + case + '.csv')
+
+    for index, row in predicted.iterrows():
+        original_data.loc[(original_data['line'] == row['line']), 'relation'] = row['relation']
+
+    original_data.to_csv('data/UKHL_csv/' + case + '.csv', index=False)
+
+def rewrite_mj(mj, filename):
+    case = filename.split(".")[0]
+    original_data = pd.read_csv('data/UKHL_csv/' + case + '.csv')
+    list = []
+    for index, row in mj.iterrows():
+        list.append(row['mj'])
+
+    original_data["mj"] = original_data["mj"].replace(original_data["mj"].unique(), list)
+    original_data.to_csv('data/UKHL_csv/' + case + '.csv', index=False)
 

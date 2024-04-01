@@ -1,6 +1,6 @@
 from ASMO.user.user import User
 from ASMO.corpus.corpus import Corpus
-from new_corpus import new_case
+import new_corpus
 from ASMO.classifier.classifier import Classifier
 from ASMO.classifier.perfect import Perfect
 from ASMO.majority.OptBaseline import Optimal
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
-    new_case = new_case('UKHL20012.txt')
+    new_case = new_corpus.new_case('UKHL20012.txt')
     out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')
 
@@ -46,21 +46,21 @@ if __name__ == '__main__':
     classifier = Classifier(ML_corpus, pip.test_size, pip.train)
     predicted = classifier.get_prediction(new_case)
     print(predicted)
+    new_corpus.rewrite_rel(predicted,'UKHL20012.txt')
 
-'''
-    print("\n\nHuman Classifier")
+    '''print("\n\nHuman Classifier")
     # Human classifier for pipeline evaluation
     perf = Perfect(MJ_corpus)
     hum_predicted = perf.get_pred()
 
     # Apply rules
     majority = Majority(MJ_corpus, hum_predicted)
-    majority.predict()
+    majority.predict()'''
 
     print("\n\nMachine Classifier")
     # Apply rules
-    majority = Majority(ALL_corpus, predicted)
-    majority.predict()
+    majority = Majority(new_case, predicted)
+    majority.new_predict()
 
     print("\n\nBaselines:")
     # Print baselines
@@ -68,9 +68,10 @@ if __name__ == '__main__':
     print("\n\n1")
     num = optimal.find_optimal()
     print("\n\n2")
-    baselines = Baseline(num, pip.corPath, ALL_corpus)
+    baselines = Baseline(num, 'data/UKHL_txt/', new_case)
     print("\n\n3")
-    baselines.find_majority()
+    mj = baselines.find_majority()
+    new_corpus.rewrite_mj(mj, 'UKHL20012.txt')
     print("\n\n4")
     baselines.find_AS()
 
