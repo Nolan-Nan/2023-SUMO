@@ -16,11 +16,6 @@ from collections import Counter
 from .storage import save_data, load_data
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-
-
-
-
-
 class Corpus:
 
     def __init__(self, user, MJ_size, update):
@@ -58,7 +53,6 @@ class Corpus:
         return corpus
 
     def get_offline(self):
-
         all = []
         for annotator in self.user.get_anno():
             for file in list(range(1, 301)):
@@ -187,6 +181,7 @@ class Corpus:
             return mj
         return "NAN"
 
+
     def update_corpus(self):
         """
         Loads corpus from pickle or downloads a new one from holj.ml
@@ -241,6 +236,7 @@ class Corpus:
         ML_set = x.loc[x["case"].isin(b)].sort_values(by=['case', 'line'])
         ALL_set = x.loc[x["case"].isin(c)].sort_values(by=['case', 'line'])
         Count_set = x.loc[x["case"].isin(d)].sort_values(by=['case', 'line'])
+
 
         if type == "ml":
             return ML_set

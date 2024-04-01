@@ -1,13 +1,12 @@
 from ASMO.user.user import User
 from ASMO.corpus.corpus import Corpus
-from ASMO.corpus.visualise import Visualise
+from new_corpus import new_case
 from ASMO.classifier.classifier import Classifier
 from ASMO.classifier.perfect import Perfect
-from ASMO.majority.majority2 import Majority
-from ASMO.majority.baselines import Baseline
 from ASMO.majority.OptBaseline import Optimal
-from ASMO.corpus.stats import Stats
-import pandas as pd
+from ASMO.majority.baselines import Baseline
+from ASMO.majority.majority import Majority
+
 
 class Pipeline:
     # ---- Corpus Settings ----
@@ -37,25 +36,18 @@ if __name__ == '__main__':
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
+    new_case = new_case('UKHL20012.txt')
     out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')
-    # # cnt = holj_corpus.get_corpus(type = "count")
-    # # st = Stats(cnt)
-    # # st.count_AS()
-    # # st.count_MO()
 
-    # # st.predict()
-    # # st.count_GEN()
-    # # st.count_JUD()
-    # #
     print("\n\nTraining Classifier")
     #Train ML classifier
     #ALL_corpus[(ALL_corpus.case == 4) & (ALL_corpus.line == 88)].relation.item()
     classifier = Classifier(ML_corpus, pip.test_size, pip.train)
-    predicted = classifier.get_prediction(ALL_corpus)
+    predicted = classifier.get_prediction(new_case)
     print(predicted)
 
-
+'''
     print("\n\nHuman Classifier")
     # Human classifier for pipeline evaluation
     perf = Perfect(MJ_corpus)
@@ -84,4 +76,4 @@ if __name__ == '__main__':
 
     # # Visualise corpus
     # # vis = Visualise(amazon, cnt)
-    # # vis.html_corpus()
+    # # vis.html_corpus()'''

@@ -366,7 +366,7 @@ class featureExtractor():
         with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
             fieldnames = ['case_id', 'sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
             'loc4', 'loc5', 'loc6', 'sentlen',
-            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg',
+            'HGsentlen', 'quoteblock', 'inline_q', 'tfidf_max', 'tfidf_top20', 'tfidf_HGavg', 'wordlist',
             'loc ent', 'org ent', 'date ent', 'person ent','fac_ent', 'norp_ent', 'gpe_ent', 'event_ent', 'law_ent', 'time_ent',
             'work_of_art_ent', 'ordinal_ent', 'cardinal_ent', 'money_ent', 'percent_ent','product_ent', 'quantity_ent',
             'judgename', 'cp tense', 'cp modal', 'cp pos bool', 'cp dep bool', 'cp dep count', 'cp pos count', 'cp dep', 'cp tag', 'cp negative',
@@ -379,7 +379,7 @@ class featureExtractor():
                 writer.writerow({'case_id': self.case_flag[v], 'sent_id': self.sent_flag[v], 'agree': self.agree_X[v],
                 'outcome': self.outcome_X[v], 'loc1': self.loc1_X[v], 'loc2': self.loc2_X[v], 'loc3': self.loc3_X[v], 'loc4': self.loc4_X[v], 
                 'loc5': self.loc5_X[v], 'loc6': self.loc6_X[v], 'sentlen': self.sentlen_X[v], 'HGsentlen': self.HGsentlen_X[v], 'quoteblock': self.qb_X[v], 'inline_q': self.inq_X[v], 
-                 'tfidf_max': self.tfidf_max_X[v], 'tfidf_top20': self.tfidf_top20_X[v], 'tfidf_HGavg': self.tfidf_HGavg_X[v],
+                 'tfidf_max': self.tfidf_max_X[v], 'tfidf_top20': self.tfidf_top20_X[v], 'tfidf_HGavg': self.tfidf_HGavg_X[v], 'wordlist':self.wordlist_X[v],
                 'loc ent' : self.loc_ent_X[v], 'org ent' : self.org_ent_X[v], 'date ent' : self.date_ent_X[v], 'person ent' : self.person_ent_X[v],
                  'fac_ent': self.fac_ent_X[v], 'norp_ent': self.norp_ent_X[v],'gpe_ent': self.gpe_ent_X[v],'event_ent': self.event_ent_X[v],
                 'law_ent': self.law_ent_X[v], 'time_ent': self.time_ent_X[v],'work_of_art_ent': self.work_of_art_ent_X[v], 'ordinal_ent': self.ordinal_ent_X[v],

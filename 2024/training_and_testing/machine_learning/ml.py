@@ -325,7 +325,7 @@ class ml:
 
                 import pickle
                 # CHANGE THIS NAME from 'test' to the classifier name you are writing, this will need to be updated in the other files / pipeline files
-                f = open('c.pickle', 'wb')
+                f = open('rel-new.pickle', 'wb')
                 pickle.dump(clf, f)
                 f.close()
                 print(score)
@@ -454,10 +454,7 @@ class ml:
         rhet_y = self.rhet_y
         rel_y = self.rel_y
        # citationent_X = self.citationent_X
-      #  blackstone = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone
-     #   spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.time_ent_X, self.gpe_ent_X, self.fac_ent_X, self.ordinal_ent_X
-     #   total_spacy = self.total_spacy_X
-        #HGents = self.provision_blackstone, self.instrument_blackstone, self.court_blackstone, self.case_blackstone, self.citation_blackstone, self.judge_blackstone, self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X
+        #   total_spacy = self.total_spacy_X
         HGents = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X, \
                       self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                       self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X

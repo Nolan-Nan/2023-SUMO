@@ -154,7 +154,6 @@ class crf():
         self.initialize()
         self.pull_testing_data()
         X_test = self.create_speeches_features_list()
-
         y_test = self.sent_to_rhetlabel()
 
 # TEST / TRAIN
@@ -168,9 +167,9 @@ class crf():
 
         crf.fit(X_train, y_train)
 
-
         labels = list(crf.classes_)
-        labels.remove('0.0')
+        if '0.0' in labels:
+            labels.remove('0.0')
 
         y_pred = crf.predict(X_test)
         print(metrics.flat_f1_score(y_test, y_pred,
@@ -248,12 +247,13 @@ class crf():
         crf = rs.best_estimator_
         y_pred = crf.predict(X_test)
         labels = list(crf.classes_)
-        labels.remove('0.0')
+        if '0.0' in labels:
+            labels.remove('0.0')
 
         y_test = [label for y in y_test for label in y]
         y_pred = [label for y in y_pred for label in y]
         print(sklearn.metrics.classification_report(
-            y_test, y_pred, labels=labels, digits=3
+            y_test, y_pred, labels=labels, digits=3, zero_division='warn'
         ))
 
         print(len(Counter(crf.transition_features_).most_common(20)))
@@ -352,7 +352,6 @@ class crf():
             individual_label = []
             individual_label.append(label)
             rhet_labels.append(individual_label)
-
         return rhet_labels
 
 
@@ -418,7 +417,7 @@ class crf():
     
     
     def rhet_predict(self): 
-        f = open("c.pickle", "rb")
+        f = open("rhet-new.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
@@ -434,8 +433,6 @@ class crf():
         features = np.vstack((features, self.sent_length))
         features = np.vstack((features, self.tfidf_top20))
         features = np.vstack((features, self.spacy))
-        features = np.vstack((features, self.rhet_role))
-        features = np.vstack((features, self.wordlist))
         features = np.vstack((features,)).T
         return features
     

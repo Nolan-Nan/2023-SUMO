@@ -39,16 +39,19 @@ class pipeline():
          print("Enter 1 to select a trained case number, anything else to a new case.")
          answer = input()
          if answer == '1':
-             print("Enter the UKHL Corpus case number (1.19, 1.63, 1.35, 2.23, 2.34, 3.21, 3.14, 1.03, 1.32, 1.7, 1.27, 2.25,")
-             print("2.16, 2.06, 2.02, 2.09, 2.03, 2.01, 2.08, 3.45, 3.36, 3.24, 3.17, 3.37, 3.03, 3.48, 3.42, 3.38 \n")
+             print("Enter the UKHL Corpus case number (1.19, 1.63, 1.68, 1.05, 1.02, 1.04, 1.35, 1.39, 1.38, 1.42, 1.34, 1.11, 1.15, 1.26,")
+             print("1.28, 1.57, 1.43, 1.55, 2.13, 2.18, 2.3, 2.35, 2.34, 2.26, 2.24, 2.29, 2.21, 2.23, 2.45, 2.47, 2.41, 3.18, 3.21\n")
+             print("3.22, 3.07, 3.1, 3.08, 3.02, 3.44, 3.41, 3.31, 3.32, 3.15, 3.14, 3.28, 1.03, 1.32, 1.7, 1.27, 2.25, 2.16, 2.06\n")
+             print("2.02, 2.09, 2.03, 2.01, 2.08, 3.45, 3.36, 3.24, 3.17, 3.37, 3.03, 3.48, 3.42, 3.38\n")
+
              casenum = input()
              self.prepareCase(casenum)
-         else: 
+         else:
+             link = answer
+             self.prepareLink(link)
              print("We do not yet support this feature.")
-             print("Enter the UKHL Corpus case number 1.02")
+             print("Enter the link of the case from National Archieve")
              # here we would go and make it to the similar csv file, label, get ASMO, then follow same pipeline
-             casenum = input()
-             self.new_prepareCase(casenum)
     def prepareCase(self, casenum):
 
         print("\n PREPARING THE DATA FOR SUMMARISATION\n")
@@ -64,7 +67,11 @@ class pipeline():
         summary.summary(casenum)
         print("\n")
         print("\n SUMO Summary Pipeline Complete.")
-        
+
+    def prepareLink(self, link):
+        print("\n GET TEXT FORM THE LINK\n")
+        import HTMLTextExtractor
+        HTMLTextExtractor.HTMLTextExtractor(link)
         
 pipeline = pipeline()
 pipeline.begin()

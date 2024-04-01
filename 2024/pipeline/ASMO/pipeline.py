@@ -39,7 +39,10 @@ if __name__ == '__main__':
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
-    out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
+    new_case = holj_corpus.new_corpus('UKHL20012.txt')
+    out = new_case[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
+    out.to_csv(r'UKHL20012.csv')
+    '''out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')
     # # cnt = holj_corpus.get_corpus(type = "count")
     # # st = Stats(cnt)
@@ -55,6 +58,7 @@ if __name__ == '__main__':
     #ALL_corpus[(ALL_corpus.case == 4) & (ALL_corpus.line == 88)].relation.item()
     classifier = Classifier(ML_corpus, pip.test_size, pip.train)
     predicted = classifier.get_prediction(ALL_corpus)
+    new_predict = classifier.get_prediction(new_case)
     print(predicted)
 
 
@@ -82,4 +86,4 @@ if __name__ == '__main__':
 
     # # Visualise corpus
     # # vis = Visualise(amazon, cnt)
-    # # vis.html_corpus()
+    # # vis.html_corpus()'''

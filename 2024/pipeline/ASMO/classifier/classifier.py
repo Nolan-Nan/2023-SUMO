@@ -1,7 +1,7 @@
 from .item_selector import ItemSelector
 from .parameters import Parameters
 
-from ..corpus.storage import save_data, load_data
+from .storage import save_data, load_data
 
 
 from .deparser import Deparser

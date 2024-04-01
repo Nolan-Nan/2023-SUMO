@@ -119,7 +119,7 @@ class summary():
     
         
     def getSummaryData(self, casenum):
-        with open('summarydata/UKHL_'+casenum+'_classification.csv', 'r') as infile:
+        with open('summarydata-spacy/UKHL_'+casenum+'_classification.csv', 'r') as infile:
             reader = csv.DictReader(infile)
             
             sentences = []

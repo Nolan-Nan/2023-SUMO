@@ -81,9 +81,6 @@ class ml():
         self.voice_X = np.array([])
         self.negcue_X = np.array([])
         self.tense_X = np.array([])
-        
-        self.rhet_X = np.array([])
-        
 
         self.ranking = []
         
@@ -95,7 +92,6 @@ class ml():
         self.sent_length = np.array([])
         self.tfidf_top20 = np.array([])
         self.rhet_role = np.array([])
-        self.blackstone = np.array([])
         self.spacy = np.array([])
         self.SVCpred = [] # change the name to reflect that its DTC now
         self.rhet_predictions = np.array([])
@@ -191,7 +187,7 @@ class ml():
         return features
 
     def rhet_predict(self): 
-        f = open("RHETORICAL_OCT22.pickle", "rb")
+        f = open("rhet.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
@@ -200,10 +196,15 @@ class ml():
         print(len(self.rhet_pred))
         self.create_RhetTarget()
         
-    def get_rhet_dtc_features(self): 
+    def get_rhet_dtc_features(self):
         features = self.location
-     #   features = np.vstack((features, self.asmo))
-    #    features = np.vstack((features, self.location))
+        features = np.vstack((features, self.quote))
+        features = np.vstack((features, self.asmo))
+        features = np.vstack((features, self.cue_phrase))
+        features = np.vstack((features, self.sent_length))
+        features = np.vstack((features, self.tfidf_top20))
+        features = np.vstack((features, self.spacy))
+        features = np.vstack((features, self.wordlist))
         features = np.vstack((features,)).T
         return features
     
@@ -232,9 +233,6 @@ class ml():
                 self.rhet_X = np.append(self.rhet_X, [0]) 
         
         print(len(self.rhet_X))
-        
-
-        
         
     def createRhetFeaturesList(self, casenum): 
         all_featureset = []
@@ -309,7 +307,9 @@ class ml():
         
         case_features = self.get_rel_features()
         curr_RelPredictions = classifier.predict(case_features)
-        for prediction in curr_RelPredictions: 
+
+
+        for prediction in curr_RelPredictions:
             if prediction == 1: 
 
                 self.RelPredictions = np.append(self.RelPredictions, ['yes'])
@@ -317,19 +317,23 @@ class ml():
                 self.RelPredictions = np.append(self.RelPredictions, ['no'])
 
         ranks = []
-        
-        rank = classifier.predict_proba(case_features)
 
-
-        for v in enumerate(rank):
-            yes = v[1]
-            yes_confidence = yes[1]
+        # Assuming you want to calculate probabilities manually
+        # You can replace this with your custom probability calculation method
+        proba = self.calculate_proba(classifier, case_features)
+        for v in proba:
+            yes_confidence = v[1]  # Assuming 1 is the index of the positive class
             ranks.append(yes_confidence)
         self.ranking = ranks
-        
- 
 
-        
+
+    def calculate_proba(self, classifier, case_features):
+        proba = []
+        for featureset in case_features:
+            prob = classifier.predict_marginals_single(featureset)
+            proba.append(prob)
+        return proba
+
     # create the necessary feature sets
     def cleanRelLabels(self):
         labels = self.RFpred
@@ -347,9 +351,7 @@ class ml():
             rellabels.append(individual_label)
             
         self.RFpred = rellabels
-        
-  
-    
+
     def ConvertRhetToArray(self, rhetorical_predictions):
         for label in rhetorical_predictions:
             if label == 'FACT':     
@@ -368,6 +370,7 @@ class ml():
                 self.rhet_predictions = np.append(self.rhet_predictions [0])   
     
     # TODO - CHANGE THIS TO THE WAY THAT YOU DO IT FOR THE RELEVANCE OTHERWISE to match same feature sets
+
     def rewriteFeatures(self, casenum):
         with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'w', newline='') as outfile:
                 fieldnames = ['sent_id', 'align', 'agree', 'outcome', 'loc1', 'loc2', 'loc3', 
@@ -394,10 +397,7 @@ class ml():
                         'cp dep count':  self.modal_dep_count_X[v], 'cp pos count': self.modal_pos_count_X[v], 'cp dep': self.new_dep_X[v], 'cp tag': self.new_tag_X[v], 'cp negative': self.new_negative_X[v],
                         'cp stop': self.new_stop_X[v], 'cp voice' : self.new_voice_X[v], 'cp second pos': self.second_pos_X[v], 'cp second dep' : self.second_dep_X[v], 
                         'cp second tag' : self.second_tag_X[v], 'cp second stop' : self.second_stop_X[v]}) 
-         
 
-
-    
     def rewriteRelFeatures(self, casenum):
 
         with open('summarydata-spacy/UKHL_'+casenum+'_classification.csv', 'w', newline='') as outfile:
@@ -412,7 +412,8 @@ class ml():
                         
         
     # TODO - UPDATE THIS FOR THE NEW CUE PHRASES
-    def rhetFeatures(self, casenum, sentence_id, y, tag_history, newspeech, 
+
+    def rhetFeatures(self, casenum, sentence_id, y, tag_history, newspeech,
                      newSpeechLookAheadBy1, newSpeechLookAheadBy2):
        
         features = {'loc' : self.location,
@@ -1264,8 +1265,6 @@ class ml():
                                       })  
         return sentence_features
 
-        
-
     def rhetData(self, casenum):
         self.sent_id = []
         with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'r') as infile:
@@ -1285,7 +1284,7 @@ class ml():
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
                 self.tfidf_top20_X = np.append(self.tfidf_top20_X, [float(row['tfidf_top20'])])
-
+                self.wordlist_X = np.append(self.wordlist_X, [float(row['wordlist'])])
                 self.loc_ent_X = np.append(self.loc_ent_X, [float(row['loc ent'])])
                 self.org_ent_X = np.append(self.org_ent_X, [float(row['org ent'])])
                 self.date_ent_X = np.append(self.date_ent_X, [float(row['date ent'])])
@@ -1327,14 +1326,13 @@ class ml():
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
         self.quote = self.inq_X, self.qb_X
         self.asmo = self.agree_X, self.outcome_X
-        self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
+        self.cue_phrase = self.modal_dep_bool_X, self.modal_dep_count_X, self.new_modal_X, self.new_tense_X, self.new_dep_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
         self.sent_length =  self.sentlen_X
         self.tfidf_top20 = self.tfidf_top20_X
         self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X,\
                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
-
-      
+        self.wordlist = self.wordlist_X
     def relevanceData(self, casenum):
         with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'r') as infile:
             reader = csv.DictReader(infile)
@@ -1353,7 +1351,7 @@ class ml():
                 self.sentlen_X = np.append(self.sentlen_X, [float(row['sentlen'])])
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
-  
+
                 self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_top20'])])
 
                 self.loc_ent_X = np.append(self.loc_ent_X, [float(row['loc ent'])])
