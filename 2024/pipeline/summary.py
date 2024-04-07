@@ -13,6 +13,9 @@ sentences (15 is the number chosen in line with Hachey and Grover)
 import csv
 import xml.etree.ElementTree as ET
 
+import pandas as pd
+
+
 class summary():
     def __init__(self, casenum):
         sentences, judges, citation, majority = self.getSentences(casenum)
@@ -56,7 +59,11 @@ class summary():
         
     def prepareASMOData(self, casenum):
         ASMOagree = []
-        with open("data/UKHL_corpus/UKHL_" +casenum+ ".csv", "r") as infile:
+        if casenum.startswith("UKHL"):
+            path = 'data/UKHL_corpus/'+casenum+'.csv'
+        else:
+            path = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
+        with open(path, 'r') as infile:
             reader = csv.DictReader(infile)
             
             for row in reader:
@@ -68,54 +75,59 @@ class summary():
         
     # get the UKHL data from corpus
     def summaryHeaderData(self, casenum):
-        corpusList = ["2001Apr04eastbrn-1.ling.xml", "2001Dec13aib-1.ling.xml", "2001Dec13smith-1.ling.xml", "2001Feb08kuwait-1.ling.xml",
-            "2001Feb08presto-1.ling.xml", "2001Jan18intern-1.ling.xml", "2001Jan31card-1.ling.xml", "2001Jul05m-1.ling.xml", "2001Jul12mcgra-1.ling.xml",
-            "2001Jul12news-1.ling.xml", "2001Jul25dan-1.ling.xml", "2001Jun28norris-1.ling.xml", "2001Mar08mehann-1.ling.xml", "2001Mar22hallam-1.ling.xml",
-            "2001May23daly-1.ling.xml", "2001May23liver-1.ling.xml", "2001Nov01moham-1.ling.xml", "2001Oct11uratem-1.ling.xml", "2001Oct25dela-1.ling.xml",
-            "2002Apr18gersn-1.ling.xml", "2002Apr25cave-1.ling.xml", "2002Jul04graham-1.ling.xml", "2002Jul25robert-1.ling.xml", "2002Jul25sten-1.ling.xml",
-            "2002Jun20pope-1.ling.xml", "2002Jun20wngton-1.ling.xml", "2002Jun27ash-1.ling.xml", "2002May16morgan-1.ling.xml", "2002May23burket-1.ling.xml",
-            "2002Nov14byrne-1.ling.xml", "2002Nov25lich-1.ling.xml", "2002Oct31regina-1.ling.xml", "2003Apr03green-1.ling.xml", "2003Apr10bellin-1.ling.xml",
-            "2003Apr10sage-1.ling.xml", "2003Feb20glaz-1.ling.xml", "2003Feb27diets-1.ling.xml", "2003Feb27inrep-1.ling.xml", "2003Jan30kanar-1.ling.xml",
-            "2003Jan30regina-1.ling.xml", "2003Jul31moyna-1.ling.xml", "2003Jul31mulkrn-1.ling.xml", "2003Jun12kuwa-1.ling.xml", "2003Jun12lyon-1.ling.xml",
-            "2003Mar20sepet-1.ling.xml", "2003Mar20sivak-1.ling.xml", "2003May22john-1.ling.xml", "2001Jan25montgo-1.ling.xml", "2001Jun28optid-1-NS.ling.xml", 
-            "2001Dec17inreb-1-NS.ling.xml", "2001May23newfi-1-NS.ling.xml", "2002Jun20ni-1-NS.ling.xml", "2002Apr25cape-1-NS.ling.xml", "2002Oct17westmi-1.ling.xml", 
-            "2002Feb20kahn-1-NS.ling.xml", "2002Jan24benja-1.ling.xml", "2002Feb28amin-1.ling.xml", "2002Jan24zeqiri-1-NS.ling.xml", "2002Jan24rezvi-1.ling.xml", 
-            "2002Feb28esusse-1-NS.ling.xml", "2003Jul31thomsn-1-NS.ling.xml", "2003Jun26anuf-1-NS.ling.xml", "2003May08russ-1.ling.xml", "2003Apr03action-1.ling.xml", 
-            "2003Jun26aston-1-NS.ling.xml", "2003Feb06shield-1-NS.ling.xml", "2003Jul31lloyds-1-NS.ling.xml", "2003Jul31giles-1-NS.ling.xml", "2003Jun26rus-1-NS.ling.xml"]
-        caseList = ['1.19', '1.63', '1.68', 'NA', 
-            '1.05', '1.02', '1.04', '1.35', '1.39', 
-            '1.38', '1.42', '1.34', '1.11', '1.15', 
-            '1.26', '1.28', '1.57', '1.43', '1.55', 
-            '2.13', '2.18', '2.3', '2.35', '2.34', 
-            '2.26', '2.24', '2.29', '2.21', '2.23', 
-            '2.45', '2.47', '2.41', '3.18', '3.21', 
-            '3.22', '3.07', '3.1', '3.08', '3.02', 
-            'N/A', '3.44', '3.41', '3.31', '3.32', 
-            '3.15', '3.14', '3.28', '1.03', '1.32', 
-            '1.7', '1.27', '2.25', '2.16', 'NA', '2.06', 
-            '2.02', '2.09', '2.03', '2.01', '2.08', '3.45',
-            '3.36', '3.24', '3.17', '3.37', '3.03', '3.48', 
-            '3.42', '3.38']
-        index = caseList.index(casenum)    
-        tree = ET.parse('./data/SUM_69_corpus/' + corpusList[index])
-        root = tree.getroot()
-        
-        respondents = []
-        appellants = []
-    
-        for elem in root.iter("case"):
-            if len(elem):
-                for subelem in elem:
-                    if subelem.attrib.get("subtype") == "respondent":
-                        respondents.append(subelem.text.replace("\n", " "))
-                    if subelem.attrib.get("subtype") == "appellant":
-                        appellants.append(subelem.text.replace("\n", " "))
-                   
-        # where it cant get the respondents and appellants
-        if len(respondents) > 0 and len(appellants) > 0:
-            return respondents[0], appellants[0]
+        if casenum.startswith("UKHL"):
+            data = pd.read_csv('data/UKHL_corpus/' + casenum + '.csv')
+            return data['text'].iloc [-1], data['text'].iloc [-2]
+
         else:
-            return "", ""
+            corpusList = ["2001Apr04eastbrn-1.ling.xml", "2001Dec13aib-1.ling.xml", "2001Dec13smith-1.ling.xml", "2001Feb08kuwait-1.ling.xml",
+                "2001Feb08presto-1.ling.xml", "2001Jan18intern-1.ling.xml", "2001Jan31card-1.ling.xml", "2001Jul05m-1.ling.xml", "2001Jul12mcgra-1.ling.xml",
+                "2001Jul12news-1.ling.xml", "2001Jul25dan-1.ling.xml", "2001Jun28norris-1.ling.xml", "2001Mar08mehann-1.ling.xml", "2001Mar22hallam-1.ling.xml",
+                "2001May23daly-1.ling.xml", "2001May23liver-1.ling.xml", "2001Nov01moham-1.ling.xml", "2001Oct11uratem-1.ling.xml", "2001Oct25dela-1.ling.xml",
+                "2002Apr18gersn-1.ling.xml", "2002Apr25cave-1.ling.xml", "2002Jul04graham-1.ling.xml", "2002Jul25robert-1.ling.xml", "2002Jul25sten-1.ling.xml",
+                "2002Jun20pope-1.ling.xml", "2002Jun20wngton-1.ling.xml", "2002Jun27ash-1.ling.xml", "2002May16morgan-1.ling.xml", "2002May23burket-1.ling.xml",
+                "2002Nov14byrne-1.ling.xml", "2002Nov25lich-1.ling.xml", "2002Oct31regina-1.ling.xml", "2003Apr03green-1.ling.xml", "2003Apr10bellin-1.ling.xml",
+                "2003Apr10sage-1.ling.xml", "2003Feb20glaz-1.ling.xml", "2003Feb27diets-1.ling.xml", "2003Feb27inrep-1.ling.xml", "2003Jan30kanar-1.ling.xml",
+                "2003Jan30regina-1.ling.xml", "2003Jul31moyna-1.ling.xml", "2003Jul31mulkrn-1.ling.xml", "2003Jun12kuwa-1.ling.xml", "2003Jun12lyon-1.ling.xml",
+                "2003Mar20sepet-1.ling.xml", "2003Mar20sivak-1.ling.xml", "2003May22john-1.ling.xml", "2001Jan25montgo-1.ling.xml", "2001Jun28optid-1-NS.ling.xml",
+                "2001Dec17inreb-1-NS.ling.xml", "2001May23newfi-1-NS.ling.xml", "2002Jun20ni-1-NS.ling.xml", "2002Apr25cape-1-NS.ling.xml", "2002Oct17westmi-1.ling.xml",
+                "2002Feb20kahn-1-NS.ling.xml", "2002Jan24benja-1.ling.xml", "2002Feb28amin-1.ling.xml", "2002Jan24zeqiri-1-NS.ling.xml", "2002Jan24rezvi-1.ling.xml",
+                "2002Feb28esusse-1-NS.ling.xml", "2003Jul31thomsn-1-NS.ling.xml", "2003Jun26anuf-1-NS.ling.xml", "2003May08russ-1.ling.xml", "2003Apr03action-1.ling.xml",
+                "2003Jun26aston-1-NS.ling.xml", "2003Feb06shield-1-NS.ling.xml", "2003Jul31lloyds-1-NS.ling.xml", "2003Jul31giles-1-NS.ling.xml", "2003Jun26rus-1-NS.ling.xml"]
+            caseList = ['1.19', '1.63', '1.68', 'NA',
+                '1.05', '1.02', '1.04', '1.35', '1.39',
+                '1.38', '1.42', '1.34', '1.11', '1.15',
+                '1.26', '1.28', '1.57', '1.43', '1.55',
+                '2.13', '2.18', '2.3', '2.35', '2.34',
+                '2.26', '2.24', '2.29', '2.21', '2.23',
+                '2.45', '2.47', '2.41', '3.18', '3.21',
+                '3.22', '3.07', '3.1', '3.08', '3.02',
+                'N/A', '3.44', '3.41', '3.31', '3.32',
+                '3.15', '3.14', '3.28', '1.03', '1.32',
+                '1.7', '1.27', '2.25', '2.16', 'NA', '2.06',
+                '2.02', '2.09', '2.03', '2.01', '2.08', '3.45',
+                '3.36', '3.24', '3.17', '3.37', '3.03', '3.48',
+                '3.42', '3.38']
+            index = caseList.index(casenum)
+            tree = ET.parse('./data/SUM_69_corpus/' + corpusList[index])
+            root = tree.getroot()
+
+            respondents = []
+            appellants = []
+
+            for elem in root.iter("case"):
+                if len(elem):
+                    for subelem in elem:
+                        if subelem.attrib.get("subtype") == "respondent":
+                            respondents.append(subelem.text.replace("\n", " "))
+                        if subelem.attrib.get("subtype") == "appellant":
+                            appellants.append(subelem.text.replace("\n", " "))
+
+            # where it cant get the respondents and appellants
+            if len(respondents) > 0 and len(appellants) > 0:
+                return respondents[0], appellants[0]
+            else:
+                return "", ""
     
         
     def getSummaryData(self, casenum):

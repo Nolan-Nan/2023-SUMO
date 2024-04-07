@@ -45,6 +45,15 @@ class HTMLTextExtractor:
             else:
                 print("No valid pattern found in the URL.")
 
+
+            respondent_paragraphs = soup.find_all('p', string=re.compile(r'RESPONDENTS', re.IGNORECASE))
+            respondent = re.sub(r'\(RESPONDENTS.*', '', respondent_paragraphs[0].get_text())
+
+            appellants_paragraphs = soup.find_all('p', string=re.compile(r'APPELLANTS', re.IGNORECASE))
+            appellants = re.sub(r'\(APPELLANTS.*', '', appellants_paragraphs[0].get_text())
+
+            text = text + '\n' + respondent + '\n' + appellants + '\n'
+
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(text)
             print("Text saved to", file_path)

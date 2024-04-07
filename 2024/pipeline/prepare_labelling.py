@@ -12,6 +12,7 @@ def prepare_labelling(filepath):
     case = filename.split(".")[0]
     data = pd.read_csv('data/UKHL_csv/' + case + '.csv')
     data.rename(columns={'case': 'case_id','line':'sentence_id','from':'judge','body':'text'}, inplace=True)
+    data['judge'] = data['judge'].str.replace('lord', '').str.strip()
     data['agree'] = np.where(data['relation'] == 'fullagr', data['to'], 'NONE')
 
     data['ackn'] = np.where(data['relation'] == 'ackn', data['to'], 'NONE')
