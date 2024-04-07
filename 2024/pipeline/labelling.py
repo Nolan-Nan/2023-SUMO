@@ -52,7 +52,11 @@ class labelling():
         y = 0
     
         # Iterate through the entities identified by the model
-        with open('data/UKHL_corpus/UKHL_'+casenum+'.csv', 'r') as infile:
+        if casenum.startswith("UKHL"):
+            path = 'data/UKHL_corpus/'+casenum+'.csv'
+        else:
+            path = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
+        with open(path, 'r') as infile:
             reader = csv.DictReader(infile)
             for row in reader:
                 if row['agree'] == 'no match' or row['role'] == '<prep-date>'\

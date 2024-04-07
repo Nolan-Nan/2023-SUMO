@@ -94,10 +94,13 @@ class featureExtractor():
         print("Data outputed")
     
     def get_end_par_in_lord(self, judge, case, current_paragraph):
-        filename = 'UKHL_' + case + '.csv'
         if case == 'N/A':
-            filename = 'UKHL_' + 'NA' + '.csv'
-        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            case = 'NA'
+        if case.startswith("UKHL"):
+            path = 'data/UKHL_corpus2/' + case + '.csv'
+        else:
+            path = 'data/UKHL_corpus2/UKHL_' + case + '.csv'
+        with open(path, 'r') as infile:
                 reader = csv.DictReader(infile)
                 
 
@@ -116,10 +119,13 @@ class featureExtractor():
                 return ret        
 
     def get_end_sent_in_lord(self, judge, case, current_sentence):
-        filename = 'UKHL_' + case + '.csv'
         if case == 'N/A':
-           filename = 'UKHL_' + 'NA' + '.csv'
-        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            case = 'NA'
+        if case.startswith("UKHL"):
+            path = 'data/UKHL_corpus2/'+case+'.csv'
+        else:
+            path = 'data/UKHL_corpus2/UKHL_'+case+'.csv'
+        with open(path, 'r') as infile:
                reader = csv.DictReader(infile)
 
                ret = ''
@@ -133,10 +139,13 @@ class featureExtractor():
                return ret
 
     def get_end_sent_in_par(self, par, case, current_sentence):
-        filename = 'UKHL_' + case + '.csv'
         if case == 'N/A':
-            filename = 'UKHL_' + 'NA' + '.csv'
-        with open('./data/UKHL_corpus2/' + filename, 'r') as infile:
+            case = 'NA'
+        if case.startswith("UKHL"):
+            path = 'data/UKHL_corpus2/'+case+'.csv'
+        else:
+            path = 'data/UKHL_corpus2/UKHL_'+case+'.csv'
+        with open(path, 'r') as infile:
             reader = csv.DictReader(infile)
         
             ret = ''
@@ -202,7 +211,10 @@ class featureExtractor():
                 self.quantity_ent_X = np.append(self.quantity_ent_X, row['quantity_ent'])
             
     def createFeatures(self, casenum):
-        caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
+        if casenum.startswith("UKHL"):
+            caseFile = 'data/UKHL_corpus/'+casenum+'.csv'
+        else:
+            caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
         
         judge = ''
         case = ''

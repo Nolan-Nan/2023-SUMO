@@ -138,9 +138,11 @@ class summary():
             
         
     def getSentences(self, casenum):
-        caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
-        
-        with open(caseFile, 'r') as infile:
+        if casenum.startswith("UKHL"):
+            path = 'data/UKHL_corpus/'+casenum+'.csv'
+        else:
+            path = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
+        with open(path, 'r') as infile:
           reader = csv.DictReader(infile)
           sentences = []
           judges = []

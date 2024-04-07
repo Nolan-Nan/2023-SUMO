@@ -27,26 +27,27 @@ class Pipeline:
     info = True # Prints the results of the algorithm/parameters performance
 
 
-if __name__ == '__main__':
+def asmo(filepath):
     pip = Pipeline()
-
+    filename = filepath.split("/")[-1]
     # Get corpus
     amazon = User(pip.key, pip.ip, pip.user, pip.annotators, pip.corPath, pip.annPath, pip.mainAnno)
     holj_corpus = Corpus(amazon, pip.MJ_size, pip.download)
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
-    new_case = new_corpus.new_case('UKHL20012.txt')
-    out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
-    out.to_csv(r'AI.csv')
+    new_case = new_corpus.new_case(filename,False)
+    '''out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
+    out.to_csv(r'AI.csv')'''
 
     print("\n\nTraining Classifier")
     #Train ML classifier
     #ALL_corpus[(ALL_corpus.case == 4) & (ALL_corpus.line == 88)].relation.item()
     classifier = Classifier(ML_corpus, pip.test_size, pip.train)
     predicted = classifier.get_prediction(new_case)
+
     print(predicted)
-    new_corpus.rewrite_rel(predicted,'UKHL20012.txt')
+    new_corpus.rewrite_rel(predicted,filename)
 
     '''print("\n\nHuman Classifier")
     # Human classifier for pipeline evaluation
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     baselines = Baseline(num, 'data/UKHL_txt/', new_case)
     print("\n\n3")
     mj = baselines.find_majority()
-    new_corpus.rewrite_mj(mj, 'UKHL20012.txt')
+    new_corpus.rewrite_mj(mj, filename)
     print("\n\n4")
     baselines.find_AS()
 

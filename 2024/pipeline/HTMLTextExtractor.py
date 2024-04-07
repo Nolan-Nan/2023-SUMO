@@ -38,9 +38,9 @@ class HTMLTextExtractor:
             if index_start != -1 & index_end != -1:
                 text =  '\n'.join(lines[max(0, index_start - 2):index_end])
 
-            match = re.search(r'UKHL/\d+/\d+', url)
+            match = re.search(r'UKHL/\d+/\d+', self.url)
             if match:
-                file_path = "data/UKHL/" + re.sub(r'[^\w\s-]', '', match.group()) + ".txt"
+                file_path = "data/UKHL_txt/" + re.sub(r'[^\w\s-]', '', match.group()) + ".txt"
 
             else:
                 print("No valid pattern found in the URL.")
@@ -48,11 +48,11 @@ class HTMLTextExtractor:
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(text)
             print("Text saved to", file_path)
-            return text
+            return file_path
         else:
             return None
 
-# Example usage:
+'''Example usage:
 url = "https://www.bailii.org/uk/cases/UKHL/2001/2.html"
 
-html_extractor = HTMLTextExtractor(url).extract_text()
+HTMLTextExtractor(url).extract_text()'''

@@ -39,20 +39,21 @@ if __name__ == '__main__':
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
-    new_case = holj_corpus.new_corpus('UKHL20012.txt')
+    new_case = holj_corpus.new_corpus('UKHL20012.txt',False)
     out = new_case[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'UKHL20012.csv')
+
     '''out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')
     # # cnt = holj_corpus.get_corpus(type = "count")
     # # st = Stats(cnt)
     # # st.count_AS()
     # # st.count_MO()
-
     # # st.predict()
     # # st.count_GEN()
     # # st.count_JUD()
     # #
+    
     print("\n\nTraining Classifier")
     #Train ML classifier
     #ALL_corpus[(ALL_corpus.case == 4) & (ALL_corpus.line == 88)].relation.item()

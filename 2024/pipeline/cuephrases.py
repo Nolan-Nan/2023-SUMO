@@ -77,8 +77,11 @@ import spacy
 # negation = https://stackoverflow.com/questions/54849111/negation-and-dependency-parsing-with-spacy?
 
 def cuePhrases(casenum):
-    import spacy 
-    caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
+    import spacy
+    if casenum.startswith("UKHL"):
+        path = 'data/UKHL_corpus/' + casenum + '.csv'
+    else:
+        path = 'data/UKHL_corpus/UKHL_' + casenum + '.csv'
     
     print("calling cue phrases")
 
@@ -86,7 +89,7 @@ def cuePhrases(casenum):
     
     y = 0
     
-    with open(caseFile, 'r') as infile:
+    with open(path, 'r') as infile:
         
         reader = csv.DictReader(infile)
         

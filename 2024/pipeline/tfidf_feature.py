@@ -10,16 +10,6 @@ import csv
 class tfidf_calc:
     def __init__(self):
         self.path = './data/68txt_corpus/'
-        # self.corpus = [self.path+'1.19.txt', self.path+'1.63.txt', self.path+'1.68.txt', self.path+'NA.txt', 
-        # self.path+'1.05.txt', self.path+'1.02.txt', self.path+'1.04.txt', self.path+'1.35.txt', self.path+'1.39.txt', 
-        # self.path+'1.38.txt', self.path+'1.42.txt', self.path+'1.34.txt', self.path+'1.11.txt', self.path+'1.15.txt', 
-        # self.path+'1.26.txt', self.path+'1.28.txt', self.path+'1.57.txt', self.path+'1.43.txt', self.path+'1.55.txt', 
-        # self.path+'2.13.txt', self.path+'2.18.txt', self.path+'2.3.txt', self.path+'2.35.txt', self.path+'2.34.txt', 
-        # self.path+'2.26.txt', self.path+'2.24.txt', self.path+'2.29.txt', self.path+'2.21.txt', self.path+'2.23.txt', 
-        # self.path+'2.45.txt', self.path+'2.47.txt', self.path+'2.41.txt', self.path+'3.18.txt', self.path+'3.21.txt', 
-        # self.path+'3.22.txt', self.path+'3.07.txt', self.path+'3.1.txt', self.path+'3.08.txt', self.path+'3.02.txt', 
-        # self.path+'3.44.txt', self.path+'3.41.txt', self.path+'3.31.txt', self.path+'3.32.txt', 
-        # self.path+'3.15.txt', self.path+'3.14.txt', self.path+'3.28.txt']
         self.corpus = []
         self.case_ids = []
         with open("./data/UKHL_corpus.csv", "r") as infile:
@@ -53,6 +43,11 @@ class tfidf_calc:
         # '3.44', '3.41', '3.31', '3.32', 
         # '3.15', '3.14', '3.28']
         # self.document = caseList.index(document)
+        if document not in self.case_ids:
+            self.case_ids.append(document)
+            path = 'data/UKHL_txt/' + document +'.txt'
+            self.corpus.append(path)
+
         self.document = self.case_ids.index(document)
         if document == 'N/A':
             document = 'NA'

@@ -47,10 +47,11 @@ class pipeline():
              casenum = input()
              self.prepareCase(casenum)
          else:
-             link = answer
-             self.prepareLink(link)
-             print("We do not yet support this feature.")
-             print("Enter the link of the case from National Archieve")
+             print("Enter the link of the case from Bailii")
+             url = input()
+             self.prepareLink(url)
+
+
              # here we would go and make it to the similar csv file, label, get ASMO, then follow same pipeline
     def prepareCase(self, casenum):
 
@@ -68,10 +69,30 @@ class pipeline():
         print("\n")
         print("\n SUMO Summary Pipeline Complete.")
 
-    def prepareLink(self, link):
+    def prepareLink(self, url):
         print("\n GET TEXT FORM THE LINK\n")
         import HTMLTextExtractor
-        HTMLTextExtractor.HTMLTextExtractor(link)
+        filepath = HTMLTextExtractor.HTMLTextExtractor(url).extract_text()
+        casename = filepath.split("/")[-1].split(".")[0]
+        import  asmo_pipeline
+        asmo_pipeline.asmo(filepath)
+
+        import prepare_labelling
+        prepare_labelling.prepare_labelling(filepath)
+
+        import labelling
+        labelling.labelling(casename)
+
+        import featureExtractor
+        featureExtractor.featureExtractor(casename)
+        # integrated cue phrases above, now need to add cue phrases below
+        import ml
+        ml.ml(casename, True)
+        print("\n SUMO PIPELINE SUMMARIES: \n")
+        import summary
+        summary.summary(casename)
+        print("\n")
+        print("\n SUMO Summary Pipeline Complete.")
         
 pipeline = pipeline()
 pipeline.begin()

@@ -13,6 +13,9 @@ import csv
 
 import pickle
 
+import pandas as pd
+
+
 class ml():
     def __init__ (self, casenum, rhetRole):
         #Target/label
@@ -294,12 +297,48 @@ class ml():
         f.close()
         case_features = self.createRhetFeaturesList(casenum)
         self.rhet_predictions = classifier.predict(case_features)
+        self.store_role(casenum)
         
     #    self.convertRhetToArray(rhetorical_predictions)
         
-        # get the predictions 
+        # get the predictions
 
-        
+    def store_role(self, casenum):
+        '''role_mapping = {
+            0: 'NONE',
+            1: 'TEXTUAL',
+            2: 'FACT',
+            3: 'PROCEEDINGS',
+            4: 'BACKGROUND',
+            5: 'FRAMING',
+            6: 'DISPOSAL'
+        }'''
+
+        def map_role(label):
+            if label == 0:
+                return 'NONE'
+            elif label == 1:
+                return 'TEXTUAL'
+            elif label == 2:
+                return 'FACT'
+            elif label == 3:
+                return 'PROCEEDINGS'
+            elif label == 4:
+                return 'BACKGROUND'
+            elif label == 5:
+                return 'FRAMING'
+            elif label == 6:
+                return 'DISPOSAL'
+            else:
+                return 'UNKNOWN'
+        if casenum.startswith("UKHL"):
+            predictions = [[int(float(val[0]))] for val in self.rhet_predictions]
+            data = pd.read_csv('data/UKHL_corpus/' + casenum + '.csv')
+            data['role'] = [map_role(label[0]) for label in predictions]
+            data.loc[0, 'role'] = '<new-case>'
+            data.to_csv('data/UKHL_corpus/' + casenum + '.csv', index=False)
+            data.to_csv('data/UKHL_corpus2/' + casenum + '.csv', index=False)
+
     def relevanceClassification(self): 
         f = open("RELEVANCE.pickle", "rb")
         classifier = pickle.load(f)
@@ -355,7 +394,7 @@ class ml():
     def ConvertRhetToArray(self, rhetorical_predictions):
         for label in rhetorical_predictions:
             if label == 'FACT':     
-                self.rhet_predictions = np.append(self.rhet_predictions, [2])       
+                self.rhet_predictions = np.append(self.rhet_predictions, [2])
             if label == 'PROCEEDINGS':     
                 self.rhet_predictions = np.append(self.rhet_predictions, [3])            
             if label == 'BACKGROUND':       
