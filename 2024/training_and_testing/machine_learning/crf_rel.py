@@ -139,7 +139,6 @@ class crf():
         from seq_init import create_tagged_sentences_list
         sentences_list = []
 
-
         # TRAIN THEN SAVE
         self.initialize()
         self.pull_training_data()
@@ -153,9 +152,6 @@ class crf():
         X_test = self.create_speeches_features_list()
         y_test = self.sent_to_rellabel()
        # print(y_test)
-
-
-
 
 
 # TEST / TRAIN
@@ -174,6 +170,7 @@ class crf():
         print(labels)
 
         y_pred = crf.predict(X_test)
+        print(y_pred)
         print(metrics.flat_f1_score(y_test, y_pred,
                       average='micro', labels=labels))
         y_test = [label for y in y_test for label in y]

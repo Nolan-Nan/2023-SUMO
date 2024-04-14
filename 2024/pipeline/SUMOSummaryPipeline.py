@@ -75,7 +75,7 @@ class pipeline():
         filepath = HTMLTextExtractor.HTMLTextExtractor(url).extract_text()
         casename = filepath.split("/")[-1].split(".")[0]
         import  asmo_pipeline
-        asmo_pipeline.asmo(filepath)
+        mj = asmo_pipeline.asmo(filepath)
 
         import prepare_labelling
         prepare_labelling.prepare_labelling(filepath)

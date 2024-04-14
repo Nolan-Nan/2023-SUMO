@@ -822,7 +822,8 @@ class summary():
                                                     possibleMajority.append(jdg)
                                     else:
                                         possibleMajority.append(lord[1][0])
-            judges.remove("NONE")
+            if "NONE" in judges:
+                judges.remove("NONE")
             major = round(len(judges)/2)
           
             for jdg in judges:

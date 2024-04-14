@@ -26,11 +26,13 @@ def track_para_id(sentence, para_id):
 
 
 def track_speaker(sentence,speaker):
+    new_judge = False
     if sentence.startswith("LORD"):
         speaker = ' '.join(sentence.split()[:2]).lower() # Extract speaker name from sentence
+        new_judge = True
     elif speaker == None:
         speaker = 'None'
-    return speaker
+    return speaker, new_judge
 
 def new_case(filename, train=False):
     nlp = spacy.load("en_core_web_sm")
@@ -105,13 +107,20 @@ def new_case(filename, train=False):
     line_num =0
     results = []
     for sentence in sentences:
-        speaker = track_speaker(sentence,speaker)
+        speaker, new_judge= track_speaker(sentence,speaker)
+
         para_id = track_para_id(sentence,para_id)
         new_X = vectorizer.transform([sentence])
         #predicted_to = mlb.inverse_transform(classifier.predict(new_X))
         predicted_to = model_to.predict(new_X)
         #print(predicted_to)
         pos = round(line_num/max_line, 1)
+        if new_judge:
+            add_sentence = '------------- NEW JUDGE --------------- '
+            para_id = track_para_id(add_sentence, para_id)
+            results.append({'case': case, 'line': line_num, 'para_id': para_id, 'body': add_sentence, 'from': 'None',
+                            'to': 'None', 'relation': 'NAN', 'pos': pos, 'mj': 'NAN'})
+            line_num += 1
         results.append({'case': case ,'line': line_num ,'para_id': para_id,'body': sentence, 'from': speaker, 'to': predicted_to[0], 'relation':'NAN', 'pos': pos, 'mj':'NAN'})
         line_num += 1
 

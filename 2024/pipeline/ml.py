@@ -347,15 +347,28 @@ class ml():
         case_features = self.get_rel_features()
         curr_RelPredictions = classifier.predict(case_features)
 
+        #print(curr_RelPredictions)
 
-        for prediction in curr_RelPredictions:
-            if prediction == 1: 
+        '''for prediction in curr_RelPredictions:
+            if prediction == 1:
 
                 self.RelPredictions = np.append(self.RelPredictions, ['yes'])
             else:
-                self.RelPredictions = np.append(self.RelPredictions, ['no'])
+                self.RelPredictions = np.append(self.RelPredictions, ['no'])'''
+
+        self.RelPredictions = curr_RelPredictions
 
         ranks = []
+
+        rank = classifier.predict_marginals(case_features)
+
+        for v in enumerate(rank):
+            yes = v[1]
+            yes_confidence = yes[1]
+            ranks.append(yes_confidence)
+        self.ranking = ranks
+
+        '''
 
         # Assuming you want to calculate probabilities manually
         # You can replace this with your custom probability calculation method
@@ -363,7 +376,7 @@ class ml():
         for v in proba:
             yes_confidence = v[1]  # Assuming 1 is the index of the positive class
             ranks.append(yes_confidence)
-        self.ranking = ranks
+        self.ranking = ranks'''
 
 
     def calculate_proba(self, classifier, case_features):

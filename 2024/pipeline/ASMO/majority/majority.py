@@ -52,9 +52,11 @@ class Majority:
         """
         judge_map = {}
         cases = self.corpus['case'].unique().tolist() # numbers of cases in corpus
+        print(cases)
 
         for case in cases:
             judges, locations = self.get_judges(self.corpus[self.corpus['case'] == case], case)
+            print(judges,locations)
             pred_lines = self.get_lines(case)
             # pred_lines = self.predicted[self.predicted["case"] == case]["line"].tolist()
             for judge, loc in zip(judges, locations):
@@ -158,6 +160,7 @@ class Majority:
         Finds line number corresponding to the judge.
         """
         break_pos = case[case["body"] == "------------- NEW JUDGE --------------- "]["line"].tolist()
+        #print(break_pos)
         if len(break_pos) < 5:
             print("Warning: Case with less than 5 judges, check %s, number of judges %d" % (number, len(break_pos)))
 
