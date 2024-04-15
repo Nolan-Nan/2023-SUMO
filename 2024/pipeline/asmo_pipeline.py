@@ -61,7 +61,9 @@ def asmo(filepath):
     print("\n\nMachine Classifier")
     # Apply rules
     majority = Majority(new_case, predicted)
-    mj = majority.new_predict()
+    map, mj = majority.new_predict()
+    new_corpus.rewrite_mj(mj, filename)
+    new_corpus.rewrite_to(map, filename)
 
     print("\n\nBaselines:")
     # Print baselines
@@ -72,7 +74,7 @@ def asmo(filepath):
     baselines = Baseline(num, 'data/UKHL_txt/', new_case)
     print("\n\n3")
     baselines.find_majority()
-    new_corpus.rewrite_mj(mj, filename)
+
     print("\n\n4")
     baselines.find_AS()
 

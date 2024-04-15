@@ -46,13 +46,29 @@ class HTMLTextExtractor:
                 print("No valid pattern found in the URL.")
 
 
-            respondent_paragraphs = soup.find_all('p', string=re.compile(r'RESPONDENTS', re.IGNORECASE))
-            respondent = re.sub(r'\(RESPONDENTS.*', '', respondent_paragraphs[0].get_text())
+            respondent_paragraphs = soup.find_all('p', string=re.compile(r'RESPONDENT', re.IGNORECASE))
+            respondent = re.sub(r'\(RESPONDENT.*', '', respondent_paragraphs[0].get_text())
+            print('respondent:', respondent)
+            if respondent.strip() == '':
+                previous_sibling = respondent_paragraphs[0].find_previous()
+                if previous_sibling is not None:
+                    respondent = previous_sibling.get_text()
+                    print('before respondent: ', respondent)
+                else:
+                    print('No previous sibling found for the RESPONDENT paragraph.')
 
-            appellants_paragraphs = soup.find_all('p', string=re.compile(r'APPELLANTS', re.IGNORECASE))
-            appellants = re.sub(r'\(APPELLANTS.*', '', appellants_paragraphs[0].get_text())
+            appellant_paragraphs = soup.find_all('p', string=re.compile(r'APPELLANT', re.IGNORECASE))
+            appellant = re.sub(r'\(APPELLANT.*', '', appellant_paragraphs[0].get_text())
+            if appellant.strip() == '':
+                previous_sibling = appellant_paragraphs[0].find_previous()
+                if previous_sibling is not None:
+                    appellant = previous_sibling.get_text()
+                    print('before appellant: ', appellant)
+                else:
+                    print('No previous sibling found for the appellant paragraph.')
 
-            text = text + '\n' + respondent + '\n' + appellants + '\n'
+
+            text = text + '\n' + respondent + '\n' + appellant + '\n'
 
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(text)

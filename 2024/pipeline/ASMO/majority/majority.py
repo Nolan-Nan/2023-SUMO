@@ -28,7 +28,7 @@ class Majority:
 
         map = self.map_agreement()
         pred_mj = self.resolve_map(map)
-        return pred_mj
+        return map, pred_mj
 
     def evaluate(self, pred_mj, true_mj):
         """
@@ -65,6 +65,7 @@ class Majority:
                 sentences = list(set(lines).intersection(pred_lines))
                 agreed_judge += self.parse_sent(sentences, case, judges, judge)
                 judge_map = self.add_map(judge_map, case, judge, set(agreed_judge)) #set(agreed_judge) removes duplicates
+            print('judge_map:', judge_map)
 
         return judge_map
 
@@ -237,12 +238,14 @@ class Majority:
         """
 
         min_agreement = int(len(map[case].keys())/2) # min agreement is one below the majority of judges ie. for 5 it's 2 for 7 it's 3 for 6 it's 3
+        print('min_agreement:', min_agreement)
         if min_agreement == 1:
             min_agreement = 2
         max = 0
         mj = "NAN"
 
         for k,v in citations.items():
+            print('k:',k, 'v:', v)
             if k != "NAN":
                 if v == max and mj != "NAN": # Two judges equally cited means NAN is mj
                     mj = "NAN"
@@ -251,6 +254,7 @@ class Majority:
                 if v > max and v >= min_agreement: # Basic rule, max cited judge is mj
                     mj = k
                     max = v
+            print('mj:', mj, max)
 
         return mj
 
@@ -316,6 +320,7 @@ class Majority:
         for case in cases:
             print("-------NEW-----:", case)
             citations = self.count_citations(map, case)
+            print(citations)
             mj = self.rule_one(map, citations, case)
             print("RULE1:", mj)
             mj = self.rule_two(map, mj, case)
@@ -328,5 +333,6 @@ class Majority:
             all.append([case, mj])
 
         corpus = pd.DataFrame.from_records(all, columns=["case", "mj"])
+        print('mj return is:', corpus)
 
         return corpus

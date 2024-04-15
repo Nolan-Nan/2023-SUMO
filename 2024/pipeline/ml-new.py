@@ -189,7 +189,97 @@ class ml():
         features = np.vstack((features,)).T
         return features
 
-    def rhet_predict(self): 
+    def create_speeches_features_list(self,model):
+        all_featureset = []
+        print('all')
+        # init
+        previous_judgename = ''
+        y = 0
+        newspeech = True
+        featureset = []
+        tagcount = 0  # this is the counter for each sentence in a speech
+        judges = self.judgename
+        newSpeechLookAheadBy1 = False  # checks if the judges are different
+        newSpeechLookAheadBy2 = False  # indicates a new speech
+        tags = self.sent_to_rhetlabel()
+        tag_history = self.rhetlabel
+        rel_history = []
+        #  print(judges)
+
+        for judge in judges:
+            featureset = []
+            newSpeechLookAheadBy1 = False
+            newSpeechLookAheadBy2 = False
+            tag = tags[y]
+            #rel = relevant[y]
+
+            #      print(judge)
+            #       print(len(judges))
+
+            if len(judges) == y + 2:
+                newSpeechLookAheadBy2 = True
+            elif len(judges) == y + 1:
+                newSpeechLookAheadBy1 = True
+            elif judges[y + 1] != judge:
+                newSpeechLookAheadBy1 = True
+            elif judges[y + 2] != judge:
+                newSpeechLookAheadBy2 = True
+            if judge != previous_judgename:
+                tagcount = 1
+                newspeech = True
+                #rel_history = []
+                #  tag_history = [] # previously assigned tags for that speech
+                featureset.append(self.get_features(tagcount, y, tag_history, newspeech,
+                                                    newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
+                rel = model.predict(featureset)
+                all_featureset.append(featureset)
+                rel_history.append(rel)
+                # tag_history.append(tag)
+                #    print(tag_history)
+                y += 1
+                tagcount += 1
+            else:
+                newspeech = False
+                featureset.append(self.get_features(tagcount, y, tag_history, newspeech,
+                                                    newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag, rel_history))
+                all_featureset.append(featureset)
+                rel = model.predict(featureset)
+                rel_history.append(rel)
+                #rel_history.append(rel)
+                #  tag_history.append(tag)
+                #    print(tag_history)
+                y += 1
+                tagcount += 1
+            previous_judgename = judge
+        return all_featureset, rel_history
+
+    def sent_to_rhetlabel(self):
+        labels = self.rhetlabel
+
+        rhet_labels = []
+
+        for label in labels:
+            if label == 2:
+                label = 'FACT'
+            if label == 3:
+                label = 'PROCEEDINGS'
+            if label == 4:
+                label = 'BACKGROUND'
+            if label == 5:
+                label = 'FRAMING'
+            if label == 6:
+                label = 'DISPOSAL'
+            if label == 1:
+                label = 'TEXTUAL'
+            if label == 0:
+                label = 'NONE'
+            individual_label = []
+            individual_label.append(label)
+            rhet_labels.append(individual_label)
+
+        return rhet_labels
+
+    def rhet_predict(self):
         f = open("rhet.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
@@ -344,29 +434,34 @@ class ml():
         classifier = pickle.load(f)
         f.close()
         
-        case_features = self.get_rel_features()
-        curr_RelPredictions = classifier.predict(case_features)
+        #case_features = self.get_rel_features()
+        print('start')
+        #case_features = self.create_speeches_features_list(classifier)
+        case_features, curr_RelPredictions = self.create_speeches_features_list(classifier)
+        #curr_RelPredictions = classifier.predict(case_features)
 
-        #print(curr_RelPredictions)
+        print(curr_RelPredictions)
 
-        for prediction in curr_RelPredictions:
-            if prediction[0] == 'yes':
+        '''for prediction in curr_RelPredictions:
+            if prediction == 1:
 
                 self.RelPredictions = np.append(self.RelPredictions, ['yes'])
             else:
-                self.RelPredictions = np.append(self.RelPredictions, ['no'])
+                self.RelPredictions = np.append(self.RelPredictions, ['no'])'''
 
-        #self.RelPredictions = curr_RelPredictions
+        self.RelPredictions = curr_RelPredictions
 
         ranks = []
 
-        rank = classifier.predict_marginals(case_features)
+        '''rank = classifier.predict_marginals(case_features)
 
         for v in enumerate(rank):
             yes = v[1]
             yes_confidence = yes[1]
             ranks.append(yes_confidence)
-        self.ranking = ranks
+
+        print(ranks)
+        self.ranking = ranks'''
 
         '''
 
@@ -375,8 +470,8 @@ class ml():
         proba = self.calculate_proba(classifier, case_features)
         for v in proba:
             yes_confidence = v[1]  # Assuming 1 is the index of the positive class
-            ranks.append(yes_confidence)
-        self.ranking = ranks'''
+            ranks.append(yes_confidence)'''
+        self.ranking = ranks
 
 
     def calculate_proba(self, classifier, case_features):
@@ -457,10 +552,10 @@ class ml():
             
                     writer = csv.DictWriter(outfile, fieldnames=fieldnames)
                     writer.writeheader()
-                        
+                    print(len(self.sent_id))
                     for v in range(len(self.sent_id)):
                         writer.writerow({'sent_id': self.sent_id[v], 'rhet label' : self.rhetlabel[v], 
-                        'relevant': self.RelPredictions[0], 'yes confidence' : self.ranking[v]})
+                        'relevant': self.RelPredictions[v], 'yes confidence' : self.ranking[v]})
                         
         
     # TODO - UPDATE THIS FOR THE NEW CUE PHRASES
@@ -1317,6 +1412,873 @@ class ml():
                                       })  
         return sentence_features
 
+    def get_features(self, sentence_id, y, tag_history, newspeech, newSpeechLookAheadBy1, newSpeechLookAheadBy2, tag,
+                     rel_history):
+        # creates a dict
+        # rhetorical tags are strings, all others are int (null if the start of the sentence)
+        sentence_id = (int(sentence_id))
+
+        sentence_features = {}
+
+        # NB - need not a super long way to access the 2D array
+        # s refers to the sentence, r refers to rhetorical role
+        # ensure that we don't go out of bounds
+        # this is not going to safeguard against going past the end of a speech
+        #   if self.sent_length[y+1] != None and self.sent_length[y+2] != None:
+        if newspeech:  # first sentence of a speech, sentence 0 reserved for a new case start
+            sentence_features.update({"r-1": "<START>",
+                                      "r-2 r-1": "<START> <START>",  # previous label and current features
+                                      'bias': 1.0,
+                                      "r": tag,
+                                      "rel-1": "<START>",
+                                      "rel-2 rel-1": "<START> <START>",
+                                      "length": (self.sent_length[y]),
+                                      "length+1": (self.sent_length[y + 1]),
+                                      "length+2": (self.sent_length[y + 2]),
+                                      "tfdif": (self.tfidf_top20[y]),
+                                      "tfdif+1": (self.tfidf_top20[y + 1]),
+                                      "tfdif+2": (self.tfidf_top20[y + 2]),
+                                      "loc1": (self.loc1_X[y]),
+                                      "loc1+1": (self.loc1_X[y + 1]),
+                                      "loc1+2": (self.loc1_X[y + 2]),
+                                      "loc2": (self.loc2_X[y]),
+                                      "loc2+1": (self.loc2_X[y + 1]),
+                                      "loc2+2": (self.loc2_X[y + 2]),
+                                      "loc3": (self.loc3_X[y]),
+                                      "loc3+1": (self.loc3_X[y + 1]),
+                                      "loc3+2": (self.loc3_X[y + 2]),
+                                      "loc4": (self.loc4_X[y]),
+                                      "loc4+1": (self.loc4_X[y + 1]),
+                                      "loc4+2": (self.loc4_X[y + 2]),
+                                      "loc5": (self.loc5_X[y]),
+                                      "loc5+1": (self.loc5_X[y + 1]),
+                                      "loc5+2": (self.loc5_X[y + 2]),
+                                      "loc6": (self.loc6_X[y]),
+                                      "loc6+1": (self.loc6_X[y + 1]),
+                                      "loc6+2": (self.loc6_X[y + 2]),
+                                      "quote1": (self.inq_X[y]),
+                                      "quote1+1": (self.inq_X[y + 1]),
+                                      "quote1+2": (self.inq_X[y + 2]),
+                                      "quote2": (self.qb_X[y]),
+                                      "quote2+1": (self.qb_X[y + 1]),
+                                      "quote2+2": (self.qb_X[y + 2]),
+                                      "asmo1": (self.agree_X[y]),
+                                      "asmo1+1": (self.agree_X[y + 1]),
+                                      "asmo1+2": (self.agree_X[y + 2]),
+                                      "asmo2": (self.outcome_X[y]),
+                                      "asmo2+1": (self.outcome_X[y + 1]),
+                                      "asmo2+2": (self.outcome_X[y + 2]),
+                                      "cue1": (self.modal_dep_bool_X[y]),
+                                      "cue1+1": (self.modal_dep_bool_X[y + 1]),
+                                      "cue1+2": (self.modal_dep_bool_X[y + 2]),
+                                      "cue2": (self.modal_dep_count_X[y]),
+                                      "cue2+1": (self.modal_dep_count_X[y + 1]),
+                                      "cue2+2": (self.modal_dep_count_X[y + 2]),
+                                      "cue3": (self.new_modal_X[y]),
+                                      "cue3+1": (self.new_modal_X[y + 1]),
+                                      "cue3+2": (self.new_modal_X[y + 2]),
+                                      "cue4": (self.new_tense_X[y]),
+                                      "cue4+1": (self.new_tense_X[y + 1]),
+                                      "cue4+2": (self.new_tense_X[y + 2]),
+                                      "cue5": (self.new_dep_X[y]),
+                                      "cue5+1": (self.new_dep_X[y + 1]),
+                                      "cue5+2": (self.new_dep_X[y + 2]),
+                                      "cue6": (self.new_tag_X[y]),
+                                      "cue6+1": (self.new_tag_X[y + 1]),
+                                      "cue6+2": (self.new_tag_X[y + 2]),
+                                      "cue7": (self.new_negative_X[y]),
+                                      "cue7+1": (self.new_negative_X[y + 1]),
+                                      "cue7+2": (self.new_negative_X[y + 2]),
+                                      "cue8": (self.new_stop_X[y]),
+                                      "cue8+1": (self.new_stop_X[y + 1]),
+                                      "cue8+2": (self.new_stop_X[y + 2]),
+                                      "cue9": (self.new_voice_X[y]),
+                                      "cue9+1": (self.new_voice_X[y + 1]),
+                                      "cue9+2": (self.new_voice_X[y + 2]),
+                                      "cue10": (self.second_pos_X[y]),
+                                      "cue10+1": (self.second_pos_X[y + 1]),
+                                      "cue10+2": (self.second_pos_X[y + 2]),
+                                      "cue11": (self.second_dep_X[y]),
+                                      "cue11+1": (self.second_dep_X[y + 1]),
+                                      "cue11+2": (self.second_dep_X[y + 2]),
+                                      "cue12": (self.second_tag_X[y]),
+                                      "cue12+1": (self.second_tag_X[y + 1]),
+                                      "cue12+2": (self.second_tag_X[y + 2]),
+                                      "cue13": (self.second_stop_X[y]),
+                                      "cue13+1": (self.second_stop_X[y + 1]),
+                                      "cue13+2": (self.second_stop_X[y + 2]),
+                                      "spacy1": (self.loc_ent_X[y]),
+                                      "spacy1+1": (self.loc_ent_X[y + 1]),
+                                      "spacy1+2": (self.loc_ent_X[y + 2]),
+                                      "spacy2": (self.org_ent_X[y]),
+                                      "spacy2+1": (self.org_ent_X[y + 1]),
+                                      "spacy2+2": (self.org_ent_X[y + 2]),
+                                      "spacy3": (self.date_ent_X[y]),
+                                      "spacy3+1": (self.date_ent_X[y + 1]),
+                                      "spacy3+2": (self.date_ent_X[y + 2]),
+                                      "spacy4": (self.person_ent_X[y]),
+                                      "spacy4+1": (self.person_ent_X[y + 1]),
+                                      "spacy4+2": (self.person_ent_X[y + 2]),
+                                      "spacy5": (self.fac_ent_X[y]),
+                                      "spacy5+1": (self.fac_ent_X[y + 1]),
+                                      "spacy5+2": (self.fac_ent_X[y + 2]),
+                                      "spacy6": (self.norp_ent_X[y]),
+                                      "spacy6+1": (self.norp_ent_X[y + 1]),
+                                      "spacy6+2": (self.norp_ent_X[y + 2]),
+                                      "spacy7": (self.gpe_ent_X[y]),
+                                      "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                      "spacy7+2": (self.gpe_ent_X[y + 2]),
+                                      "spacy8": (self.event_ent_X[y]),
+                                      "spacy8+1": (self.event_ent_X[y + 1]),
+                                      "spacy8+2": (self.event_ent_X[y + 2]),
+                                      "spacy9": (self.law_ent_X[y]),
+                                      "spacy9+1": (self.law_ent_X[y + 1]),
+                                      "spacy9+2": (self.law_ent_X[y + 2]),
+                                      "spacy10": (self.time_ent_X[y]),
+                                      "spacy10+1": (self.time_ent_X[y + 1]),
+                                      "spacy10+2": (self.time_ent_X[y + 2]),
+                                      "spacy11": (self.work_of_art_ent_X[y]),
+                                      "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                      "spacy11+2": (self.work_of_art_ent_X[y + 2]),
+                                      "spacy12": (self.ordinal_ent_X[y]),
+                                      "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                      "spacy12+2": (self.ordinal_ent_X[y + 2]),
+                                      "spacy13": (self.cardinal_ent_X[y]),
+                                      "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                      "spacy13+2": (self.cardinal_ent_X[y + 2]),
+                                      "spacy14": (self.money_ent_X[y]),
+                                      "spacy14+1": (self.money_ent_X[y + 1]),
+                                      "spacy14+2": (self.money_ent_X[y + 2]),
+                                      "spacy15": (self.percent_ent_X[y]),
+                                      "spacy15+1": (self.percent_ent_X[y + 1]),
+                                      "spacy15+2": (self.percent_ent_X[y + 2]),
+                                      "spacy16": (self.product_ent_X[y]),
+                                      "spacy16+1": (self.product_ent_X[y + 1]),
+                                      "spacy16+2": (self.product_ent_X[y + 2]),
+                                      "spacy17": (self.quantity_ent_X[y]),
+                                      "spacy17+1": (self.quantity_ent_X[y + 1]),
+                                      "spacy17+2": (self.quantity_ent_X[y + 2]),
+
+                                      })
+        # second word of the sentence
+        elif sentence_id == 2:
+            sentence_features.update({"r-1": tag_history[y - 1],
+                                      "r-2 r-1": "<START> %s" % (tag_history[y - 1]),
+                                      'bias': 1.0,
+                                      "r": tag,
+                                      "rel-1": rel_history[sentence_id - 2],
+                                      "rel-2 rel-1": "<START> %s" % (rel_history[sentence_id - 2]),
+                                      "length": (self.sent_length[y]),
+                                      "length+1": (self.sent_length[y + 1]),
+                                      "length+2": (self.sent_length[y + 2]),
+                                      "length-1": (self.sent_length[y - 1]),
+                                      "tfdif": (self.tfidf_top20[y]),
+                                      "tfdif+1": (self.tfidf_top20[y + 1]),
+                                      "tfdif+2": (self.tfidf_top20[y + 2]),
+                                      "tfdif-1": (self.tfidf_top20[y - 1]),
+                                      "loc1": (self.loc1_X[y]),
+                                      "loc1+1": (self.loc1_X[y + 1]),
+                                      "loc1+2": (self.loc1_X[y + 2]),
+                                      "loc1-1": (self.loc1_X[y - 1]),
+                                      "loc2": (self.loc2_X[y]),
+                                      "loc2+1": (self.loc2_X[y + 1]),
+                                      "loc2+2": (self.loc2_X[y + 2]),
+                                      "loc2-1": (self.loc1_X[y - 1]),
+                                      "loc3": (self.loc3_X[y]),
+                                      "loc3+1": (self.loc3_X[y + 1]),
+                                      "loc3+2": (self.loc3_X[y + 2]),
+                                      "loc3-1": (self.loc1_X[y - 1]),
+                                      "loc4": (self.loc4_X[y]),
+                                      "loc4+1": (self.loc4_X[y + 1]),
+                                      "loc4+2": (self.loc4_X[y + 2]),
+                                      "loc4-1": (self.loc1_X[y - 1]),
+                                      "loc5": (self.loc5_X[y]),
+                                      "loc5+1": (self.loc5_X[y + 1]),
+                                      "loc5+2": (self.loc5_X[y + 2]),
+                                      "loc5-1": (self.loc1_X[y - 1]),
+                                      "loc6": (self.loc6_X[y]),
+                                      "loc6+1": (self.loc6_X[y + 1]),
+                                      "loc6+2": (self.loc6_X[y + 2]),
+                                      "loc6-1": (self.loc1_X[y - 1]),
+                                      "quote1": (self.inq_X[y]),
+                                      "quote1+1": (self.inq_X[y + 1]),
+                                      "quote1+2": (self.inq_X[y + 2]),
+                                      "quote1-1": (self.inq_X[y - 1]),
+                                      "quote2": (self.qb_X[y]),
+                                      "quote2+1": (self.qb_X[y + 1]),
+                                      "quote2+2": (self.qb_X[y + 2]),
+                                      "quote2-1": (self.qb_X[y - 1]),
+                                      "asmo1": (self.agree_X[y]),
+                                      "asmo1+1": (self.agree_X[y + 1]),
+                                      "asmo1+2": (self.agree_X[y + 2]),
+                                      "asmo1-1": (self.agree_X[y - 1]),
+                                      "asmo2": (self.outcome_X[y]),
+                                      "asmo2+1": (self.outcome_X[y + 1]),
+                                      "asmo2+2": (self.outcome_X[y + 2]),
+                                      "asmo2-1": (self.outcome_X[y - 1]),
+                                      "cue1": (self.modal_dep_bool_X[y]),
+                                      "cue1+1": (self.modal_dep_bool_X[y + 1]),
+                                      "cue1+2": (self.modal_dep_bool_X[y + 2]),
+                                      "cue1-1": (self.modal_dep_bool_X[y - 1]),
+                                      "cue2": (self.modal_dep_count_X[y]),
+                                      "cue2+1": (self.modal_dep_count_X[y + 1]),
+                                      "cue2+2": (self.modal_dep_count_X[y + 2]),
+                                      "cue2-1": (self.modal_dep_count_X[y - 1]),
+                                      "cue3": (self.new_modal_X[y]),
+                                      "cue3+1": (self.new_modal_X[y + 1]),
+                                      "cue3+2": (self.new_modal_X[y + 2]),
+                                      "cue3-1": (self.new_modal_X[y - 1]),
+                                      "cue4": (self.new_tense_X[y]),
+                                      "cue4+1": (self.new_tense_X[y + 1]),
+                                      "cue4+2": (self.new_tense_X[y + 2]),
+                                      "cue4-1": (self.new_tense_X[y - 1]),
+                                      "cue5": (self.new_dep_X[y]),
+                                      "cue5+1": (self.new_dep_X[y + 1]),
+                                      "cue5+2": (self.new_dep_X[y + 2]),
+                                      "cue5-1": (self.new_dep_X[y - 1]),
+                                      "cue6": (self.new_tag_X[y]),
+                                      "cue6+1": (self.new_tag_X[y + 1]),
+                                      "cue6+2": (self.new_tag_X[y + 2]),
+                                      "cue6-1": (self.new_tag_X[y - 1]),
+                                      "cue7": (self.new_negative_X[y]),
+                                      "cue7+1": (self.new_negative_X[y + 1]),
+                                      "cue7+2": (self.new_negative_X[y + 2]),
+                                      "cue7-1": (self.new_negative_X[y - 1]),
+                                      "cue8": (self.new_stop_X[y]),
+                                      "cue8+1": (self.new_stop_X[y + 1]),
+                                      "cue8+2": (self.new_stop_X[y + 2]),
+                                      "cue8-1": (self.new_stop_X[y - 1]),
+                                      "cue9": (self.new_voice_X[y]),
+                                      "cue9+1": (self.new_voice_X[y + 1]),
+                                      "cue9+2": (self.new_voice_X[y + 2]),
+                                      "cue9-1": (self.new_voice_X[y - 1]),
+                                      "cue10": (self.second_pos_X[y]),
+                                      "cue10+1": (self.second_pos_X[y + 1]),
+                                      "cue10+2": (self.second_pos_X[y + 2]),
+                                      "cue10-1": (self.second_pos_X[y - 1]),
+                                      "cue11": (self.second_dep_X[y]),
+                                      "cue11+1": (self.second_dep_X[y + 1]),
+                                      "cue11+2": (self.second_dep_X[y + 2]),
+                                      "cue11-1": (self.second_dep_X[y - 1]),
+                                      "cue12": (self.second_tag_X[y]),
+                                      "cue12+1": (self.second_tag_X[y + 1]),
+                                      "cue12+2": (self.second_tag_X[y + 2]),
+                                      "cue12-1": (self.second_tag_X[y - 1]),
+                                      "cue13": (self.second_stop_X[y]),
+                                      "cue13+1": (self.second_stop_X[y + 1]),
+                                      "cue13+2": (self.second_stop_X[y + 2]),
+                                      "cue13-1": (self.second_stop_X[y - 1]),
+                                      "spacy1": (self.loc_ent_X[y]),
+                                      "spacy1+1": (self.loc_ent_X[y + 1]),
+                                      "spacy1+2": (self.loc_ent_X[y + 2]),
+                                      "spacy1-1": (self.loc_ent_X[y - 1]),
+                                      "spacy2": (self.org_ent_X[y]),
+                                      "spacy2+1": (self.org_ent_X[y + 1]),
+                                      "spacy2+2": (self.org_ent_X[y + 2]),
+                                      "spacy2-1": (self.org_ent_X[y - 1]),
+                                      "spacy3": (self.date_ent_X[y]),
+                                      "spacy3+1": (self.date_ent_X[y + 1]),
+                                      "spacy3+2": (self.date_ent_X[y + 2]),
+                                      "spacy3-1": (self.date_ent_X[y - 1]),
+                                      "spacy4": (self.person_ent_X[y]),
+                                      "spacy4+1": (self.person_ent_X[y + 1]),
+                                      "spacy4+2": (self.person_ent_X[y + 2]),
+                                      "spacy4-1": (self.person_ent_X[y - 1]),
+                                      "spacy5": (self.fac_ent_X[y]),
+                                      "spacy5+1": (self.fac_ent_X[y + 1]),
+                                      "spacy5+2": (self.fac_ent_X[y + 2]),
+                                      "spacy5-1": (self.fac_ent_X[y - 1]),
+                                      "spacy6": (self.norp_ent_X[y]),
+                                      "spacy6+1": (self.norp_ent_X[y + 1]),
+                                      "spacy6+2": (self.norp_ent_X[y + 2]),
+                                      "spacy6-1": (self.norp_ent_X[y - 1]),
+                                      "spacy7": (self.gpe_ent_X[y]),
+                                      "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                      "spacy7+2": (self.gpe_ent_X[y + 2]),
+                                      "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                      "spacy8": (self.event_ent_X[y]),
+                                      "spacy8+1": (self.event_ent_X[y + 1]),
+                                      "spacy8+2": (self.event_ent_X[y + 2]),
+                                      "spacy8-1": (self.event_ent_X[y - 1]),
+                                      "spacy9": (self.law_ent_X[y]),
+                                      "spacy9+1": (self.law_ent_X[y + 1]),
+                                      "spacy9+2": (self.law_ent_X[y + 2]),
+                                      "spacy9-1": (self.law_ent_X[y - 1]),
+                                      "spacy10": (self.time_ent_X[y]),
+                                      "spacy10+1": (self.time_ent_X[y + 1]),
+                                      "spacy10+2": (self.time_ent_X[y + 2]),
+                                      "spacy10-1": (self.time_ent_X[y - 1]),
+                                      "spacy11": (self.work_of_art_ent_X[y]),
+                                      "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                      "spacy11+2": (self.work_of_art_ent_X[y + 2]),
+                                      "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                      "spacy12": (self.ordinal_ent_X[y]),
+                                      "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                      "spacy12+2": (self.ordinal_ent_X[y + 2]),
+                                      "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                      "spacy13": (self.cardinal_ent_X[y]),
+                                      "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                      "spacy13+2": (self.cardinal_ent_X[y + 2]),
+                                      "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                      "spacy14": (self.money_ent_X[y]),
+                                      "spacy14+1": (self.money_ent_X[y + 1]),
+                                      "spacy14+2": (self.money_ent_X[y + 2]),
+                                      "spacy14-1": (self.money_ent_X[y - 1]),
+                                      "spacy15": (self.percent_ent_X[y]),
+                                      "spacy15+1": (self.percent_ent_X[y + 1]),
+                                      "spacy15+2": (self.percent_ent_X[y + 2]),
+                                      "spacy15-1": (self.percent_ent_X[y - 1]),
+                                      "spacy16": (self.product_ent_X[y]),
+                                      "spacy16+1": (self.product_ent_X[y + 1]),
+                                      "spacy16+2": (self.product_ent_X[y + 2]),
+                                      "spacy16-1": (self.product_ent_X[y - 1]),
+                                      "spacy17": (self.quantity_ent_X[y]),
+                                      "spacy17+1": (self.quantity_ent_X[y + 1]),
+                                      "spacy17+2": (self.quantity_ent_X[y + 2]),
+                                      "spacy17-1": (self.quantity_ent_X[y - 1]),
+
+                                      })
+
+        elif newSpeechLookAheadBy1:
+            sentence_features.update({"r-1": tag_history[y - 1],
+                                      "r-2 r-1": "%s %s" % (tag_history[y - 2], tag_history[y - 1]),
+                                      'bias': 1.0,
+                                      "r": tag,
+                                      "rel-1": rel_history[sentence_id - 2],
+                                      "rel-2 rel-1": "%s %s" % (
+                                      rel_history[sentence_id - 3], rel_history[sentence_id - 2]),
+                                      "length": (self.sent_length[y]),
+                                      "length-1": (self.sent_length[y - 1]),
+                                      "length-2": (self.sent_length[y - 2]),
+                                      "tfdif": (self.tfidf_top20[y]),
+                                      "tfdif-1": (self.tfidf_top20[y - 1]),
+                                      "tfdif-2": (self.tfidf_top20[y - 2]),
+                                      "loc1": (self.loc1_X[y]),
+                                      "loc1-1": (self.loc1_X[y - 1]),
+                                      "loc1-2": (self.loc1_X[y - 2]),
+                                      "loc2": (self.loc1_X[y]),
+                                      "loc2-1": (self.loc1_X[y - 1]),
+                                      "loc2-2": (self.loc1_X[y - 2]),
+                                      "loc3": (self.loc1_X[y]),
+                                      "loc3-1": (self.loc1_X[y - 1]),
+                                      "loc3-2": (self.loc1_X[y - 2]),
+                                      "loc4": (self.loc1_X[y]),
+                                      "loc4-1": (self.loc1_X[y - 1]),
+                                      "loc4-2": (self.loc1_X[y - 2]),
+                                      "loc5": (self.loc1_X[y]),
+                                      "loc5-1": (self.loc1_X[y - 1]),
+                                      "loc5-2": (self.loc1_X[y - 2]),
+                                      "loc6": (self.loc1_X[y]),
+                                      "loc6-1": (self.loc1_X[y - 1]),
+                                      "loc6-2": (self.loc1_X[y - 2]),
+                                      "quote1": (self.inq_X[y]),
+                                      "quote1-1": (self.inq_X[y - 1]),
+                                      "quote1-2": (self.inq_X[y - 2]),
+                                      "quote2": (self.qb_X[y]),
+                                      "quote2-1": (self.qb_X[y - 1]),
+                                      "quote2-2": (self.inq_X[y - 2]),
+                                      "asmo1": (self.agree_X[y]),
+                                      "asmo1-1": (self.agree_X[y - 1]),
+                                      "asmo1-2": (self.agree_X[y - 2]),
+                                      "asmo2": (self.outcome_X[y]),
+                                      "asmo2-1": (self.outcome_X[y - 1]),
+                                      "asmo2-2": (self.outcome_X[y - 2]),
+                                      "cue1": (self.modal_dep_bool_X[y]),
+                                      "cue1-2": (self.modal_dep_bool_X[y - 2]),
+                                      "cue1-1": (self.modal_dep_bool_X[y - 1]),
+                                      "cue2": (self.modal_dep_count_X[y]),
+                                      "cue2-2": (self.modal_dep_count_X[y - 2]),
+                                      "cue2-1": (self.modal_dep_count_X[y - 1]),
+                                      "cue3": (self.new_modal_X[y]),
+                                      "cue3-1": (self.new_modal_X[y - 1]),
+                                      "cue3-2": (self.new_modal_X[y - 2]),
+                                      "cue4": (self.new_tense_X[y]),
+                                      "cue4-2": (self.new_tense_X[y - 2]),
+                                      "cue4-1": (self.new_tense_X[y - 1]),
+                                      "cue5": (self.new_dep_X[y]),
+                                      "cue5-2": (self.new_dep_X[y - 2]),
+                                      "cue5-1": (self.new_dep_X[y - 1]),
+                                      "cue6": (self.new_tag_X[y]),
+                                      "cue6-2": (self.new_tag_X[y - 2]),
+                                      "cue6-1": (self.new_tag_X[y - 1]),
+                                      "cue7": (self.new_negative_X[y]),
+                                      "cue7-2": (self.new_negative_X[y - 2]),
+                                      "cue7-1": (self.new_negative_X[y - 1]),
+                                      "cue8": (self.new_stop_X[y]),
+                                      "cue8-2": (self.new_stop_X[y - 2]),
+                                      "cue8-1": (self.new_stop_X[y - 1]),
+                                      "cue9": (self.new_voice_X[y]),
+                                      "cue9-2": (self.new_voice_X[y - 2]),
+                                      "cue9-1": (self.new_voice_X[y - 1]),
+                                      "cue10": (self.second_pos_X[y]),
+                                      "cue10-2": (self.second_pos_X[y - 2]),
+                                      "cue10-1": (self.second_pos_X[y - 1]),
+                                      "cue11": (self.second_dep_X[y]),
+                                      "cue11-2": (self.second_dep_X[y - 2]),
+                                      "cue11-1": (self.second_dep_X[y - 1]),
+                                      "cue12": (self.second_tag_X[y]),
+                                      "cue12-2": (self.second_tag_X[y - 2]),
+                                      "cue12-1": (self.second_tag_X[y - 1]),
+                                      "cue13": (self.second_stop_X[y]),
+                                      "cue13-2": (self.second_stop_X[y - 2]),
+                                      "cue13-1": (self.second_stop_X[y - 1]),
+
+                                      "spacy1": (self.loc_ent_X[y]),
+                                      "spacy1-1": (self.loc_ent_X[y - 1]),
+                                      "spacy1-2": (self.loc_ent_X[y - 2]),
+                                      "spacy2": (self.org_ent_X[y]),
+                                      "spacy2-1": (self.org_ent_X[y - 1]),
+                                      "spacy2-2": (self.org_ent_X[y - 2]),
+                                      "spacy3": (self.date_ent_X[y]),
+                                      "spacy3-1": (self.date_ent_X[y - 1]),
+                                      "spacy3-2": (self.date_ent_X[y - 2]),
+                                      "spacy4": (self.person_ent_X[y]),
+                                      "spacy4-1": (self.person_ent_X[y - 1]),
+                                      "spacy4-2": (self.person_ent_X[y - 2]),
+                                      "spacy5": (self.fac_ent_X[y]),
+                                      "spacy5-1": (self.fac_ent_X[y - 1]),
+                                      "spacy5-2": (self.fac_ent_X[y - 2]),
+                                      "spacy6": (self.norp_ent_X[y]),
+                                      "spacy6-1": (self.norp_ent_X[y - 1]),
+                                      "spacy6-2": (self.norp_ent_X[y - 2]),
+                                      "spacy7": (self.gpe_ent_X[y]),
+                                      "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                      "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                      "spacy8": (self.event_ent_X[y]),
+                                      "spacy8-1": (self.event_ent_X[y - 1]),
+                                      "spacy8-2": (self.event_ent_X[y - 2]),
+                                      "spacy9": (self.law_ent_X[y]),
+                                      "spacy9-1": (self.law_ent_X[y - 1]),
+                                      "spacy9-2": (self.law_ent_X[y - 2]),
+                                      "spacy10": (self.time_ent_X[y]),
+                                      "spacy10-1": (self.time_ent_X[y - 1]),
+                                      "spacy10-2": (self.time_ent_X[y - 2]),
+                                      "spacy11": (self.work_of_art_ent_X[y]),
+                                      "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                      "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                      "spacy12": (self.ordinal_ent_X[y]),
+                                      "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                      "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                      "spacy13": (self.cardinal_ent_X[y]),
+                                      "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                      "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                      "spacy14": (self.money_ent_X[y]),
+                                      "spacy14-1": (self.money_ent_X[y - 1]),
+                                      "spacy14-2": (self.money_ent_X[y - 2]),
+                                      "spacy15": (self.percent_ent_X[y]),
+                                      "spacy15-1": (self.percent_ent_X[y - 1]),
+                                      "spacy15-2": (self.percent_ent_X[y - 2]),
+                                      "spacy16": (self.product_ent_X[y]),
+                                      "spacy16-1": (self.product_ent_X[y - 1]),
+                                      "spacy16-2": (self.product_ent_X[y - 2]),
+                                      "spacy17": (self.quantity_ent_X[y]),
+                                      "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                      "spacy17-2": (self.quantity_ent_X[y - 2]),
+
+                                      })
+        elif newSpeechLookAheadBy2:
+            sentence_features.update({"r-1": tag_history[y - 1],
+                                      "r-2 r-1": "%s %s" % (tag_history[y - 2], tag_history[y - 1]),
+                                      "rel-1": rel_history[sentence_id - 2],
+                                      "rel-2 rel-1": "%s %s" % (
+                                      rel_history[sentence_id - 3], rel_history[sentence_id - 2]),
+                                      'bias': 1.0,
+                                      "r": tag,
+                                      "length": (self.sent_length[y]),
+                                      "length+1": (self.sent_length[y + 1]),
+                                      "length-1": (self.sent_length[y - 1]),
+                                      "length-2": (self.sent_length[y - 2]),
+                                      "tfdif": (self.tfidf_top20[y]),
+                                      "tfdif+1": (self.tfidf_top20[y + 1]),
+                                      "tfdif-1": (self.tfidf_top20[y - 1]),
+                                      "tfdif-2": (self.tfidf_top20[y - 2]),
+                                      "loc1": (self.loc1_X[y]),
+                                      "loc1+1": (self.loc1_X[y + 1]),
+                                      "loc1-1": (self.loc1_X[y - 1]),
+                                      "loc1-2": (self.loc1_X[y - 2]),
+                                      "loc2": (self.loc2_X[y]),
+                                      "loc2+1": (self.loc2_X[y + 1]),
+                                      "loc2-1": (self.loc1_X[y - 1]),
+                                      "loc2-2": (self.loc1_X[y - 2]),
+                                      "loc3": (self.loc3_X[y]),
+                                      "loc3+1": (self.loc3_X[y + 1]),
+                                      "loc3-1": (self.loc1_X[y - 1]),
+                                      "loc3-2": (self.loc1_X[y - 2]),
+                                      "loc4": (self.loc4_X[y]),
+                                      "loc4+1": (self.loc4_X[y + 1]),
+                                      "loc4-1": (self.loc1_X[y - 1]),
+                                      "loc4-2": (self.loc1_X[y - 2]),
+                                      "loc5": (self.loc5_X[y]),
+                                      "loc5+1": (self.loc5_X[y + 1]),
+                                      "loc5-1": (self.loc1_X[y - 1]),
+                                      "loc5-2": (self.loc1_X[y - 2]),
+                                      "loc6": (self.loc6_X[y]),
+                                      "loc6+1": (self.loc6_X[y + 1]),
+                                      "loc6-1": (self.loc1_X[y - 1]),
+                                      "loc6-2": (self.loc1_X[y - 2]),
+                                      "quote1": (self.inq_X[y]),
+                                      "quote1+1": (self.inq_X[y + 1]),
+                                      "quote1-1": (self.inq_X[y - 1]),
+                                      "quote1-2": (self.inq_X[y - 2]),
+                                      "quote2": (self.qb_X[y]),
+                                      "quote2+1": (self.qb_X[y + 1]),
+                                      "quote2-1": (self.qb_X[y - 1]),
+                                      "quote2-2": (self.inq_X[y - 2]),
+                                      "asmo1": (self.agree_X[y]),
+                                      "asmo1+1": (self.agree_X[y + 1]),
+                                      "asmo1-1": (self.agree_X[y - 1]),
+                                      "asmo1-2": (self.agree_X[y - 2]),
+                                      "asmo2": (self.outcome_X[y]),
+                                      "asmo2+1": (self.outcome_X[y + 1]),
+                                      "asmo2-1": (self.outcome_X[y - 1]),
+                                      "asmo2-2": (self.outcome_X[y - 2]),
+                                      "cue1": (self.modal_dep_bool_X[y]),
+                                      "cue1+1": (self.modal_dep_bool_X[y + 1]),
+                                      "cue1-2": (self.modal_dep_bool_X[y - 2]),
+                                      "cue1-1": (self.modal_dep_bool_X[y - 1]),
+                                      "cue2": (self.modal_dep_count_X[y]),
+                                      "cue2+1": (self.modal_dep_count_X[y + 1]),
+                                      "cue2-2": (self.modal_dep_count_X[y - 2]),
+                                      "cue2-1": (self.modal_dep_count_X[y - 1]),
+                                      "cue3": (self.new_modal_X[y]),
+                                      "cue3+1": (self.new_modal_X[y + 1]),
+                                      "cue3-1": (self.new_modal_X[y - 1]),
+                                      "cue3-2": (self.new_modal_X[y - 2]),
+                                      "cue4": (self.new_tense_X[y]),
+                                      "cue4+1": (self.new_tense_X[y + 1]),
+                                      "cue4-2": (self.new_tense_X[y - 2]),
+                                      "cue4-1": (self.new_tense_X[y - 1]),
+                                      "cue5": (self.new_dep_X[y]),
+                                      "cue5+1": (self.new_dep_X[y + 1]),
+                                      "cue5-2": (self.new_dep_X[y - 2]),
+                                      "cue5-1": (self.new_dep_X[y - 1]),
+                                      "cue6": (self.new_tag_X[y]),
+                                      "cue6+1": (self.new_tag_X[y + 1]),
+                                      "cue6-2": (self.new_tag_X[y - 2]),
+                                      "cue6-1": (self.new_tag_X[y - 1]),
+                                      "cue7": (self.new_negative_X[y]),
+                                      "cue7+1": (self.new_negative_X[y + 1]),
+                                      "cue7-2": (self.new_negative_X[y - 2]),
+                                      "cue7-1": (self.new_negative_X[y - 1]),
+                                      "cue8": (self.new_stop_X[y]),
+                                      "cue8+1": (self.new_stop_X[y + 1]),
+                                      "cue8-2": (self.new_stop_X[y - 2]),
+                                      "cue8-1": (self.new_stop_X[y - 1]),
+                                      "cue9": (self.new_voice_X[y]),
+                                      "cue9+1": (self.new_voice_X[y + 1]),
+                                      "cue9-2": (self.new_voice_X[y - 2]),
+                                      "cue9-1": (self.new_voice_X[y - 1]),
+                                      "cue10": (self.second_pos_X[y]),
+                                      "cue10+1": (self.second_pos_X[y + 1]),
+                                      "cue10-2": (self.second_pos_X[y - 2]),
+                                      "cue10-1": (self.second_pos_X[y - 1]),
+                                      "cue11": (self.second_dep_X[y]),
+                                      "cue11+1": (self.second_dep_X[y + 1]),
+                                      "cue11-2": (self.second_dep_X[y - 2]),
+                                      "cue11-1": (self.second_dep_X[y - 1]),
+                                      "cue12": (self.second_tag_X[y]),
+                                      "cue12+1": (self.second_tag_X[y + 1]),
+                                      "cue12-2": (self.second_tag_X[y - 2]),
+                                      "cue12-1": (self.second_tag_X[y - 1]),
+                                      "cue13": (self.second_stop_X[y]),
+                                      "cue13+1": (self.second_stop_X[y + 1]),
+                                      "cue13-2": (self.second_stop_X[y - 2]),
+                                      "cue13-1": (self.second_stop_X[y - 1]),
+                                      "spacy1": (self.loc_ent_X[y]),
+                                      "spacy1+1": (self.loc_ent_X[y + 1]),
+                                      "spacy1-1": (self.loc_ent_X[y - 1]),
+                                      "spacy1-2": (self.loc_ent_X[y - 2]),
+                                      "spacy2": (self.org_ent_X[y]),
+                                      "spacy2+1": (self.org_ent_X[y + 1]),
+                                      "spacy2-1": (self.org_ent_X[y - 1]),
+                                      "spacy2-2": (self.org_ent_X[y - 2]),
+                                      "spacy3": (self.date_ent_X[y]),
+                                      "spacy3+1": (self.date_ent_X[y + 1]),
+                                      "spacy3-1": (self.date_ent_X[y - 1]),
+                                      "spacy3-2": (self.date_ent_X[y - 2]),
+                                      "spacy4": (self.person_ent_X[y]),
+                                      "spacy4+1": (self.person_ent_X[y + 1]),
+                                      "spacy4-1": (self.person_ent_X[y - 1]),
+                                      "spacy4-2": (self.person_ent_X[y - 2]),
+                                      "spacy5": (self.fac_ent_X[y]),
+                                      "spacy5-1": (self.fac_ent_X[y - 1]),
+                                      "spacy5-2": (self.fac_ent_X[y - 2]),
+                                      "spacy5+1": (self.fac_ent_X[y + 1]),
+                                      "spacy6": (self.norp_ent_X[y]),
+                                      "spacy6-1": (self.norp_ent_X[y - 1]),
+                                      "spacy6-2": (self.norp_ent_X[y - 2]),
+                                      "spacy6+1": (self.norp_ent_X[y + 1]),
+                                      "spacy7": (self.gpe_ent_X[y]),
+                                      "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                      "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                      "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                      "spacy8": (self.event_ent_X[y]),
+                                      "spacy8-1": (self.event_ent_X[y - 1]),
+                                      "spacy8-2": (self.event_ent_X[y - 2]),
+                                      "spacy8+1": (self.event_ent_X[y + 1]),
+                                      "spacy9": (self.law_ent_X[y]),
+                                      "spacy9-1": (self.law_ent_X[y - 1]),
+                                      "spacy9-2": (self.law_ent_X[y - 2]),
+                                      "spacy9+1": (self.law_ent_X[y + 1]),
+                                      "spacy10": (self.time_ent_X[y]),
+                                      "spacy10-1": (self.time_ent_X[y - 1]),
+                                      "spacy10-2": (self.time_ent_X[y - 2]),
+                                      "spacy10+1": (self.time_ent_X[y + 1]),
+                                      "spacy11": (self.work_of_art_ent_X[y]),
+                                      "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                      "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                      "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                      "spacy12": (self.ordinal_ent_X[y]),
+                                      "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                      "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                      "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                      "spacy13": (self.cardinal_ent_X[y]),
+                                      "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                      "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                      "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                      "spacy14": (self.money_ent_X[y]),
+                                      "spacy14-1": (self.money_ent_X[y - 1]),
+                                      "spacy14-2": (self.money_ent_X[y - 2]),
+                                      "spacy14+1": (self.money_ent_X[y + 1]),
+                                      "spacy15": (self.percent_ent_X[y]),
+                                      "spacy15-1": (self.percent_ent_X[y - 1]),
+                                      "spacy15-2": (self.percent_ent_X[y - 2]),
+                                      "spacy15+1": (self.percent_ent_X[y + 1]),
+                                      "spacy16": (self.product_ent_X[y]),
+                                      "spacy16-1": (self.product_ent_X[y - 1]),
+                                      "spacy16-2": (self.product_ent_X[y - 2]),
+                                      "spacy16+1": (self.product_ent_X[y + 1]),
+                                      "spacy17": (self.quantity_ent_X[y]),
+                                      "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                      "spacy17-2": (self.quantity_ent_X[y - 2]),
+                                      "spacy17+1": (self.quantity_ent_X[y + 1]),
+
+                                      })
+
+        else:
+            sentence_features.update({"r-1": tag_history[y - 1],
+                                      "r-2 r-1": "%s %s" % (tag_history[y - 2], tag_history[y - 1]),
+                                      "rel-1": rel_history[sentence_id - 2],
+                                      "rel-2 rel-1": "%s %s" % (
+                                      rel_history[sentence_id - 3], rel_history[sentence_id - 2]),
+                                      'bias': 1.0,
+                                      "r": tag,
+                                      "length": (self.sent_length[y]),
+                                      "length+1": (self.sent_length[y + 1]),
+                                      "length+2": (self.sent_length[y + 2]),
+                                      "length-1": (self.sent_length[y - 1]),
+                                      "length-2": (self.sent_length[y - 2]),
+                                      "tfdif": (self.tfidf_top20[y]),
+                                      "tfdif+1": (self.tfidf_top20[y + 1]),
+                                      "tfdif+2": (self.tfidf_top20[y + 2]),
+                                      "tfdif-1": (self.tfidf_top20[y - 1]),
+                                      "tfdif-2": (self.tfidf_top20[y - 2]),
+                                      "loc1": (self.loc1_X[y]),
+                                      "loc1+1": (self.loc1_X[y + 1]),
+                                      "loc1+2": (self.loc1_X[y + 2]),
+                                      "loc1-1": (self.loc1_X[y - 1]),
+                                      "loc1-2": (self.loc1_X[y - 2]),
+                                      "loc2": (self.loc2_X[y]),
+                                      "loc2+1": (self.loc2_X[y + 1]),
+                                      "loc2+2": (self.loc2_X[y + 2]),
+                                      "loc2-1": (self.loc1_X[y - 1]),
+                                      "loc2-2": (self.loc1_X[y - 2]),
+                                      "loc3": (self.loc3_X[y]),
+                                      "loc3+1": (self.loc3_X[y + 1]),
+                                      "loc3+2": (self.loc3_X[y + 2]),
+                                      "loc3-1": (self.loc1_X[y - 1]),
+                                      "loc3-2": (self.loc1_X[y - 2]),
+                                      "loc4": (self.loc4_X[y]),
+                                      "loc4+1": (self.loc4_X[y + 1]),
+                                      "loc4+2": (self.loc4_X[y + 2]),
+                                      "loc4-1": (self.loc1_X[y - 1]),
+                                      "loc4-2": (self.loc1_X[y - 2]),
+                                      "loc5": (self.loc5_X[y]),
+                                      "loc5+1": (self.loc5_X[y + 1]),
+                                      "loc5+2": (self.loc5_X[y + 2]),
+                                      "loc5-1": (self.loc1_X[y - 1]),
+                                      "loc5-2": (self.loc1_X[y - 2]),
+                                      "loc6": (self.loc6_X[y]),
+                                      "loc6+1": (self.loc6_X[y + 1]),
+                                      "loc6+2": (self.loc6_X[y + 2]),
+                                      "loc6-1": (self.loc1_X[y - 1]),
+                                      "loc6-2": (self.loc1_X[y - 2]),
+                                      "quote1": (self.inq_X[y]),
+                                      "quote1+1": (self.inq_X[y + 1]),
+                                      "quote1+2": (self.inq_X[y + 2]),
+                                      "quote1-1": (self.inq_X[y - 1]),
+                                      "quote1-2": (self.inq_X[y - 2]),
+                                      "quote2": (self.qb_X[y]),
+                                      "quote2+1": (self.qb_X[y + 1]),
+                                      "quote2+2": (self.qb_X[y + 2]),
+                                      "quote2-1": (self.qb_X[y - 1]),
+                                      "quote2-2": (self.inq_X[y - 2]),
+                                      "asmo1": (self.agree_X[y]),
+                                      "asmo1+1": (self.agree_X[y + 1]),
+                                      "asmo1+2": (self.agree_X[y + 2]),
+                                      "asmo1-1": (self.agree_X[y - 1]),
+                                      "asmo1-2": (self.agree_X[y - 2]),
+                                      "asmo2": (self.outcome_X[y]),
+                                      "asmo2+1": (self.outcome_X[y + 1]),
+                                      "asmo2+2": (self.outcome_X[y + 2]),
+                                      "asmo2-1": (self.outcome_X[y - 1]),
+                                      "asmo2-2": (self.outcome_X[y - 2]),
+                                      "cue1": (self.modal_dep_bool_X[y]),
+                                      "cue1+1": (self.modal_dep_bool_X[y + 1]),
+                                      "cue1+2": (self.modal_dep_bool_X[y + 2]),
+                                      "cue1-2": (self.modal_dep_bool_X[y - 2]),
+                                      "cue1-1": (self.modal_dep_bool_X[y - 1]),
+                                      "cue2": (self.modal_dep_count_X[y]),
+                                      "cue2+1": (self.modal_dep_count_X[y + 1]),
+                                      "cue2+2": (self.modal_dep_count_X[y + 2]),
+                                      "cue2-2": (self.modal_dep_count_X[y - 2]),
+                                      "cue2-1": (self.modal_dep_count_X[y - 1]),
+                                      "cue3": (self.new_modal_X[y]),
+                                      "cue3+1": (self.new_modal_X[y + 1]),
+                                      "cue3+2": (self.new_modal_X[y + 2]),
+                                      "cue3-1": (self.new_modal_X[y - 1]),
+                                      "cue3-2": (self.new_modal_X[y - 2]),
+                                      "cue4": (self.new_tense_X[y]),
+                                      "cue4+1": (self.new_tense_X[y + 1]),
+                                      "cue4+2": (self.new_tense_X[y + 2]),
+                                      "cue4-2": (self.new_tense_X[y - 2]),
+                                      "cue4-1": (self.new_tense_X[y - 1]),
+                                      "cue5": (self.new_dep_X[y]),
+                                      "cue5+1": (self.new_dep_X[y + 1]),
+                                      "cue5+2": (self.new_dep_X[y + 2]),
+                                      "cue5-2": (self.new_dep_X[y - 2]),
+                                      "cue5-1": (self.new_dep_X[y - 1]),
+                                      "cue6": (self.new_tag_X[y]),
+                                      "cue6+1": (self.new_tag_X[y + 1]),
+                                      "cue6+2": (self.new_tag_X[y + 2]),
+                                      "cue6-2": (self.new_tag_X[y - 2]),
+                                      "cue6-1": (self.new_tag_X[y - 1]),
+                                      "cue7": (self.new_negative_X[y]),
+                                      "cue7+1": (self.new_negative_X[y + 1]),
+                                      "cue7+2": (self.new_negative_X[y + 2]),
+                                      "cue7-2": (self.new_negative_X[y - 2]),
+                                      "cue7-1": (self.new_negative_X[y - 1]),
+                                      "cue8": (self.new_stop_X[y]),
+                                      "cue8+1": (self.new_stop_X[y + 1]),
+                                      "cue8+2": (self.new_stop_X[y + 2]),
+                                      "cue8-2": (self.new_stop_X[y - 2]),
+                                      "cue8-1": (self.new_stop_X[y - 1]),
+                                      "cue9": (self.new_voice_X[y]),
+                                      "cue9+1": (self.new_voice_X[y + 1]),
+                                      "cue9+2": (self.new_voice_X[y + 2]),
+                                      "cue9-2": (self.new_voice_X[y - 2]),
+                                      "cue9-1": (self.new_voice_X[y - 1]),
+                                      "cue10": (self.second_pos_X[y]),
+                                      "cue10+1": (self.second_pos_X[y + 1]),
+                                      "cue10+2": (self.second_pos_X[y + 2]),
+                                      "cue10-2": (self.second_pos_X[y - 2]),
+                                      "cue10-1": (self.second_pos_X[y - 1]),
+                                      "cue11": (self.second_dep_X[y]),
+                                      "cue11+1": (self.second_dep_X[y + 1]),
+                                      "cue11+2": (self.second_dep_X[y + 2]),
+                                      "cue11-2": (self.second_dep_X[y - 2]),
+                                      "cue11-1": (self.second_dep_X[y - 1]),
+                                      "cue12": (self.second_tag_X[y]),
+                                      "cue12+1": (self.second_tag_X[y + 1]),
+                                      "cue12+2": (self.second_tag_X[y + 2]),
+                                      "cue12-2": (self.second_tag_X[y - 2]),
+                                      "cue12-1": (self.second_tag_X[y - 1]),
+                                      "cue13": (self.second_stop_X[y]),
+                                      "cue13+1": (self.second_stop_X[y + 1]),
+                                      "cue13+2": (self.second_stop_X[y + 2]),
+                                      "cue13-2": (self.second_stop_X[y - 2]),
+                                      "cue13-1": (self.second_stop_X[y - 1]),
+
+                                      "spacy1": (self.loc_ent_X[y]),
+                                      "spacy1+1": (self.loc_ent_X[y + 1]),
+                                      "spacy1+2": (self.loc_ent_X[y + 2]),
+                                      "spacy1-1": (self.loc_ent_X[y - 1]),
+                                      "spacy1-2": (self.loc_ent_X[y - 2]),
+                                      "spacy2": (self.org_ent_X[y]),
+                                      "spacy2+1": (self.org_ent_X[y + 1]),
+                                      "spacy2+2": (self.org_ent_X[y + 2]),
+                                      "spacy2-1": (self.org_ent_X[y - 1]),
+                                      "spacy2-2": (self.org_ent_X[y - 2]),
+                                      "spacy3": (self.date_ent_X[y]),
+                                      "spacy3+1": (self.date_ent_X[y + 1]),
+                                      "spacy3+2": (self.date_ent_X[y + 2]),
+                                      "spacy3-1": (self.date_ent_X[y - 1]),
+                                      "spacy3-2": (self.date_ent_X[y - 2]),
+                                      "spacy4": (self.person_ent_X[y]),
+                                      "spacy4+1": (self.person_ent_X[y + 1]),
+                                      "spacy4+2": (self.person_ent_X[y + 2]),
+                                      "spacy4-1": (self.person_ent_X[y - 1]),
+                                      "spacy4-2": (self.person_ent_X[y - 2]),
+                                      "spacy5": (self.fac_ent_X[y]),
+                                      "spacy5+1": (self.fac_ent_X[y + 1]),
+                                      "spacy5+2": (self.fac_ent_X[y + 2]),
+                                      "spacy5-1": (self.fac_ent_X[y - 1]),
+                                      "spacy5-2": (self.fac_ent_X[y - 2]),
+                                      "spacy6": (self.norp_ent_X[y]),
+                                      "spacy6+1": (self.norp_ent_X[y + 1]),
+                                      "spacy6+2": (self.norp_ent_X[y + 2]),
+                                      "spacy6-1": (self.norp_ent_X[y - 1]),
+                                      "spacy6-2": (self.norp_ent_X[y - 2]),
+                                      "spacy7": (self.gpe_ent_X[y]),
+                                      "spacy7+1": (self.gpe_ent_X[y + 1]),
+                                      "spacy7+2": (self.gpe_ent_X[y + 2]),
+                                      "spacy7-1": (self.gpe_ent_X[y - 1]),
+                                      "spacy7-2": (self.gpe_ent_X[y - 2]),
+                                      "spacy8": (self.event_ent_X[y]),
+                                      "spacy8+1": (self.event_ent_X[y + 1]),
+                                      "spacy8+2": (self.event_ent_X[y + 2]),
+                                      "spacy8-1": (self.event_ent_X[y - 1]),
+                                      "spacy8-2": (self.event_ent_X[y - 2]),
+                                      "spacy9": (self.law_ent_X[y]),
+                                      "spacy9+1": (self.law_ent_X[y + 1]),
+                                      "spacy9+2": (self.law_ent_X[y + 2]),
+                                      "spacy9-1": (self.law_ent_X[y - 1]),
+                                      "spacy9-2": (self.law_ent_X[y - 2]),
+                                      "spacy10": (self.time_ent_X[y]),
+                                      "spacy10+1": (self.time_ent_X[y + 1]),
+                                      "spacy10+2": (self.time_ent_X[y + 2]),
+                                      "spacy10-1": (self.time_ent_X[y - 1]),
+                                      "spacy10-2": (self.time_ent_X[y - 2]),
+                                      "spacy11": (self.work_of_art_ent_X[y]),
+                                      "spacy11+1": (self.work_of_art_ent_X[y + 1]),
+                                      "spacy11+2": (self.work_of_art_ent_X[y + 2]),
+                                      "spacy11-1": (self.work_of_art_ent_X[y - 1]),
+                                      "spacy11-2": (self.work_of_art_ent_X[y - 2]),
+                                      "spacy12": (self.ordinal_ent_X[y]),
+                                      "spacy12+1": (self.ordinal_ent_X[y + 1]),
+                                      "spacy12+2": (self.ordinal_ent_X[y + 2]),
+                                      "spacy12-1": (self.ordinal_ent_X[y - 1]),
+                                      "spacy12-2": (self.ordinal_ent_X[y - 2]),
+                                      "spacy13": (self.cardinal_ent_X[y]),
+                                      "spacy13+1": (self.cardinal_ent_X[y + 1]),
+                                      "spacy13+2": (self.cardinal_ent_X[y + 2]),
+                                      "spacy13-1": (self.cardinal_ent_X[y - 1]),
+                                      "spacy13-2": (self.cardinal_ent_X[y - 2]),
+                                      "spacy14": (self.money_ent_X[y]),
+                                      "spacy14+1": (self.money_ent_X[y + 1]),
+                                      "spacy14+2": (self.money_ent_X[y + 2]),
+                                      "spacy14-1": (self.money_ent_X[y - 1]),
+                                      "spacy14-2": (self.money_ent_X[y - 2]),
+                                      "spacy15": (self.percent_ent_X[y]),
+                                      "spacy15+1": (self.percent_ent_X[y + 1]),
+                                      "spacy15+2": (self.percent_ent_X[y + 2]),
+                                      "spacy15-1": (self.percent_ent_X[y - 1]),
+                                      "spacy15-2": (self.percent_ent_X[y - 2]),
+                                      "spacy16": (self.product_ent_X[y]),
+                                      "spacy16+1": (self.product_ent_X[y + 1]),
+                                      "spacy16+2": (self.product_ent_X[y + 2]),
+                                      "spacy16-1": (self.product_ent_X[y - 1]),
+                                      "spacy16-2": (self.product_ent_X[y - 2]),
+                                      "spacy17": (self.quantity_ent_X[y]),
+                                      "spacy17+1": (self.quantity_ent_X[y + 1]),
+                                      "spacy17+2": (self.quantity_ent_X[y + 2]),
+                                      "spacy17-1": (self.quantity_ent_X[y - 1]),
+                                      "spacy17-2": (self.quantity_ent_X[y - 2]),
+
+                                      })
+
+        return sentence_features
+
     def rhetData(self, casenum):
         self.sent_id = []
         with open('summarydata-spacy/UKHL_'+casenum+'_features.csv', 'r') as infile:
@@ -1400,9 +2362,13 @@ class ml():
                 self.loc5_X = np.append(self.loc5_X, [float(row['loc5'])])
                 self.loc6_X = np.append(self.loc6_X, [float(row['loc6'])])
 
+                self.tfidf_top20_X = np.append(self.tfidf_top20_X, [float(row['tfidf_top20'])])
                 self.sentlen_X = np.append(self.sentlen_X, [float(row['sentlen'])])
                 self.qb_X = np.append(self.qb_X, [float(row['quoteblock'])])
                 self.inq_X = np.append(self.inq_X, [float(row['inline_q'])])
+
+                self.judgename.append(row['judgename'])
+                self.sent_id.append(row['sent_id'])
 
                 self.tfidf_max_X = np.append(self.tfidf_max_X, [float(row['tfidf_top20'])])
 
@@ -1447,6 +2413,7 @@ class ml():
         self.asmo = self.agree_X, self.outcome_X
         self.sent_length = self.sentlen_X
         self.tfidf_max = self.tfidf_max_X
+        self.tfidf_top20 = self.tfidf_top20_X
         self.HGents = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X,\
                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X

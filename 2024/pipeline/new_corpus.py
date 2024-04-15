@@ -18,7 +18,9 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 def track_para_id(sentence, para_id):
     if sentence.strip()[0].isdigit():
-        para_id = int(sentence.strip().split('.')[0])
+        match = re.match(r'\d+\.', sentence.strip())
+        if match is not None:
+            para_id = int(sentence.strip().split('.')[0])
     elif para_id==None:
         para_id = 0
 
@@ -29,6 +31,7 @@ def track_speaker(sentence,speaker):
     new_judge = False
     if sentence.startswith("LORD"):
         speaker = ' '.join(sentence.split()[:2]).lower() # Extract speaker name from sentence
+        speaker = speaker.replace('lord', '').strip()
         new_judge = True
     elif speaker == None:
         speaker = 'None'
@@ -145,6 +148,24 @@ def rewrite_mj(mj, filename):
         list.append(row['mj'])
 
     original_data["mj"] = original_data["mj"].replace(original_data["mj"].unique(), list)
+    original_data.to_csv('data/UKHL_csv/' + case + '.csv', index=False)
+
+def rewrite_to(judge_map, filename):
+    case = filename.split(".")[0]
+    original_data = pd.read_csv('data/UKHL_csv/' + case + '.csv')
+    case_mapping = judge_map.get(case, {})
+    judges = list(dict(case_mapping.items()).keys())
+    for index, row in original_data[original_data['relation'] != 'NAN'].iterrows():
+        from_judge = row['from']
+        to_judge = None
+        if from_judge in judges:
+            to_set = case_mapping.get(from_judge)
+            if None not in to_set:
+                to_judge = '+'.join(to_set)
+            else:
+                to_judge = 'self'
+        original_data.at[index, 'to'] = to_judge
+
     original_data.to_csv('data/UKHL_csv/' + case + '.csv', index=False)
 
 #new_case('UKHL20012.txt',False)

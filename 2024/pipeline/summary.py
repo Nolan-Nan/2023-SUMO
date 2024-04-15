@@ -23,7 +23,7 @@ class summary():
         respondent, appellant = self.summaryHeaderData(casenum)
         print("\n SUMMARY BASED ON RELEVANCE PREDICTIONS: \n")
         print(citation)
-        print(respondent + ", " + appellant)
+        print('respondent: ' + respondent + ", " + 'appellant: ' + appellant)
         print("\n")
         self.createRelevanceOnlySummary(MLData, sentences)
         
@@ -32,7 +32,7 @@ class summary():
         summaryLength = input()
         print("\n SUMMARY BASED ON TOP " + summaryLength + " RANKED SENTENCES: \n")
         print(citation)
-        print(respondent + " " + appellant)
+        print('respondent: ' + respondent + ", " + 'appellant: ' + appellant)
         summaryLength = int(summaryLength)
         rankedData = self.createRankingOnlySummary(MLData, sentences, summaryLength)
         self.createRankingandRhetSummary(rankedData, summaryLength, judges)
