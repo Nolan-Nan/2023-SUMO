@@ -48,7 +48,6 @@ class HTMLTextExtractor:
 
             respondent_paragraphs = soup.find_all('p', string=re.compile(r'RESPONDENT', re.IGNORECASE))
             respondent = re.sub(r'\(RESPONDENT.*', '', respondent_paragraphs[0].get_text())
-            print('respondent:', respondent)
             if respondent.strip() == '':
                 previous_sibling = respondent_paragraphs[0].find_previous()
                 if previous_sibling is not None:

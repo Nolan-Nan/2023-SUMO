@@ -9,9 +9,6 @@ crf implemented for relevance classifier
 
 import matplotlib.pyplot as plt
 from collections import Counter
-
-from sklearn.ensemble import RandomForestClassifier
-
 plt.style.use('ggplot')
 
 from itertools import chain
@@ -19,15 +16,13 @@ from itertools import chain
 import nltk
 import sklearn
 import scipy.stats
-from sklearn.metrics import make_scorer, classification_report
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import RandomizedSearchCV
-
 
 import sklearn_crfsuite
 from sklearn_crfsuite import scorers
 from sklearn_crfsuite import metrics
-from sklearn.metrics import f1_score
 
 import numpy as np
 import csv
@@ -149,19 +144,19 @@ class crf():
         self.initialize()
         self.pull_training_data()
 
-        X_train = self.get_rel_features()
+        X_train = self.create_speeches_features_list()
         y_train = self.sent_to_rellabel()
       #  print(y_train)
 
         self.initialize()
         self.pull_testing_data()
-        X_test = self.get_rel_features()
+        X_test = self.create_speeches_features_list()
         y_test = self.sent_to_rellabel()
        # print(y_test)
 
 
-        # TEST / TRAIN
-        '''crf = sklearn_crfsuite.CRF(
+        '''# TEST / TRAIN
+        crf = sklearn_crfsuite.CRF(
               algorithm='lbfgs',
               c1=0.5,
               c2=0.05,
@@ -171,92 +166,99 @@ class crf():
 
         crf.fit(X_train, y_train)
 
-        labels = list(crf.classes_)'''
-        rf = RandomForestClassifier(n_estimators = 100, max_depth = 2, random_state = 0)
-        rf.fit(X_train, y_train)
-
-        labels = list(rf.classes_)
+        labels = list(crf.classes_)
       #  labels.remove('NONE')
         print(labels)
 
-        y_pred = rf.predict(X_test)
+        y_pred = crf.predict(X_test)
         print(y_pred)
-
-
-        print(f1_score(y_test, y_pred,
+        print(metrics.flat_f1_score(y_test, y_pred,
                       average='micro', labels=labels))
-        '''y_test = [label for y in y_test for label in y]
-        y_pred = [label for y in y_pred for label in y]'''
+        y_test = [label for y in y_test for label in y]
+        y_pred = [label for y in y_pred for label in y]
         sorted_labels = sorted(
             labels,
             key=lambda name: (name[1:], name[0])
             )
 
-        print(classification_report(
+        print(sklearn.metrics.classification_report(
             y_test, y_pred, labels=sorted_labels, digits=3
             ))
+        
 
-        print("Top positive features:")
-        feature_importances = rf.feature_importances_
-        sorted_indices = np.argsort(feature_importances)[::-1]
-        for i in range(20):
-            feature_index = sorted_indices[i]
-            print(f"Feature {feature_index}: Importance {feature_importances[feature_index]}")
+        print("Top likely transitions:")
 
-        print("\nTop negative features:")
-        for i in range(1, 21):
-            feature_index = sorted_indices[-i]
-            print(f"Feature {feature_index}: Importance {feature_importances[feature_index]}")
-        '''import eli5
+        self.print_transitions(Counter(crf.transition_features_).most_common(20))
+
+        print("\nTop unlikely transitions:")
+        self.print_transitions(Counter(crf.transition_features_).most_common()[-20:])
+
+        print("Top positive:")
+        self.print_state_features(Counter(crf.state_features_).most_common(30))
+
+        print("\nTop negative:")
+        self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
+
+        import eli5
         from PIL import Image
 
-        expl = eli5.explain_weights(rf, top=10)
+        expl = eli5.explain_weights(crf, top=10)
         print(expl)
         print((expl.targets[0].target, expl.targets[0].score, expl.targets[0].proba))
         text = eli5.formatters.text.format_as_text(expl)
-        print(text)'''
+        print(text)
 
 
 # CROSS VAL
-        y_train = np.ravel(y_train)
-        rf = RandomForestClassifier()
-
+        crf = sklearn_crfsuite.CRF(
+            algorithm='lbfgs',
+            max_iterations=100,
+            all_possible_transitions=True
+            )
         params_space = {
-            'n_estimators': [10, 50, 100],  # Number of trees in the forest
-            'max_depth': [None, 10, 20],  # Maximum depth of the trees
-            'min_samples_split': [2, 5, 10],  # Minimum number of samples required to split an internal node
-            'min_samples_leaf': [1, 2, 4]  # Minimum number of samples required to be at a leaf node
-        }
+            'c1': scipy.stats.expon(scale=0.5),
+            'c2': scipy.stats.expon(scale=0.05),
+            }
 
-        # Use the same metric for evaluation
-        f1_scorer = make_scorer(f1_score,
-                                average='micro', labels=np.unique(labels))
 
-        # Search
-        rs = RandomizedSearchCV(rf, params_space,
-                                cv=10,
-                                verbose=1,
-                                n_jobs=-1,  # Use all available CPU cores
-                                n_iter=50,
-                                scoring=f1_scorer)
+
+# use the same metric for evaluation
+        f1_scorer = make_scorer(metrics.flat_f1_score,
+                        average='micro', labels=np.unique(labels))
+
+
+
+
+# search
+
+        rs = RandomizedSearchCV(crf, params_space,
+                        cv=10,
+                        verbose=1,
+                        n_jobs=1,
+                        n_iter=50,
+                        scoring=f1_scorer)
         rs.fit(X_train, y_train)
 
         # crf = rs.best_estimator_
         print('best params:', rs.best_params_)
         print('best CV score:', rs.best_score_)
-        #print('model size: {:0.2f}M'.format(rs.best_estimator_.size_ / 1000000))
+        print('model size: {:0.2f}M'.format(rs.best_estimator_.size_ / 1000000))
 
-        rf = rs.best_estimator_
-        y_pred =rf.predict(X_test)
+        crf = rs.best_estimator_'''
+        f = open("RELEVANCE.pickle", "rb")
+        crf = pickle.load(f)
+        f.close()
+        y_pred = crf.predict(X_test)
         print(y_pred)
-        labels = list(rf.classes_)
+        labels = list(crf.classes_)
       #  labels.remove('NONE')
         print(labels)
-        print(classification_report(
+        y_pred = [label for y in y_pred for label in y]
+        print(sklearn.metrics.classification_report(
             y_test, y_pred, labels=labels, digits=3
         ))
 
-        #print(len(Counter(rf.transition_features_).most_common(20)))
+        print(len(Counter(crf.transition_features_).most_common(20)))
 
         from sklearn.metrics import plot_confusion_matrix
         from sklearn.metrics import confusion_matrix
@@ -264,9 +266,9 @@ class crf():
      #   plot_confusion_matrix(crf, X_test, y_test)  # doctest: +SKIP
      #   plt.show()
 
-        f = open('RELEVANCE-eight.pickle', 'wb')
-        pickle.dump(rf, f)
-        f.close()
+        '''f = open('RELEVANCE.pickle', 'wb')
+        pickle.dump(crf, f)
+        f.close()'''
 
 # =============================================================================
 #         print("Top positive:")
@@ -276,12 +278,12 @@ class crf():
 #         self.print_state_features(Counter(crf.state_features_).most_common()[-30:])
 # =============================================================================
 
-        '''import eli5
-        expl = eli5.explain_weights(rf, top=10)
+        import eli5
+        expl = eli5.explain_weights(crf, top=10)
         print(expl)
         print((expl.targets[0].target, expl.targets[0].score, expl.targets[0].proba))
         text = eli5.formatters.text.format_as_text(expl)
-        print(text)'''
+        print(text)
 
 
 
@@ -366,18 +368,6 @@ class crf():
             rhet_labels.append(individual_label)
 
         return rhet_labels
-
-    def get_rel_features(self):
-        features = self.location
-        features = np.vstack((features, self.quotation))
-        features = np.vstack((features, self.asmo))
-        features = np.vstack((features, self.sent_length))
-        features = np.vstack((features, self.tfidf_top20))
-        features = np.vstack((features, self.rhet_X))
-        features = np.vstack((features, self.spacy))
-        features = np.vstack((features, self.cue_phrase))
-        features = np.vstack((features,)).T
-        return features
 
 
     def create_speeches_features_list(self):
@@ -1378,12 +1368,11 @@ class crf():
                 self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
-        self.quotation = self.inq_X, self.qb_X
+        self.quote = self.inq_X, self.qb_X
         self.asmo = self.agree_X, self.outcome_X
     #    self.cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
         self.sent_length =  self.sentlen_X
         self.tfidf_top20 = self.tfidf_top20_X
-        self.tfidf_max = self.tfidf_max_X
         self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X, \
                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
@@ -1459,12 +1448,11 @@ class crf():
                 self.second_stop_X = np.append(self.second_stop_X, [float(row['cp second stop'])])
 
         self.location = self.loc1_X, self.loc2_X, self.loc3_X, self.loc4_X, self.loc5_X, self.loc6_X
-        self.quotation = self.inq_X, self.qb_X
+        self.quote = self.inq_X, self.qb_X
         self.asmo = self.agree_X, self.outcome_X
-        #    self.cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
-        self.sent_length = self.sentlen_X
+      #  self.cue_phrase = self.asp_X, self.modal_X, self.voice_X, self.negcue_X, self.tense_X
+        self.sent_length =  self.sentlen_X
         self.tfidf_top20 = self.tfidf_top20_X
-        self.tfidf_max = self.tfidf_max_X
         self.spacy = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X, \
                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X

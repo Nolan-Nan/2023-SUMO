@@ -16,7 +16,7 @@ import pickle
 import pandas as pd
 
 
-class ml():
+class ml_new():
     def __init__ (self, casenum, rhetRole):
         #Target/label
         ##relevance target
@@ -196,20 +196,17 @@ class ml():
         previous_judgename = ''
         y = 0
         newspeech = True
-        featureset = []
         tagcount = 0  # this is the counter for each sentence in a speech
         judges = self.judgename
-        newSpeechLookAheadBy1 = False  # checks if the judges are different
-        newSpeechLookAheadBy2 = False  # indicates a new speech
         tags = self.sent_to_rhetlabel()
         tag_history = self.rhetlabel
         rel_history = []
-        #  print(judges)
+
 
         for judge in judges:
             featureset = []
-            newSpeechLookAheadBy1 = False
-            newSpeechLookAheadBy2 = False
+            newSpeechLookAheadBy1 = False  # checks if the judges are different
+            newSpeechLookAheadBy2 = False  # indicates a new speech
             tag = tags[y]
             #rel = relevant[y]
 

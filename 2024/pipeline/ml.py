@@ -340,27 +340,27 @@ class ml():
             data.to_csv('data/UKHL_corpus2/' + casenum + '.csv', index=False)
 
     def relevanceClassification(self): 
-        f = open("RELEVANCE.pickle", "rb")
+        f = open("RELEVANCE-eight.pickle", "rb")
         classifier = pickle.load(f)
         f.close()
         
         case_features = self.get_rel_features()
         curr_RelPredictions = classifier.predict(case_features)
 
-        #print(curr_RelPredictions)
+        print(curr_RelPredictions)
 
-        for prediction in curr_RelPredictions:
+        '''for prediction in curr_RelPredictions:
             if prediction[0] == 'yes':
 
                 self.RelPredictions = np.append(self.RelPredictions, ['yes'])
             else:
                 self.RelPredictions = np.append(self.RelPredictions, ['no'])
-
-        #self.RelPredictions = curr_RelPredictions
+'''
+        self.RelPredictions = curr_RelPredictions
 
         ranks = []
 
-        rank = classifier.predict_marginals(case_features)
+        rank = classifier.predict_proba(case_features)
 
         for v in enumerate(rank):
             yes = v[1]
@@ -460,7 +460,7 @@ class ml():
                         
                     for v in range(len(self.sent_id)):
                         writer.writerow({'sent_id': self.sent_id[v], 'rhet label' : self.rhetlabel[v], 
-                        'relevant': self.RelPredictions[0], 'yes confidence' : self.ranking[v]})
+                        'relevant': self.RelPredictions[v], 'yes confidence' : self.ranking[v]})
                         
         
     # TODO - UPDATE THIS FOR THE NEW CUE PHRASES
@@ -1450,6 +1450,6 @@ class ml():
         self.HGents = self.loc_ent_X, self.org_ent_X, self.date_ent_X, self.person_ent_X, self.fac_ent_X, self.norp_ent_X,\
                      self.gpe_ent_X, self.event_ent_X, self.law_ent_X, self.time_ent_X, self.work_of_art_ent_X, self.ordinal_ent_X, \
                      self.cardinal_ent_X, self.money_ent_X, self.percent_ent_X, self.product_ent_X, self.quantity_ent_X
-        self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X 
+        self.cue_phrase = self.modal_dep_bool_X,  self.modal_dep_count_X, self.new_tense_X, self.new_dep_X, self.new_tag_X, self.new_negative_X, self.new_stop_X, self.new_voice_X, self.new_modal_X, self.second_pos_X, self.second_dep_X, self.second_tag_X, self.second_stop_X
      
         

@@ -333,6 +333,5 @@ class Majority:
             all.append([case, mj])
 
         corpus = pd.DataFrame.from_records(all, columns=["case", "mj"])
-        print('mj return is:', corpus)
 
         return corpus
