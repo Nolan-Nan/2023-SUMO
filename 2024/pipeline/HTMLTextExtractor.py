@@ -1,6 +1,7 @@
 import re
 
 from bs4 import BeautifulSoup
+import PyPDF2
 import requests
 
 class HTMLTextExtractor:
@@ -19,57 +20,80 @@ class HTMLTextExtractor:
 
     def extract_text(self):
         html_content = self.fetch_html()
+         #deal with case that paragraph no. in <li> tag
         if html_content:
             soup = BeautifulSoup(html_content, 'html.parser')
+            for li in soup.find_all('li'):
+                value = li.get('value')
+                if value:
+                    li_text = li.get_text(strip=True)
+                    li.replace_with(f"{value} {li_text}")
+
+
             text = soup.get_text()
-            text = re.sub(r'\n\s*\n', '\n', text)
             lines = text.split('\n')
             index_start=-1
             index_end = -1
             lines = [line.strip() for line in lines if line.strip()]
+            if "UKHL" in self.url:
+                for i, line in enumerate(lines):
+                    if 'My Lords,' in line:
+                        index_start = i
+                        break
+            elif "UKSC" in self.url:
+                for i, line in enumerate(lines):
+                    match = re.match(r'\d+\.', line.strip())
+                    if match:
+                        index_start = i
+                        break
             for i, line in enumerate(lines):
-                if 'My Lords,' in line:
-                    index_start = i
-                    break
-            for i, line in enumerate(lines):
-                if 'Crown Copyright' in line:
+                if 'Copyright' in line:
                     index_end = i
                     break
             if index_start != -1 & index_end != -1:
                 text =  '\n'.join(lines[max(0, index_start - 2):index_end])
 
-            match = re.search(r'UKHL/\d+/\d+', self.url)
+
+            match = re.search(r'UK\w{2}/\d+/\d+', self.url)
             if match:
                 file_path = "data/UKHL_txt/" + re.sub(r'[^\w\s-]', '', match.group()) + ".txt"
 
             else:
                 print("No valid pattern found in the URL.")
 
+            respondent_paragraphs = soup.find_all(string=re.compile(r'Respondent', re.IGNORECASE))
+            if respondent_paragraphs:
+                respondent = re.sub(r'\(RESPONDENT.*', '', respondent_paragraphs[0].get_text(), flags=re.IGNORECASE)
+                if respondent.strip() == '':
+                    respondent_paragraphs = soup.find_all('p', string=re.compile(r'Respondent', re.IGNORECASE))
+                    previous_sibling = respondent_paragraphs[0].find_previous()
+                    if previous_sibling is not None:
+                        respondent = previous_sibling.get_text()
+                        print('before respondent: ', respondent)
+                    else:
+                        print('No previous sibling found for the RESPONDENT paragraph.')
+            else:
+                respondent = 'Empty'
 
-            respondent_paragraphs = soup.find_all('p', string=re.compile(r'RESPONDENT', re.IGNORECASE))
-            respondent = re.sub(r'\(RESPONDENT.*', '', respondent_paragraphs[0].get_text())
-            if respondent.strip() == '':
-                previous_sibling = respondent_paragraphs[0].find_previous()
-                if previous_sibling is not None:
-                    respondent = previous_sibling.get_text()
-                    print('before respondent: ', respondent)
-                else:
-                    print('No previous sibling found for the RESPONDENT paragraph.')
 
-            appellant_paragraphs = soup.find_all('p', string=re.compile(r'APPELLANT', re.IGNORECASE))
-            appellant = re.sub(r'\(APPELLANT.*', '', appellant_paragraphs[0].get_text())
-            if appellant.strip() == '':
-                previous_sibling = appellant_paragraphs[0].find_previous()
-                if previous_sibling is not None:
-                    appellant = previous_sibling.get_text()
-                    print('before appellant: ', appellant)
-                else:
-                    print('No previous sibling found for the appellant paragraph.')
-
+            appellant_paragraphs = soup.find_all(string=re.compile(r'APPELLANT', re.IGNORECASE))
+            if appellant_paragraphs:
+                appellant = re.sub(r'\(APPELLANT.*', '', appellant_paragraphs[0].get_text(), flags=re.IGNORECASE)
+                if appellant.strip() == '':
+                    appellant_paragraphs = soup.find_all('p', string=re.compile(r'APPELLANT', re.IGNORECASE))
+                    previous_sibling = appellant_paragraphs[0].find_previous()
+                    if previous_sibling is not None:
+                        appellant = previous_sibling.get_text()
+                        print('before appellant: ', appellant)
+                    else:
+                        print('No previous sibling found for the appellant paragraph.')
+            else:
+                appellant = 'Empty'
 
             text = text + '\n' + respondent + '\n' + appellant + '\n'
 
             with open(file_path, "w", encoding="utf-8") as file:
+
                 file.write(text)
             print("Text saved to", file_path)
             return file_path

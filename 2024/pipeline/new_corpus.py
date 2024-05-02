@@ -29,13 +29,19 @@ def track_para_id(sentence, para_id):
 
 def track_speaker(sentence,speaker):
     new_judge = False
-    if sentence.startswith("LORD"):
+    name = None
+    if sentence.startswith("LORD") or sentence.startswith("LADY"):
+        match = re.search(r'with whom (.+?) agrees', sentence)
+        if match:
+            words = sentence.split()
+            index = words.index('whom')
+            name = words[index + 2].lower()
         speaker = ' '.join(sentence.split()[:2]).lower() # Extract speaker name from sentence
         speaker = speaker.replace('lord', '').strip()
         new_judge = True
     elif speaker == None:
         speaker = 'None'
-    return speaker, new_judge
+    return speaker, new_judge, name
 
 def new_case(filename, train=False):
     nlp = spacy.load("en_core_web_sm")
@@ -110,14 +116,23 @@ def new_case(filename, train=False):
     line_num =0
     results = []
     for sentence in sentences:
-        speaker, new_judge= track_speaker(sentence,speaker)
-
+        speaker, new_judge, name = track_speaker(sentence,speaker)
+        print(speaker, new_judge, name)
         para_id = track_para_id(sentence,para_id)
         new_X = vectorizer.transform([sentence])
         #predicted_to = mlb.inverse_transform(classifier.predict(new_X))
         predicted_to = model_to.predict(new_X)
         #print(predicted_to)
         pos = round(line_num/max_line, 1)
+        if name is not None:
+            add_sentence = '------------- NEW JUDGE --------------- '
+            para_id = track_para_id(add_sentence, para_id)
+            results.append({'case': case, 'line': line_num, 'para_id': para_id, 'body': add_sentence, 'from': 'None',
+                            'to': 'None', 'relation': 'NAN', 'pos': pos, 'mj': 'NAN'})
+            line_num += 1
+            results.append({'case': case, 'line': line_num, 'para_id': para_id, 'body': 'fully agree', 'from': name,
+                            'to': speaker, 'relation': 'fullagr', 'pos': pos, 'mj': 'NAN'})
+            line_num += 1
         if new_judge:
             add_sentence = '------------- NEW JUDGE --------------- '
             para_id = track_para_id(add_sentence, para_id)
@@ -146,7 +161,6 @@ def rewrite_mj(mj, filename):
     list = []
     for index, row in mj.iterrows():
         list.append(row['mj'])
-
     original_data["mj"] = original_data["mj"].replace(original_data["mj"].unique(), list)
     original_data.to_csv('data/UKHL_csv/' + case + '.csv', index=False)
 

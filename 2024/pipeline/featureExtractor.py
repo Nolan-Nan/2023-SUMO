@@ -96,11 +96,11 @@ class featureExtractor():
     def get_end_par_in_lord(self, judge, case, current_paragraph):
         if case == 'N/A':
             case = 'NA'
-        if case.startswith("UKHL"):
+        if case.startswith("UK"):
             path = 'data/UKHL_corpus2/' + case + '.csv'
         else:
             path = 'data/UKHL_corpus2/UKHL_' + case + '.csv'
-        with open(path, 'r') as infile:
+        with open(path, 'r', encoding="utf-8") as infile:
                 reader = csv.DictReader(infile)
                 
 
@@ -121,11 +121,11 @@ class featureExtractor():
     def get_end_sent_in_lord(self, judge, case, current_sentence):
         if case == 'N/A':
             case = 'NA'
-        if case.startswith("UKHL"):
+        if case.startswith("UK"):
             path = 'data/UKHL_corpus2/'+case+'.csv'
         else:
             path = 'data/UKHL_corpus2/UKHL_'+case+'.csv'
-        with open(path, 'r') as infile:
+        with open(path, 'r', encoding="utf-8") as infile:
                reader = csv.DictReader(infile)
 
                ret = ''
@@ -141,11 +141,11 @@ class featureExtractor():
     def get_end_sent_in_par(self, par, case, current_sentence):
         if case == 'N/A':
             case = 'NA'
-        if case.startswith("UKHL"):
+        if case.startswith("UK"):
             path = 'data/UKHL_corpus2/'+case+'.csv'
         else:
             path = 'data/UKHL_corpus2/UKHL_'+case+'.csv'
-        with open(path, 'r') as infile:
+        with open(path, 'r', encoding="utf-8") as infile:
             reader = csv.DictReader(infile)
         
             ret = ''
@@ -211,7 +211,7 @@ class featureExtractor():
                 self.quantity_ent_X = np.append(self.quantity_ent_X, row['quantity_ent'])
             
     def createFeatures(self, casenum):
-        if casenum.startswith("UKHL"):
+        if casenum.startswith("UK"):
             caseFile = 'data/UKHL_corpus/'+casenum+'.csv'
         else:
             caseFile = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
@@ -234,7 +234,7 @@ class featureExtractor():
                 self.negtoken_X, self.verbstop_X, self.newvoice_X, self.second_pos_X, \
                     self.second_dep_X, self.second_tag_X, self.second_stop_X = cuephrases.cuePhrases(casenum)
         
-        with open(caseFile, 'r') as infile:
+        with open(caseFile, 'r', encoding="utf-8") as infile:
           reader = csv.DictReader(infile)  
           for row in reader:
                 if row['agree'] == 'no match' or row['role'] == '<prep-date>'\

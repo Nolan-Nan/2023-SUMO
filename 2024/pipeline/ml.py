@@ -219,7 +219,7 @@ class ml():
             
             # TODO: this needs to be ammended to be strings instead, once the 
             # working CRF training code is integrated here .. 
-            print(label)
+            #print(label)
             if label == 2.0:    
                 self.rhet_X = np.append(self.rhet_X, [2/6])        
             if label == 3.0:      
@@ -331,7 +331,7 @@ class ml():
                 return 'DISPOSAL'
             else:
                 return 'UNKNOWN'
-        if casenum.startswith("UKHL"):
+        if casenum.startswith("UK"):
             predictions = [[int(float(val[0]))] for val in self.rhet_predictions]
             data = pd.read_csv('data/UKHL_corpus/' + casenum + '.csv')
             data['role'] = [map_role(label[0]) for label in predictions]
@@ -347,7 +347,7 @@ class ml():
         case_features = self.get_rel_features()
         curr_RelPredictions = classifier.predict(case_features)
 
-        print(curr_RelPredictions)
+        #print(curr_RelPredictions)
 
         '''for prediction in curr_RelPredictions:
             if prediction[0] == 'yes':

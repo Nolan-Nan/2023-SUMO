@@ -78,7 +78,7 @@ import spacy
 
 def cuePhrases(casenum):
     import spacy
-    if casenum.startswith("UKHL"):
+    if casenum.startswith("UK"):
         path = 'data/UKHL_corpus/' + casenum + '.csv'
     else:
         path = 'data/UKHL_corpus/UKHL_' + casenum + '.csv'
@@ -89,7 +89,7 @@ def cuePhrases(casenum):
     
     y = 0
     
-    with open(path, 'r') as infile:
+    with open(path, 'r', encoding="utf-8") as infile:
         
         reader = csv.DictReader(infile)
         

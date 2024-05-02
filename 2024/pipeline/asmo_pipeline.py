@@ -36,7 +36,7 @@ def asmo(filepath):
     ML_corpus = holj_corpus.get_corpus(type = "ml")
     MJ_corpus = holj_corpus.get_corpus(type = "mj")
     ALL_corpus = holj_corpus.get_corpus(type = "all")
-    new_case = new_corpus.new_case(filename,False)
+    new_case = new_corpus.new_case(filename ,False)
     '''out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')'''
 
@@ -65,7 +65,7 @@ def asmo(filepath):
     new_corpus.rewrite_mj(mj, filename)
     new_corpus.rewrite_to(map, filename)
 
-    print("\n\nBaselines:")
+    '''print("\n\nBaselines:")
     # Print baselines
     optimal = Optimal(pip.corPath, ML_corpus)
     print("\n\n1")
@@ -76,7 +76,7 @@ def asmo(filepath):
     baselines.find_majority()
 
     print("\n\n4")
-    baselines.find_AS()
+    baselines.find_AS()'''
 
     # # Visualise corpus
     # # vis = Visualise(amazon, cnt)

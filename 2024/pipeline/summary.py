@@ -59,11 +59,11 @@ class summary():
         
     def prepareASMOData(self, casenum):
         ASMOagree = []
-        if casenum.startswith("UKHL"):
+        if casenum.startswith("UK"):
             path = 'data/UKHL_corpus/'+casenum+'.csv'
         else:
             path = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
-        with open(path, 'r') as infile:
+        with open(path, 'r', encoding="utf-8") as infile:
             reader = csv.DictReader(infile)
             
             for row in reader:
@@ -75,9 +75,9 @@ class summary():
         
     # get the UKHL data from corpus
     def summaryHeaderData(self, casenum):
-        if casenum.startswith("UKHL"):
+        if casenum.startswith("UK"):
             data = pd.read_csv('data/UKHL_corpus/' + casenum + '.csv')
-            return data['text'].iloc [-1], data['text'].iloc [-2]
+            return data['text'].iloc [-2], data['text'].iloc [-1]
 
         else:
             corpusList = ["2001Apr04eastbrn-1.ling.xml", "2001Dec13aib-1.ling.xml", "2001Dec13smith-1.ling.xml", "2001Feb08kuwait-1.ling.xml",
@@ -150,11 +150,11 @@ class summary():
             
         
     def getSentences(self, casenum):
-        if casenum.startswith("UKHL"):
+        if casenum.startswith("UK"):
             path = 'data/UKHL_corpus/'+casenum+'.csv'
         else:
             path = 'data/UKHL_corpus/UKHL_'+casenum+'.csv'
-        with open(path, 'r') as infile:
+        with open(path, 'r', encoding="utf-8") as infile:
           reader = csv.DictReader(infile)
           sentences = []
           judges = []

@@ -43,7 +43,7 @@ if __name__ == '__main__':
     out = new_case[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'UKHL20012.csv')
 
-    '''out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
+    out = ALL_corpus[["case", "line", "body", "from", "to", "relation", "pos", "mj"]]
     out.to_csv(r'AI.csv')
     # # cnt = holj_corpus.get_corpus(type = "count")
     # # st = Stats(cnt)

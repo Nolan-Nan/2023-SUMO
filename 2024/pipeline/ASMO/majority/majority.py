@@ -321,15 +321,19 @@ class Majority:
             print("-------NEW-----:", case)
             citations = self.count_citations(map, case)
             print(citations)
-            mj = self.rule_one(map, citations, case)
-            print("RULE1:", mj)
-            mj = self.rule_two(map, mj, case)
-            print("RULE2:", mj)
-            try:
-                mj = self.rule_three(map, citations, mj, case)
-                print("RULE3:", mj)
-            except:
-                pass
+            if len(map) == 1:
+                mj = list(map[case].keys())[0]
+
+            else:
+                mj = self.rule_one(map, citations, case)
+                print("RULE1:", mj)
+                mj = self.rule_two(map, mj, case)
+                print("RULE2:", mj)
+                try:
+                    mj = self.rule_three(map, citations, mj, case)
+                    print("RULE3:", mj)
+                except:
+                    pass
             all.append([case, mj])
 
         corpus = pd.DataFrame.from_records(all, columns=["case", "mj"])
